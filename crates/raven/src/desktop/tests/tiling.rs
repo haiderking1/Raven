@@ -52,7 +52,7 @@ fn tiled_configures_reflow_on_unmap_without_following_focus_order() {
         None,
         Some((0, 0).into()),
     );
-    f.state.space.map_output(&output, (0, 0));
+    f.state.space_mut().map_output(&output, (0, 0));
     f.state.output = Some(output);
 
     let first = f.toplevel();
@@ -66,7 +66,7 @@ fn tiled_configures_reflow_on_unmap_without_following_focus_order() {
     f.wire.request(first.xdg, 4, &[word(&serial.args)]);
     let buffer = f.buffer();
     f.attach(first, buffer);
-    let first_window = f.state.space.elements().next().unwrap().clone();
+    let first_window = f.state.space().elements().next().unwrap().clone();
 
     let second = f.toplevel();
     f.configure(second);
@@ -75,17 +75,17 @@ fn tiled_configures_reflow_on_unmap_without_following_focus_order() {
     assert_eq!(configure_size(&events, second), (501, 601));
     let second_window = f
         .state
-        .space
+        .space()
         .elements()
         .find(|window| window.toplevel().unwrap().wl_surface().id().protocol_id() == second.surface)
         .unwrap()
         .clone();
     assert_eq!(
-        f.state.space.element_location(&first_window),
+        f.state.space().element_location(&first_window),
         Some((0, 0).into())
     );
     assert_eq!(
-        f.state.space.element_location(&second_window),
+        f.state.space().element_location(&second_window),
         Some((500, 0).into())
     );
 
@@ -93,31 +93,31 @@ fn tiled_configures_reflow_on_unmap_without_following_focus_order() {
     // must not repeatedly configure clients and provoke redraw loops.
     f.state.activate_window(Some(first_window.clone()));
     f.dispatch();
-    f.state.retile_windows();
+    f.state.retile_workspace(f.state.workspaces.active);
     let events = f.dispatch();
     assert!(
         !events
             .iter()
             .any(|event| [first.role, second.role].contains(&event.object) && event.opcode == 0)
     );
-    assert_eq!(f.state.space.elements().next_back(), Some(&first_window));
+    assert_eq!(f.state.space().elements().next_back(), Some(&first_window));
     assert_eq!(
-        f.state.space.element_location(&first_window),
+        f.state.space().element_location(&first_window),
         Some((0, 0).into())
     );
     assert_eq!(
-        f.state.space.element_location(&second_window),
+        f.state.space().element_location(&second_window),
         Some((500, 0).into())
     );
 
     let events = attach(&mut f, second, 0);
     assert_eq!(configure_size(&events, first), (1001, 601));
-    assert_eq!(f.state.space.elements().count(), 1);
+    assert_eq!(f.state.space().elements().count(), 1);
     f.configure(second);
     let events = attach(&mut f, second, buffer);
     assert_eq!(configure_size(&events, first), (500, 601));
     assert_eq!(
-        f.state.space.element_location(&second_window),
+        f.state.space().element_location(&second_window),
         Some((500, 0).into())
     );
 
@@ -126,5 +126,5 @@ fn tiled_configures_reflow_on_unmap_without_following_focus_order() {
     f.wire.request(second.surface, 0, &[]);
     let events = f.dispatch();
     assert_eq!(configure_size(&events, first), (1001, 601));
-    assert_eq!(f.state.space.elements().count(), 1);
+    assert_eq!(f.state.space().elements().count(), 1);
 }

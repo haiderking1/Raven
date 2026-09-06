@@ -6,3 +6,4 @@ mod pointer_focus;
 mod popups;
 mod tiling;
 mod wire;
+mod workspaces;

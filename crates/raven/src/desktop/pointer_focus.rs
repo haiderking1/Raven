@@ -15,7 +15,7 @@ impl State {
         {
             return;
         }
-        let Some((window, _)) = self.space.element_under(point) else {
+        let Some((window, _)) = self.space().element_under(point) else {
             // Moving across background should not stop typing into a window.
             return;
         };

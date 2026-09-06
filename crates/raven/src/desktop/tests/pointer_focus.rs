@@ -16,8 +16,10 @@ fn hover_changes_focus_once_and_preserves_background_and_drag_focus() {
     let second = f.toplevel();
     f.configure(second);
     f.attach(second, buffer);
-    let second_window = f.state.space.elements().next_back().unwrap().clone();
-    f.state.space.map_element(second_window, (200, 0), false);
+    let second_window = f.state.space().elements().next_back().unwrap().clone();
+    f.state
+        .space_mut()
+        .map_element(second_window, (200, 0), false);
     let keyboard = f.state.seat.get_keyboard().unwrap();
     assert_eq!(
         keyboard.current_focus().unwrap().id().protocol_id(),

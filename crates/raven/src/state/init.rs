@@ -1,6 +1,6 @@
 use super::State;
 use smithay::{
-    desktop::{PopupManager, Space},
+    desktop::PopupManager,
     input::{SeatState, pointer::CursorImageStatus},
     reexports::{calloop::LoopSignal, wayland_server::DisplayHandle},
     wayland::{
@@ -36,7 +36,6 @@ impl State {
             data_device_state,
             seat_state,
             seat,
-            space: Space::default(),
             output: None,
             start_time: Instant::now(),
             loop_signal,
@@ -45,7 +44,7 @@ impl State {
             backend: None,
             input: Default::default(),
             clients: None,
-            tiling: Default::default(),
+            workspaces: Default::default(),
             popup_manager: PopupManager::default(),
             popup_grab: None,
             windows: Vec::new(),

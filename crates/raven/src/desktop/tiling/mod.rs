@@ -1,6 +1,8 @@
 mod arrange;
 mod configure;
 mod geometry;
+mod initial;
+mod membership;
 
 use smithay::{
     desktop::Window,

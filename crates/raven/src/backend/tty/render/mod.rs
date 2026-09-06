@@ -113,7 +113,7 @@ impl Scene {
         }
         // Space's Window elements include XDG popups and subsurface trees.
         elements.extend(
-            space_render_elements(&mut device.renderer, [&state.space], output, 1.0)?
+            space_render_elements(&mut device.renderer, [state.space()], output, 1.0)?
                 .into_iter()
                 .map(SceneElement::Space),
         );

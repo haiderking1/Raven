@@ -39,6 +39,9 @@ pub fn run() -> Result<(), Box<dyn Error>> {
             .expect("backend installed")
             .seat_name()
     );
+    eprintln!(
+        "raven: Super+1..9/0 switches workspace; add Shift to move the focused window without following (0 selects workspace 10)"
+    );
     clients.spawn(&command)?;
     state.clients = Some(clients);
     let mut flush_error = None;

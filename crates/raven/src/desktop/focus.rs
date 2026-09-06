@@ -10,7 +10,7 @@ impl State {
         &self,
         point: Point<f64, Logical>,
     ) -> Option<(WlSurface, Point<f64, Logical>)> {
-        let (window, origin) = self.space.element_under(point)?;
+        let (window, origin) = self.space().element_under(point)?;
         window
             .surface_under(point - origin.to_f64(), WindowSurfaceType::ALL)
             .map(|(surface, offset)| (surface, (origin + offset).to_f64()))
@@ -24,17 +24,18 @@ impl State {
             return;
         }
         let window = self
-            .space
+            .space()
             .element_under(point)
             .map(|(window, _)| window.clone());
         self.activate_window(window);
     }
 
     pub(crate) fn activate_window(&mut self, window: Option<Window>) {
+        self.workspaces.entries[self.workspaces.active].focused = window.clone();
         if let Some(window) = &window {
-            self.space.raise_element(window, true);
+            self.space_mut().raise_element(window, true);
         }
-        for candidate in self.space.elements() {
+        for candidate in self.space().elements() {
             candidate.set_activated(window.as_ref() == Some(candidate));
             if let Some(toplevel) = candidate.toplevel() {
                 toplevel.send_pending_configure();
@@ -57,11 +58,11 @@ impl State {
             return;
         };
         let still_mapped = self
-            .space
+            .space()
             .elements()
             .any(|w| w.toplevel().is_some_and(|t| t.wl_surface() == &focus));
         if !still_mapped {
-            let next = self.space.elements().next_back().cloned();
+            let next = self.space().elements().next_back().cloned();
             self.activate_window(next);
         }
     }

@@ -6,6 +6,12 @@ fn shortcuts_swallow_repeat_and_release_after_modifiers_are_released() {
         (24, keysyms::KEY_q, false, Action::LaunchTerminal),
         (24, keysyms::KEY_q, true, Action::Quit),
         (54, keysyms::KEY_c, false, Action::CloseWindow),
+        (10, keysyms::KEY_1, false, Action::SwitchWorkspace(0)),
+        (18, keysyms::KEY_9, false, Action::SwitchWorkspace(8)),
+        (19, keysyms::KEY_0, false, Action::SwitchWorkspace(9)),
+        (10, keysyms::KEY_1, true, Action::MoveToWorkspace(0)),
+        (18, keysyms::KEY_9, true, Action::MoveToWorkspace(8)),
+        (19, keysyms::KEY_0, true, Action::MoveToWorkspace(9)),
     ] {
         let mut shortcuts = Shortcuts::default();
         let key = Keycode::new(keycode);
@@ -41,6 +47,47 @@ fn shortcuts_swallow_repeat_and_release_after_modifiers_are_released() {
             shortcuts.filter(key, KeyState::Released, &modifiers, &symbols),
             FilterResult::Forward
         ));
+        assert!(matches!(
+            shortcuts.filter(key, KeyState::Pressed, &modifiers, &symbols),
+            FilterResult::Intercept(Some(actual)) if actual == expected
+        ));
+    }
+}
+
+#[test]
+fn workspace_shortcuts_reject_extra_modifiers_and_non_digit_symbols() {
+    for shift in [false, true] {
+        for (logo, ctrl, alt) in [
+            (false, false, false),
+            (false, true, true),
+            (true, true, false),
+            (true, false, true),
+            (true, true, true),
+        ] {
+            let modifiers = ModifiersState {
+                logo,
+                ctrl,
+                alt,
+                shift,
+                ..Default::default()
+            };
+            for symbol in [keysyms::KEY_1, keysyms::KEY_9, keysyms::KEY_0] {
+                assert_eq!(shortcut(&modifiers, &[Keysym::new(symbol)]), None);
+            }
+        }
+        let modifiers = ModifiersState {
+            logo: true,
+            shift,
+            ..Default::default()
+        };
+        for symbol in [
+            keysyms::KEY_slash,
+            keysyms::KEY_colon,
+            keysyms::KEY_exclam,
+            keysyms::KEY_parenright,
+        ] {
+            assert_eq!(shortcut(&modifiers, &[Keysym::new(symbol)]), None);
+        }
     }
 }
 
@@ -58,6 +105,10 @@ fn control_alt_function_keys_select_vt_only_on_press() {
         assert!(matches!(
             shortcuts.filter(key, KeyState::Pressed, &modifiers, &symbols),
             FilterResult::Intercept(Some(Action::SwitchVt(actual))) if actual == vt
+        ));
+        assert!(matches!(
+            shortcuts.filter(key, KeyState::Pressed, &modifiers, &symbols),
+            FilterResult::Intercept(None)
         ));
         assert!(matches!(
             shortcuts.filter(key, KeyState::Released, &modifiers, &symbols),

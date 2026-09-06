@@ -8,12 +8,12 @@ impl State {
         let Some(output) = &self.output else {
             return;
         };
-        let Some(geometry) = self.space.output_geometry(output) else {
+        let Some(geometry) = self.space().output_geometry(output) else {
             return;
         };
-        for window in self.space.elements() {
+        for window in self.space().elements() {
             if self
-                .space
+                .space()
                 .element_bbox(window)
                 .is_some_and(|bbox| bbox.overlaps(geometry))
             {

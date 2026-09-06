@@ -15,10 +15,10 @@ fn configure_map_unmap_remap_restores_focus() {
             .any(|e| e.object == first.xdg && e.opcode == 0)
     );
     f.configure(first);
-    assert_eq!(f.state.space.elements().count(), 0);
+    assert_eq!(f.state.space().elements().count(), 0);
     let buffer = f.buffer();
     f.attach(first, buffer);
-    assert_eq!(f.state.space.elements().count(), 1);
+    assert_eq!(f.state.space().elements().count(), 1);
     let second = f.toplevel();
     f.configure(second);
     f.attach(second, buffer);
@@ -28,14 +28,14 @@ fn configure_map_unmap_remap_restores_focus() {
         second.surface
     );
     f.attach(second, 0);
-    assert_eq!(f.state.space.elements().count(), 1);
+    assert_eq!(f.state.space().elements().count(), 1);
     assert_eq!(
         keyboard.current_focus().unwrap().id().protocol_id(),
         first.surface
     );
     f.configure(second);
     f.attach(second, buffer);
-    assert_eq!(f.state.space.elements().count(), 2);
+    assert_eq!(f.state.space().elements().count(), 2);
     assert_eq!(
         keyboard.current_focus().unwrap().id().protocol_id(),
         second.surface
@@ -50,8 +50,8 @@ fn hit_test_returns_buffer_origin_not_window_geometry_origin() {
     f.wire.request(top.xdg, 3, &[10, 12, 80, 70]);
     let buffer = f.buffer();
     f.attach(top, buffer);
-    let window = f.state.space.elements().next().unwrap().clone();
-    f.state.space.map_element(window, (100, 100), false);
+    let window = f.state.space().elements().next().unwrap().clone();
+    f.state.space_mut().map_element(window, (100, 100), false);
     let (surface, origin) = f.state.surface_under((110.0, 110.0).into()).unwrap();
     assert_eq!(surface.id().protocol_id(), top.surface);
     assert_eq!(origin, (90.0, 88.0).into());
@@ -79,18 +79,20 @@ fn frame_callbacks_require_window_overlap_with_output() {
         None,
         Some((0, 0).into()),
     );
-    f.state.space.map_output(&output, (0, 0));
+    f.state.space_mut().map_output(&output, (0, 0));
     f.state.output = Some(output);
     let top = f.toplevel();
     f.configure(top);
     let buffer = f.buffer();
     f.attach(top, buffer);
-    let window = f.state.space.elements().next().unwrap().clone();
+    let window = f.state.space().elements().next().unwrap().clone();
     let callback = f.id();
     f.wire.request(top.surface, 3, &[callback]);
     f.wire.request(top.surface, 6, &[]);
     f.dispatch();
-    f.state.space.map_element(window.clone(), (900, 0), false);
+    f.state
+        .space_mut()
+        .map_element(window.clone(), (900, 0), false);
     f.state.refresh();
     f.state.send_frames(Duration::from_millis(10));
     assert!(
@@ -98,7 +100,7 @@ fn frame_callbacks_require_window_overlap_with_output() {
             .iter()
             .any(|e| e.object == callback && e.opcode == 0)
     );
-    f.state.space.map_element(window, (0, 0), false);
+    f.state.space_mut().map_element(window, (0, 0), false);
     f.state.refresh();
     f.state.send_frames(Duration::from_millis(20));
     assert!(

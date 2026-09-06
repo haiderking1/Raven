@@ -52,6 +52,21 @@ fn shortcut(modifiers: &ModifiersState, symbols: &[Keysym]) -> Option<Action> {
         if modifiers.logo && modifiers.shift && matches!(symbol, keysyms::KEY_q | keysyms::KEY_Q) {
             return Some(Action::Quit);
         }
+        if modifiers.logo && !modifiers.ctrl && !modifiers.alt {
+            // Raw symbols remain digits even when Shift is held.
+            let workspace = match symbol {
+                keysyms::KEY_1..=keysyms::KEY_9 => Some((symbol - keysyms::KEY_1) as usize),
+                keysyms::KEY_0 => Some(9),
+                _ => None,
+            };
+            if let Some(index) = workspace {
+                return Some(if modifiers.shift {
+                    Action::MoveToWorkspace(index)
+                } else {
+                    Action::SwitchWorkspace(index)
+                });
+            }
+        }
         if modifiers.logo && !modifiers.shift && !modifiers.ctrl && !modifiers.alt {
             match symbol {
                 keysyms::KEY_q | keysyms::KEY_Q => return Some(Action::LaunchTerminal),

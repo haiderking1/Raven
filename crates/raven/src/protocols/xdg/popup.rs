@@ -26,9 +26,9 @@ impl State {
                 .windows
                 .iter()
                 .find(|w| w.toplevel().is_some_and(|t| t.wl_surface() == &root))?;
-            let location = self.space.element_location(window)?;
+            let location = self.space().element_location(window)?;
             let output = self.output.as_ref()?;
-            let mut target = self.space.output_geometry(output)?;
+            let mut target = self.space().output_geometry(output)?;
             // Positioners use the parent's window-geometry origin, not its buffer origin.
             target.loc -= location + get_popup_toplevel_coords(&kind);
             Some(target)

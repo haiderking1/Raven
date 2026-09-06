@@ -6,12 +6,16 @@ pub(super) enum Action {
     SwitchVt(i32),
     LaunchTerminal,
     CloseWindow,
+    SwitchWorkspace(usize),
+    MoveToWorkspace(usize),
 }
 
 impl Action {
     pub(super) fn execute(self, state: &mut State) {
         match self {
             Self::CloseWindow => state.close_focused_window(),
+            Self::SwitchWorkspace(index) => state.switch_workspace(index),
+            Self::MoveToWorkspace(index) => state.move_focused_to_workspace(index),
             Self::Quit => {
                 state.loop_signal.stop();
                 state.loop_signal.wakeup();

@@ -7,7 +7,7 @@ fn close_requests_target_keyboard_focus_and_wait_for_the_client() {
     f.configure(first);
     let buffer = f.buffer();
     f.attach(first, buffer);
-    let first_window = f.state.space.elements().next().unwrap().clone();
+    let first_window = f.state.space().elements().next().unwrap().clone();
     let second = f.toplevel();
     f.configure(second);
     f.attach(second, buffer);
@@ -21,7 +21,7 @@ fn close_requests_target_keyboard_focus_and_wait_for_the_client() {
         .collect();
     assert_eq!(closed, vec![second.role]);
     assert_eq!(
-        f.state.space.elements().count(),
+        f.state.space().elements().count(),
         2,
         "requesting close must not forcibly unmap a client"
     );

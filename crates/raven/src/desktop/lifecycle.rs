@@ -14,16 +14,22 @@ impl State {
         else {
             return;
         };
+        let Some(index) = self.workspaces.index_of(&window) else {
+            return;
+        };
         window.on_commit();
         let toplevel = window.toplevel().expect("Wayland window");
         let has_buffer =
             with_renderer_surface_state(surface, |state| state.buffer().is_some()).unwrap_or(false);
-        let mapped = self.space.element_location(&window).is_some();
+        let mapped = self.workspaces.entries[index]
+            .space
+            .element_location(&window)
+            .is_some();
         if mapped && !has_buffer {
             self.dismiss_window_popups(surface);
             window.set_activated(false);
-            self.space.unmap_elem(&window);
-            self.refresh_tiling();
+            self.workspaces.entries[index].space.unmap_elem(&window);
+            self.refresh_workspace_tiling(index);
             self.restore_focus();
             return;
         }
@@ -32,9 +38,12 @@ impl State {
             toplevel.send_configure();
         }
         if has_buffer && !mapped && toplevel.ensure_configured() {
-            self.map_tiled_window(window.clone());
-            // Do not interrupt a menu or drag that already owns keyboard focus.
-            if !self.seat.get_keyboard().is_some_and(|k| k.is_grabbed()) {
+            self.map_tiled_window(index, window.clone());
+            // A delayed or remapped hidden client must never steal the seat.
+            if index == self.workspaces.active
+                && !self.seat.get_keyboard().is_some_and(|k| k.is_grabbed())
+                && !self.seat.get_pointer().is_some_and(|p| p.is_grabbed())
+            {
                 self.activate_window(Some(window));
             }
         }
@@ -44,14 +53,17 @@ impl State {
         if let Some(toplevel) = window.toplevel() {
             self.dismiss_window_popups(toplevel.wl_surface());
         }
-        self.space.unmap_elem(window);
+        if let Some(index) = self.workspaces.index_of(window) {
+            self.workspaces.entries[index].space.unmap_elem(window);
+            self.refresh_workspace_tiling(index);
+        }
+        self.workspaces.forget(window);
         self.windows.retain(|candidate| candidate != window);
-        self.refresh_tiling();
         self.restore_focus();
     }
 
     pub fn refresh(&mut self) {
-        self.space.refresh();
+        self.workspaces.refresh();
         self.windows.retain(IsAlive::alive);
         self.refresh_tiling();
         self.popup_manager.cleanup();

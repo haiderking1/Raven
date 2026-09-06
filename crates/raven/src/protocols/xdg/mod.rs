@@ -18,7 +18,10 @@ impl XdgShellHandler for State {
 
     fn new_toplevel(&mut self, surface: ToplevelSurface) {
         // The first configure follows the initial wl_surface.commit, not get_toplevel.
-        self.windows.push(Window::new_wayland_window(surface));
+        let window = Window::new_wayland_window(surface);
+        self.workspaces
+            .assign(window.clone(), self.workspaces.active);
+        self.windows.push(window);
     }
 
     fn toplevel_destroyed(&mut self, surface: ToplevelSurface) {

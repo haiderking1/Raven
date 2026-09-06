@@ -4,7 +4,7 @@ mod init;
 pub use client::ClientState;
 
 use smithay::{
-    desktop::{PopupGrab, PopupManager, Space, Window},
+    desktop::{PopupGrab, PopupManager, Window},
     input::{Seat, SeatState, pointer::CursorImageStatus},
     output::Output,
     reexports::{
@@ -31,7 +31,6 @@ pub struct State {
     pub data_device_state: DataDeviceState,
     pub seat_state: SeatState<Self>,
     pub seat: Seat<Self>,
-    pub space: Space<Window>,
     pub output: Option<Output>,
     pub start_time: Instant,
     pub loop_signal: LoopSignal,
@@ -40,7 +39,7 @@ pub struct State {
     pub backend: Option<crate::backend::tty::TtyBackend>,
     pub input: crate::input::InputState,
     pub(crate) clients: Option<crate::runtime::client::Clients>,
-    pub(crate) tiling: crate::desktop::tiling::Tiling,
+    pub(crate) workspaces: crate::desktop::workspaces::Workspaces,
     pub popup_manager: PopupManager,
     pub(crate) popup_grab: Option<(WlSurface, PopupGrab<Self>)>,
     /// Includes unmapped toplevels so a null-buffer commit can later remap them.

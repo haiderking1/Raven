@@ -2,7 +2,7 @@ use crate::state::State;
 use smithay::{
     desktop::{PopupManager, PopupUngrabStrategy},
     reexports::wayland_server::protocol::wl_surface::WlSurface,
-    utils::SERIAL_COUNTER,
+    utils::{Clock, Monotonic, SERIAL_COUNTER},
 };
 
 impl State {
@@ -45,7 +45,7 @@ impl State {
         }
         if let Some(pointer) = self.seat.get_pointer() {
             if pointer.has_grab(serial) {
-                let time = self.start_time.elapsed().as_millis() as u32;
+                let time = Clock::<Monotonic>::new().now().as_millis();
                 pointer.unset_grab(self, SERIAL_COUNTER.next_serial(), time);
             }
         }

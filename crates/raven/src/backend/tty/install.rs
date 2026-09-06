@@ -69,7 +69,7 @@ pub(super) fn install(
         .output
         .clone();
     backend.output_global = Some(output.create_global::<State>(&state.display_handle));
-    state.space.map_output(&output, (0, 0));
+    state.space_mut().map_output(&output, (0, 0));
     state.output = Some(output);
     state.backend = Some(backend);
     // The already-registered timer performs the first render after install returns.
