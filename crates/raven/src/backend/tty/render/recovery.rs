@@ -3,7 +3,7 @@ use std::{error::Error, fmt};
 
 /// queue_frame only submits when Smithay has no pending frame. A successful
 /// queue (including one parked behind a pending flip) must never be retried.
-pub(super) fn plane_rejection<A, B, F>(error: &FrameError<A, B, F>) -> bool
+pub(in crate::backend::tty) fn plane_rejection<A, B, F>(error: &FrameError<A, B, F>) -> bool
 where
     A: Error + Send + Sync + 'static,
     B: Error + Send + Sync + 'static,
@@ -45,7 +45,7 @@ impl Error for RecoveryFailure {
     }
 }
 
-pub(super) fn failure(
+pub(in crate::backend::tty) fn failure(
     original: &Option<String>,
     error: impl Into<Box<dyn Error>>,
 ) -> Box<dyn Error> {

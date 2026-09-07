@@ -1,6 +1,9 @@
 mod clock;
+mod frame;
+mod lifecycle;
 mod queued;
-pub(super) use queued::QueuedFeedback;
+pub(super) use frame::Frame;
+pub(crate) use queued::QueuedFeedback;
 mod sequence;
 
 pub(super) use clock::completion;

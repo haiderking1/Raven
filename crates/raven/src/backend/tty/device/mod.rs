@@ -1,5 +1,6 @@
 mod planes;
 mod selection;
+mod timing;
 pub(super) use planes::PlanePolicy;
 
 use super::{
@@ -39,6 +40,7 @@ pub(super) type Compositor = DrmCompositor<
 /// The event-loop DRM notifier must be removed before dropping this object.
 pub(super) struct Device {
     pub compositor: Compositor,
+    pub gpu_time: Option<super::gpu_time::GpuTime>,
     pub renderer: GlesRenderer,
     pub render_node: DrmNode,
     pub plane_policy: PlanePolicy,
@@ -177,6 +179,7 @@ impl Device {
                             return Ok((
                                 Self {
                                     compositor,
+                                    gpu_time: None,
                                     renderer,
                                     render_node,
                                     plane_policy,
@@ -226,6 +229,9 @@ impl Device {
         self.compositor.reset_state()?;
         self.compositor.reset_buffers();
         self.plane_policy.resume();
+        if let Some(timing) = &mut self.gpu_time {
+            timing.reset(&mut self.renderer)?;
+        }
         // Discard pre-pause pageflips only after synchronous CRTC disable. Otherwise
         // a stale flip could complete the first new frame's bookkeeping.
         loop {

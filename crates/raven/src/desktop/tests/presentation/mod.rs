@@ -1,3 +1,5 @@
+mod queued;
+
 use super::fixture::Fixture;
 
 #[test]

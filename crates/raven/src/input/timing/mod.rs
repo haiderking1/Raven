@@ -8,6 +8,11 @@ mod frames;
 mod observations;
 mod report;
 mod samples;
+mod snapshots;
+
+#[cfg(test)]
+#[path = "tests/lifecycle.rs"]
+mod lifecycle_tests;
 
 pub use report::Report;
 
@@ -28,7 +33,7 @@ pub struct InputTiming {
     window: Window,
     unflushed: Observations,
     unqueued: Observations,
-    pending: Option<frames::Pending>,
+    snapshots: snapshots::Queue,
     last_presentation: Option<Duration>,
 }
 
@@ -49,13 +54,13 @@ impl InputTiming {
             window: Window::default(),
             unflushed: Observations::default(),
             unqueued: Observations::default(),
-            pending: None,
+            snapshots: snapshots::Queue::default(),
             last_presentation: None,
         }
     }
 
     /// Call on both VT pause and successful resume. Discards partial reports,
-    /// input batches, the pending snapshot, and outstanding phase tokens.
+    /// input batches, both frame snapshots, and outstanding phase tokens.
     pub fn reset(&mut self, now: Instant) {
         *self = Self::new(now, self.generation.wrapping_add(1));
     }
@@ -74,7 +79,9 @@ impl InputTiming {
         let report = Report {
             span: now.duration_since(self.since),
             window: std::mem::take(&mut self.window),
-            pending: self.pending.is_some(),
+            pending: self.snapshots.has_pending(),
+            successor: self.snapshots.has_successor(),
+            pending_ambiguous: self.snapshots.is_ambiguous(),
             unqueued: self.unqueued.count,
             unflushed: self.unflushed.count,
         };

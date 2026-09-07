@@ -60,6 +60,11 @@ impl fmt::Display for Report {
             f,
             " primary_scanout_queued={} composition_queued={} cursor_queued={} plane_recoveries={}",
             w.primary_scanout_queued, w.composition_queued, w.cursor_queued, w.plane_recoveries
+        )?;
+        write!(
+            f,
+            " software_queued={} kms_submitted={} gpu_batch_max_ms={} gpu_sample_batches={}",
+            w.software_queued, w.kms_submitted, w.gpu_elapsed, w.gpu_elapsed.count
         )
     }
 }

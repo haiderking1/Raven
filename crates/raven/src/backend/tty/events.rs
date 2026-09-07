@@ -26,7 +26,7 @@ pub(super) fn session(event: SessionEvent, state: &mut State) {
     with_backend(state, |backend, state| {
         match event {
             SessionEvent::PauseSession => {
-                backend.schedule.pause();
+                backend.pause_frames();
                 if let Some(input) = &mut backend.input {
                     super::input_lifecycle::suspend(input, state);
                 }
@@ -81,27 +81,7 @@ pub(super) fn drm(event: DrmEvent, metadata: Option<DrmEventMetadata>, state: &m
                 if device.crtc != crtc {
                     return Ok(());
                 }
-                let completion = super::presentation::completion(metadata);
-                if !backend.schedule.presented(completion.instant) {
-                    return Ok(());
-                }
-                if let Some(timing) = &mut backend.timing {
-                    timing.presented(metadata);
-                }
-                if let Some(timing) = &mut state.input_timing {
-                    timing.presented(metadata);
-                }
-                if let Some(queued) = device.compositor.frame_submitted()? {
-                    let mut feedback = queued
-                        .take()
-                        .ok_or("presented frame missing feedback ownership")?;
-                    backend.presentation.complete(
-                        &mut feedback,
-                        metadata,
-                        &completion,
-                        device.output.current_mode().map_or(0, |mode| mode.refresh),
-                    );
-                }
+                super::pageflip::complete(backend, state, metadata)?;
                 // Callbacks and any requested repaint run after the whole event batch.
             }
             // Resume can drain a fd that calloop already marked readable in

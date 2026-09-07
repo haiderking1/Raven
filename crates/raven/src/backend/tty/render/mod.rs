@@ -1,7 +1,7 @@
 mod cursor;
 mod desktop;
 mod outcome;
-mod recovery;
+pub(super) mod recovery;
 pub(super) use outcome::RenderOutcome;
 mod submit;
 
@@ -45,14 +45,15 @@ impl Scene {
         }
     }
 
-    /// Report accepted submission and plane usage; keep one KMS frame in flight.
+    /// Render one snapshot. The scheduler reserves the pending or successor slot.
     pub fn render(
         &mut self,
         device: &mut Device,
         state: &mut State,
+        deferred: bool,
     ) -> Result<RenderOutcome, Box<dyn Error>> {
         let mut elements = std::mem::take(&mut self.elements);
-        let result = self.render_into(device, state, &mut elements);
+        let result = self.render_into(device, state, &mut elements, deferred);
         // Retain allocation capacity, never client buffer/texture references.
         elements.clear();
         self.elements = elements;
@@ -64,6 +65,7 @@ impl Scene {
         device: &mut Device,
         state: &mut State,
         elements: &mut Vec<SceneElement>,
+        deferred: bool,
     ) -> Result<RenderOutcome, Box<dyn Error>> {
         let output = &device.output;
         let scale = output.current_scale().fractional_scale();
@@ -129,6 +131,6 @@ impl Scene {
         }
         // Desktop elements include layer shells, XDG popups, and subsurface trees.
         desktop::append(&mut device.renderer, state, output, elements);
-        submit::render(device, state, elements, &mut self.feedback)
+        submit::render(device, state, elements, &mut self.feedback, deferred)
     }
 }

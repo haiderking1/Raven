@@ -21,6 +21,7 @@ pub(super) fn install(
             "the TTY backend must be installed exactly once before dispatching clients".into(),
         );
     }
+    let policy = super::schedule::Policy::from_env()?;
     let (mut session, notifier) = LibSeatSession::new()
         .map_err(|error| format!("cannot open a libseat session: {error}; run Raven as your login user on an active VT with logind or seatd access"))?;
     if !session.is_active() {
@@ -31,7 +32,8 @@ pub(super) fn install(
         .into());
     }
     let udev = UdevBackend::new(session.seat())?;
-    let (device, drm_notifier) = Device::probe(&mut session, &udev)?;
+    let (mut device, drm_notifier) = Device::probe(&mut session, &udev)?;
+    device.configure_timing(policy)?;
     let mut input =
         Libinput::new_with_udev::<LibinputSessionInterface<LibSeatSession>>(session.clone().into());
     input.udev_assign_seat(&session.seat()).map_err(|_| {
@@ -53,7 +55,8 @@ pub(super) fn install(
         session,
         input: Some(input),
         scene: Scene::new(),
-        schedule: Schedule::new(refresh, Instant::now()),
+        schedule: Schedule::with_policy(refresh, Instant::now(), policy),
+        deferred_recovery: None,
         timing: Timing::from_env(refresh, Instant::now()),
         sources: Sources::new(handle),
         display_handle: state.display_handle.clone(),

@@ -19,7 +19,7 @@ impl TtyBackend {
             if backend.schedule.stalled(Instant::now()) {
                 return Err("DRM pageflip did not complete within three seconds; stopping instead of reusing an in-flight buffer".into());
             }
-            if backend.schedule.render_due() {
+            if backend.schedule.render_due(Instant::now()) {
                 frame::render(backend, state)?;
             }
             // An empty render after a long idle may have callbacks already due.

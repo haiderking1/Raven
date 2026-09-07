@@ -12,6 +12,7 @@ pub(super) fn render(
     state: &mut State,
     elements: &[SceneElement],
     delivery: &mut FeedbackDelivery,
+    deferred: bool,
 ) -> Result<RenderOutcome, Box<dyn Error>> {
     let mut rejected = None;
     for attempt in 0..2 {
@@ -20,15 +21,31 @@ pub(super) fn render(
         } else {
             FrameFlags::empty()
         };
-        let mut frame = device
-            .compositor
-            .render_frame(
-                &mut device.renderer,
-                elements,
-                [0.055, 0.065, 0.085, 1.0],
-                flags,
-            )
-            .map_err(|error| recovery::failure(&rejected, error))?;
+        if let Some(timer) = &mut device.gpu_time {
+            timer.begin(&mut device.renderer)?;
+        }
+        let rendered_frame = device.compositor.render_frame(
+            &mut device.renderer,
+            elements,
+            [0.055, 0.065, 0.085, 1.0],
+            flags,
+        );
+        // Close the query even when rendering failed, before waiting or queueing.
+        let query_end = if let Some(timer) = &mut device.gpu_time {
+            timer.end(&mut device.renderer).and_then(|()| {
+                if timer.is_enabled() {
+                    // finish() flushed the render fence before our end marker.
+                    // Submit the marker without waiting for its result.
+                    device.renderer.with_context(|gl| unsafe { gl.Flush() })
+                } else {
+                    Ok(())
+                }
+            })
+        } else {
+            Ok(())
+        };
+        let mut frame = rendered_frame.map_err(|error| recovery::failure(&rejected, error))?;
+        query_end.map_err(|error| recovery::failure(&rejected, error))?;
         if frame.needs_sync()
             && let PrimaryPlaneElement::Swapchain(element) = &frame.primary_element
         {
@@ -79,11 +96,12 @@ pub(super) fn render(
                     copied_cursor.as_ref(),
                 ));
                 if let Some(timing) = &mut state.input_timing {
-                    timing.frame_queued();
+                    timing.frame_queued(deferred);
                 }
                 state.update_render_visibility(&device.output, &rendered);
                 return Ok(RenderOutcome {
                     queued: true,
+                    feedback: Some(queued_feedback),
                     primary_scanout,
                     hardware_cursor: copied_cursor.is_some(),
                     recovered: rejected.is_some(),

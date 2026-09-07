@@ -20,6 +20,10 @@ impl FrameClock {
         }
     }
 
+    pub fn interval(&self) -> Duration {
+        self.interval
+    }
+
     pub fn presented(&mut self, time: Instant) {
         if time > self.anchor {
             self.anchor = time;

@@ -1,4 +1,5 @@
 mod flip;
+mod pipeline;
 mod planes;
 mod report;
 mod samples;

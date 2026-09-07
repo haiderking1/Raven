@@ -7,9 +7,13 @@
 mod device;
 mod dmabuf;
 mod events;
+mod gpu_time;
 mod input_lifecycle;
 mod install;
+mod pageflip;
 mod presentation;
+#[cfg(test)]
+pub(crate) use presentation::QueuedFeedback as TestQueuedFeedback;
 mod redraw;
 mod render;
 mod schedule;
@@ -39,7 +43,8 @@ pub struct TtyBackend {
     session: LibSeatSession,
     input: Option<Libinput>,
     scene: Scene,
-    schedule: Schedule,
+    schedule: Schedule<presentation::Frame>,
+    deferred_recovery: Option<String>,
     presentation: presentation::Presentation,
     timing: Option<timing::Timing>,
     sources: Sources,
@@ -83,7 +88,7 @@ impl TtyBackend {
         if self.failure.is_none() {
             self.failure = Some(error.to_string());
         }
-        self.schedule.pause();
+        self.pause_frames();
         if let Some(input) = &mut self.input {
             input.suspend();
         }
@@ -101,7 +106,7 @@ impl TtyBackend {
 
 impl Drop for TtyBackend {
     fn drop(&mut self) {
-        self.schedule.pause();
+        self.pause_frames();
         if let Some(input) = &mut self.input {
             input.suspend();
         }
@@ -111,6 +116,7 @@ impl Drop for TtyBackend {
         // Remove the notifier's DRM fd reference before closing the session fd.
         if let Some(mut device) = self.device.take() {
             if device.drm.is_active() && self.session.is_active() {
+                device.destroy_timing();
                 if let Err(error) = device.compositor.clear() {
                     eprintln!("raven: could not clear output at shutdown: {error}");
                     device.drm.pause();
