@@ -57,6 +57,7 @@ impl State {
             backend: None,
             redraw_requested: false,
             input: Default::default(),
+            input_timing: crate::input::timing::InputTiming::from_env(),
             clients: None,
             workspaces: Default::default(),
             popup_manager: PopupManager::default(),

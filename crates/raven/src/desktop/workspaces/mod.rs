@@ -3,6 +3,7 @@ mod focus;
 mod grabs;
 mod movement;
 mod switching;
+mod visibility;
 
 use super::tiling::Tiling;
 use smithay::{

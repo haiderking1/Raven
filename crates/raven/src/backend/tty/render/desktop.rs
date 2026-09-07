@@ -1,3 +1,4 @@
+use super::SceneElement;
 use crate::state::State;
 use smithay::{
     backend::renderer::{
@@ -9,12 +10,12 @@ use smithay::{
     wayland::shell::wlr_layer::Layer,
 };
 
-pub(super) fn elements(
+pub(super) fn append(
     renderer: &mut GlesRenderer,
     state: &State,
     output: &Output,
-) -> Vec<WaylandSurfaceRenderElement<GlesRenderer>> {
-    let mut elements = Vec::new();
+    elements: &mut Vec<SceneElement>,
+) {
     let scale = output.current_scale().fractional_scale();
     let map = layer_map_for_output(output);
     // Front to back, matching hit testing. Smithay's space_render_elements only
@@ -24,13 +25,15 @@ pub(super) fn elements(
         &map,
         &[Layer::Overlay, Layer::Top],
         scale,
-        &mut elements,
+        elements,
     );
     if let Some(area) = state.space().output_geometry(output) {
         elements.extend(
             state
                 .space()
-                .render_elements_for_region(renderer, &area, scale, 1.0),
+                .render_elements_for_region(renderer, &area, scale, 1.0)
+                .into_iter()
+                .map(SceneElement::Surface),
         );
     }
     append_layers(
@@ -38,9 +41,8 @@ pub(super) fn elements(
         &map,
         &[Layer::Bottom, Layer::Background],
         scale,
-        &mut elements,
+        elements,
     );
-    elements
 }
 
 fn append_layers(
@@ -48,7 +50,7 @@ fn append_layers(
     map: &LayerMap,
     levels: &[Layer],
     scale: f64,
-    elements: &mut Vec<WaylandSurfaceRenderElement<GlesRenderer>>,
+    elements: &mut Vec<SceneElement>,
 ) {
     for level in levels {
         for layer in map.layers_on(*level).rev() {
@@ -58,12 +60,15 @@ fn append_layers(
             // Layer geometry includes the surface-tree bounding-box offset.
             let origin = geometry.loc - layer.bbox().loc;
             elements.extend(
-                layer.render_elements::<WaylandSurfaceRenderElement<GlesRenderer>>(
-                    renderer,
-                    origin.to_physical_precise_round(scale),
-                    scale.into(),
-                    1.0,
-                ),
+                layer
+                    .render_elements::<WaylandSurfaceRenderElement<GlesRenderer>>(
+                        renderer,
+                        origin.to_physical_precise_round(scale),
+                        scale.into(),
+                        1.0,
+                    )
+                    .into_iter()
+                    .map(SceneElement::Surface),
             );
         }
     }

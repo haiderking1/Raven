@@ -1,11 +1,13 @@
 mod close;
 mod decorations;
 mod fixture;
+mod globals;
 mod initial_configure;
 mod layers;
 mod lifecycle;
 mod pointer_focus;
 mod popups;
+mod presentation;
 mod redraw;
 mod tiling;
 mod wire;

@@ -29,11 +29,19 @@ impl TtyBackend {
             {
                 eprintln!("{report}");
             }
+            if let Some(timing) = &mut state.input_timing
+                && let Some(report) = timing.report(Instant::now())
+            {
+                eprintln!("{report}");
+            }
+            let background_deadline = state.background_frame_deadline(state.start_time.elapsed());
             let deadline = backend
                 .schedule
                 .deadline()
                 .into_iter()
                 .chain(backend.timing.as_ref().map(|timing| timing.deadline()))
+                .chain(background_deadline)
+                .chain(state.input_timing.as_ref().map(|timing| timing.deadline()))
                 .min();
             backend.sources.arm(deadline)?;
             Ok(())

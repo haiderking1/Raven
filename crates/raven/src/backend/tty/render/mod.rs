@@ -1,20 +1,21 @@
 mod cursor;
 mod desktop;
+mod outcome;
+mod recovery;
+pub(super) use outcome::RenderOutcome;
+mod submit;
 
-use super::device::Device;
+use super::{device::Device, dmabuf::FeedbackDelivery};
 use crate::state::State;
 use smithay::{
-    backend::{
-        drm::compositor::{FrameFlags, PrimaryPlaneElement},
-        renderer::{
-            element::{
-                Kind,
-                memory::{MemoryRenderBuffer, MemoryRenderBufferRenderElement},
-                render_elements,
-                surface::{WaylandSurfaceRenderElement, render_elements_from_surface_tree},
-            },
-            gles::GlesRenderer,
+    backend::renderer::{
+        element::{
+            Kind,
+            memory::{MemoryRenderBuffer, MemoryRenderBufferRenderElement},
+            render_elements,
+            surface::{WaylandSurfaceRenderElement, render_elements_from_surface_tree},
         },
+        gles::GlesRenderer,
     },
     input::pointer::{CursorImageStatus, CursorImageSurfaceData},
     reexports::wayland_server::Resource,
@@ -31,25 +32,42 @@ render_elements! {
 
 pub(super) struct Scene {
     cursor: MemoryRenderBuffer,
+    feedback: FeedbackDelivery,
+    elements: Vec<SceneElement>,
 }
 
 impl Scene {
     pub fn new() -> Self {
         Self {
             cursor: cursor::default_arrow(),
+            feedback: FeedbackDelivery::default(),
+            elements: Vec::new(),
         }
     }
 
-    /// Returns true only when a nonempty frame was queued for a pageflip.
+    /// Report accepted submission and plane usage; keep one KMS frame in flight.
     pub fn render(
         &mut self,
         device: &mut Device,
         state: &mut State,
-    ) -> Result<bool, Box<dyn Error>> {
+    ) -> Result<RenderOutcome, Box<dyn Error>> {
+        let mut elements = std::mem::take(&mut self.elements);
+        let result = self.render_into(device, state, &mut elements);
+        // Retain allocation capacity, never client buffer/texture references.
+        elements.clear();
+        self.elements = elements;
+        result
+    }
+
+    fn render_into(
+        &mut self,
+        device: &mut Device,
+        state: &mut State,
+        elements: &mut Vec<SceneElement>,
+    ) -> Result<RenderOutcome, Box<dyn Error>> {
         let output = &device.output;
         let scale = output.current_scale().fractional_scale();
         let pointer = state.pointer_location;
-        let mut elements = Vec::<SceneElement>::new();
         if matches!(&state.cursor_status, CursorImageStatus::Surface(surface) if !surface.is_alive())
         {
             state.cursor_status = CursorImageStatus::default_named();
@@ -110,30 +128,7 @@ impl Scene {
             ));
         }
         // Desktop elements include layer shells, XDG popups, and subsurface trees.
-        elements.extend(
-            desktop::elements(&mut device.renderer, state, output)
-                .into_iter()
-                .map(SceneElement::Surface),
-        );
-        // Compose every element with GLES. No client scanout or hardware cursor
-        // planes are required, avoiding implicit cross-device buffer assumptions.
-        let frame = device.compositor.render_frame(
-            &mut device.renderer,
-            &elements,
-            [0.055, 0.065, 0.085, 1.0],
-            FrameFlags::empty(),
-        )?;
-        if frame.needs_sync()
-            && let PrimaryPlaneElement::Swapchain(element) = &frame.primary_element
-        {
-            element.sync.wait()?;
-        }
-        let changed = !frame.is_empty;
-        let feedback = changed.then(|| state.take_presentation_feedback(output, &frame.states));
-        drop(frame);
-        if let Some(feedback) = feedback {
-            device.compositor.queue_frame(feedback)?;
-        }
-        Ok(changed)
+        desktop::append(&mut device.renderer, state, output, elements);
+        submit::render(device, state, elements, &mut self.feedback)
     }
 }

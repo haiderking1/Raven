@@ -1,9 +1,11 @@
 # Client GPU buffers
 
-The TTY backend advertises Linux DMA-BUF only when GLES supplies usable texture-import formats. Default and surface feedback describe the actual rendering device and its import format/modifier pairs. The default main tranche permits composition, not direct scanout. SHM remains available.
+Linux DMA-BUF is advertised only with usable GLES texture-import formats. Global feedback describes the actual rendering device and import formats. Per-surface scanout advice intersects enabled primary-plane formats, selected swapchain formats and renderer import support. Render-only feedback remains the fallback.
 
-Every imported buffer is validated by EGL/GLES. Unsupported formats and failed imports receive protocol failures. An inactive or failed backend does not attempt GPU imports. Startup reports whether DMA-BUF import was enabled.
+Imported storage must pass EGL/GLES validation. An unset node hint is tagged only after successful import; a known different hint is not overwritten. Inactive or failed backends reject imports without using EGL. SHM remains available.
 
-Every DMA-BUF attachment installs a fresh implicit acquire-readiness blocker before Smithay applies its commit. Calloop waits for all plane writers without blocking the event thread. Reusing a wl_buffer repeats this check. Surface destruction removes its readiness sources; backend teardown removes all sources and the advertised global before dropping EGL/DRM.
+Every DMA-BUF attachment gets a fresh implicit acquire-readiness check before its commit applies. Calloop waits for plane writers without blocking the event thread. Surface destruction removes readiness sources; backend teardown removes all sources and globals before EGL/DRM.
 
-This implements implicit synchronization. Raven does not advertise explicit synchronization, direct scanout, or multi-GPU support. Imported client buffers are GLES-composited into the output. Hardware driver behavior and application acceleration still require a real VT run.
+Advice follows render results and is withdrawn from hidden, removed or no-longer-eligible surfaces. Copied hardware cursors receive render-only advice. Feedback maps reuse their allocations and keep weak surface references.
+
+No explicit synchronization or multi-GPU capability is advertised. Direct scanout still requires runtime KMS acceptance; successful GPU import is not proof of scanout eligibility.

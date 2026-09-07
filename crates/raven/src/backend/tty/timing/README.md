@@ -26,6 +26,7 @@ All `*_ms` triplets are minimum, mean, and maximum milliseconds. `n/a` means no 
 
 - `mode`: configured output refresh rate. At 165 Hz the refresh interval is about 6.06 ms.
 - `flips` and `flip_hz`: completed pageflips during the actual reporting span, and their rate. These count submitted display updates, not an individual application's FPS.
+- `primary_scanout_queued`, `composition_queued`, `cursor_queued`, `plane_recoveries`: accepted queued-frame plane paths and successful bounded composition recoveries. These are not completed presentations or merely enabled policy flags.
 - `draws` and `draw_ms`: render calls that queued a changed frame, including render-element construction, GLES work, required synchronization, and queue submission. Desktop reconciliation runs before this measured section. This is CPU wall time, including any blocking, not a GPU execution-time query.
 - `empty` and `empty_ms`: render calls that found no damage and queued nothing, measured separately so they do not dilute the draw average.
 - `flip_ms`: spacing between DRM pageflip timestamps. Event-loop dispatch times are not substituted for kernel timestamps.

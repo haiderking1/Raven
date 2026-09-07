@@ -3,7 +3,7 @@ use crate::state::State;
 use smithay::{
     backend::renderer::ImportDma,
     reexports::{calloop::LoopHandle, wayland_server::DisplayHandle},
-    wayland::dmabuf::{DmabufFeedbackBuilder, DmabufGlobal, DmabufState},
+    wayland::dmabuf::{DmabufGlobal, DmabufState},
 };
 use std::io;
 
@@ -26,18 +26,16 @@ impl Registration {
         // Texture import formats include external-only formats. KMS and GLES
         // render-target formats would incorrectly exclude usable client buffers.
         let formats = device.renderer.dmabuf_formats();
-        if formats.iter().next().is_none() {
+        let Some(feedback) = device.feedback.as_ref() else {
             eprintln!("raven: no GLES DMA-BUF import formats; clients remain SHM-only");
             return Ok(None);
-        }
+        };
         // Advertise the rendering device, not the connector or scanout target.
-        let node = super::identity::renderer_node(device)?;
-        let feedback =
-            DmabufFeedbackBuilder::new(node.dev_id(), formats.iter().copied()).build()?;
+        let node = device.render_node;
         let mut state = DmabufState::new();
         // Smithay 0.7 advertises version 5 with the v4 feedback mechanism.
         // The sole main tranche describes composition imports, without Scanout.
-        let global = state.create_global_with_default_feedback::<State>(&display, &feedback);
+        let global = state.create_global_with_default_feedback::<State>(&display, &feedback.render);
         eprintln!(
             "raven: Linux DMA-BUF import enabled on {node}, {} format/modifier pairs",
             formats.iter().count()

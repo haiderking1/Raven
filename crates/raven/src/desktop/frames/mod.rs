@@ -1,4 +1,7 @@
+mod background;
 mod cycle;
+mod surfaces;
+mod visibility;
 pub(crate) use cycle::FrameCallbacks;
 
 use crate::state::State;
@@ -28,18 +31,18 @@ impl State {
                 .is_some_and(|bbox| bbox.overlaps(geometry))
             {
                 window.send_frame(output, time, None, |_, states| {
-                    self.frame_callbacks.output(states, output)
+                    self.frame_callbacks.output(states, output, time)
                 });
             }
         }
         if let Some(icon) = &self.dnd_icon {
             send_frames_surface_tree(icon, output, time, None, |_, states| {
-                self.frame_callbacks.output(states, output)
+                self.frame_callbacks.output(states, output, time)
             });
         }
         if let smithay::input::pointer::CursorImageStatus::Surface(cursor) = &self.cursor_status {
             send_frames_surface_tree(cursor, output, time, None, |_, states| {
-                self.frame_callbacks.output(states, output)
+                self.frame_callbacks.output(states, output, time)
             });
         }
     }

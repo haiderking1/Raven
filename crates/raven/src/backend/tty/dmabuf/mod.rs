@@ -1,5 +1,9 @@
-//! Renderer import support, not direct scanout or explicit synchronization.
-mod identity;
+//! DMA-BUF imports, implicit acquire readiness, and per-surface allocation advice.
+mod delivery;
+mod feedback;
+pub(super) mod identity;
+pub(super) use delivery::FeedbackDelivery;
+pub(super) use feedback::Feedback;
 mod import;
 mod pending;
 mod registration;

@@ -2,6 +2,7 @@
 mod cli;
 pub(crate) mod client;
 mod environment;
+mod flush;
 mod signals;
 mod wayland;
 
@@ -46,9 +47,16 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     state.clients = Some(clients);
     let mut flush_error = None;
     let result = event_loop.run(None, &mut state, |state| {
+        // Deliver the input batch before desktop reconciliation or any GPU wait.
+        if let Err(error) = flush::clients(state) {
+            flush_error = Some(error);
+            state.loop_signal.stop();
+            return;
+        }
         state.refresh();
         TtyBackend::dispatch(state);
-        if let Err(error) = state.display_handle.flush_clients() {
+        // Submission-time callbacks and presentation events must also go out now.
+        if let Err(error) = flush::clients(state) {
             flush_error = Some(error);
             state.loop_signal.stop();
         }

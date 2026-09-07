@@ -63,6 +63,16 @@ impl State {
         self.restore_focus();
     }
 
+    pub(crate) fn subsurface_role_removed(&mut self) {
+        // Smithay keeps the removed role's surface private. Refresh live window
+        // tree bounds on this rare lifecycle event, never on every input event.
+        for window in self.windows.iter().filter(|window| window.alive()) {
+            window.on_commit();
+        }
+        self.request_redraw();
+        self.refresh_tiling_pointer();
+    }
+
     pub fn refresh(&mut self) {
         self.workspaces.refresh();
         self.windows.retain(IsAlive::alive);

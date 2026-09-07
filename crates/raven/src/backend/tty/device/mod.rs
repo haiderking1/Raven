@@ -1,6 +1,12 @@
+mod planes;
 mod selection;
+pub(super) use planes::PlanePolicy;
 
-use super::session::SessionDevice;
+use super::{
+    dmabuf::{Feedback, identity::renderer_node},
+    presentation::QueuedFeedback,
+    session::SessionDevice,
+};
 use smithay::{
     backend::{
         allocator::{
@@ -8,7 +14,7 @@ use smithay::{
             gbm::{GbmAllocator, GbmBufferFlags, GbmDevice},
         },
         drm::{
-            DrmDevice, DrmDeviceFd, DrmDeviceNotifier, compositor::DrmCompositor,
+            DrmDevice, DrmDeviceFd, DrmDeviceNotifier, DrmNode, compositor::DrmCompositor,
             exporter::gbm::GbmFramebufferExporter,
         },
         egl::{EGLContext, EGLDisplay},
@@ -16,17 +22,16 @@ use smithay::{
         session::libseat::LibSeatSession,
         udev::UdevBackend,
     },
-    desktop::utils::OutputPresentationFeedback,
     output::{Mode as OutputMode, Output, PhysicalProperties},
     reexports::drm::control::{Device as _, Mode, connector, crtc},
     utils::{DeviceFd, Transform},
 };
 use std::{error::Error, io::ErrorKind, path::Path};
 
-type Compositor = DrmCompositor<
+pub(super) type Compositor = DrmCompositor<
     GbmAllocator<DrmDeviceFd>,
     GbmFramebufferExporter<DrmDeviceFd>,
-    OutputPresentationFeedback,
+    QueuedFeedback,
     DrmDeviceFd,
 >;
 
@@ -35,6 +40,9 @@ type Compositor = DrmCompositor<
 pub(super) struct Device {
     pub compositor: Compositor,
     pub renderer: GlesRenderer,
+    pub render_node: DrmNode,
+    pub plane_policy: PlanePolicy,
+    pub feedback: Option<Feedback>,
     pub drm: DrmDevice,
     pub output: Output,
     pub connector: connector::Handle,
@@ -90,6 +98,9 @@ impl Device {
         // SAFETY: this freshly created context is not current on any other thread.
         // The renderer and all its use remain on the calloop thread.
         let renderer = unsafe { GlesRenderer::new(context)? };
+        let render_node = renderer_node(&renderer, &drm)?;
+        let kms_node = DrmNode::from_file(drm.device_fd())?;
+        let plane_policy = PlanePolicy::from_env()?;
         let formats = renderer.egl_context().dmabuf_render_formats().clone();
         let mut failures = Vec::new();
         for connector in connectors {
@@ -124,21 +135,34 @@ impl Device {
                             gbm.clone(),
                             GbmBufferFlags::RENDERING | GbmBufferFlags::SCANOUT,
                         );
+                        let mut planes = surface.planes().clone();
+                        planes.overlay.clear();
+                        if !plane_policy.cursor || surface.is_legacy() {
+                            planes.cursor.clear();
+                        }
+                        let cursor_allocator = (!planes.cursor.is_empty()).then(|| gbm.clone());
                         let compositor = Compositor::new(
                             &output,
                             surface,
-                            None,
+                            Some(planes),
                             allocator,
-                            GbmFramebufferExporter::new(gbm.clone(), None),
+                            GbmFramebufferExporter::new(gbm.clone(), Some(render_node)),
                             [Fourcc::Xrgb8888, Fourcc::Argb8888],
                             formats.iter().copied(),
                             drm.cursor_size(),
-                            None,
+                            cursor_allocator,
                         )?;
-                        Ok((compositor, output))
+                        let feedback = Feedback::new(
+                            &renderer,
+                            &compositor,
+                            render_node,
+                            kms_node,
+                            plane_policy,
+                        )?;
+                        Ok((compositor, output, feedback))
                     })();
                     match attempt {
-                        Ok((compositor, output)) => {
+                        Ok((compositor, output, feedback)) => {
                             eprintln!(
                                 "raven: using {} on {} at {}x{}",
                                 output.name(),
@@ -146,10 +170,17 @@ impl Device {
                                 mode.size().0,
                                 mode.size().1
                             );
+                            eprintln!(
+                                "raven: plane policy primary={} cursor={}; overlays disabled",
+                                plane_policy.primary, plane_policy.cursor
+                            );
                             return Ok((
                                 Self {
                                     compositor,
                                     renderer,
+                                    render_node,
+                                    plane_policy,
+                                    feedback,
                                     drm,
                                     output,
                                     connector: connector.info.handle(),
@@ -194,6 +225,7 @@ impl Device {
         self.compositor.clear()?;
         self.compositor.reset_state()?;
         self.compositor.reset_buffers();
+        self.plane_policy.resume();
         // Discard pre-pause pageflips only after synchronous CRTC disable. Otherwise
         // a stale flip could complete the first new frame's bookkeeping.
         loop {

@@ -33,6 +33,9 @@ pub(super) fn session(event: SessionEvent, state: &mut State) {
                 if let Some(device) = &mut backend.device {
                     device.drm.pause();
                 }
+                if let Some(timing) = &mut state.input_timing {
+                    timing.reset(Instant::now());
+                }
             }
             SessionEvent::ActivateSession => {
                 if backend.schedule.active() {
@@ -51,6 +54,9 @@ pub(super) fn session(event: SessionEvent, state: &mut State) {
                     .map_err(|_| "libinput failed to resume the seat")?;
                 let now = Instant::now();
                 backend.schedule.resume(now);
+                if let Some(timing) = &mut state.input_timing {
+                    timing.reset(now);
+                }
                 if let Some(timing) = &mut backend.timing {
                     timing.reset(now);
                 }
@@ -62,7 +68,7 @@ pub(super) fn session(event: SessionEvent, state: &mut State) {
 }
 
 pub(super) fn drm(event: DrmEvent, metadata: Option<DrmEventMetadata>, state: &mut State) {
-    with_backend(state, |backend, _| {
+    with_backend(state, |backend, state| {
         if !backend.schedule.active() || !backend.session.is_active() {
             return Ok(());
         }
@@ -82,7 +88,13 @@ pub(super) fn drm(event: DrmEvent, metadata: Option<DrmEventMetadata>, state: &m
                 if let Some(timing) = &mut backend.timing {
                     timing.presented(metadata);
                 }
-                if let Some(mut feedback) = device.compositor.frame_submitted()? {
+                if let Some(timing) = &mut state.input_timing {
+                    timing.presented(metadata);
+                }
+                if let Some(queued) = device.compositor.frame_submitted()? {
+                    let mut feedback = queued
+                        .take()
+                        .ok_or("presented frame missing feedback ownership")?;
                     backend.presentation.complete(
                         &mut feedback,
                         metadata,

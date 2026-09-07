@@ -53,8 +53,13 @@ impl fmt::Display for Report {
             w.repeated_sequences, w.reset_sequences
         )?;
         match w.last_sequence {
-            Some(sequence) => write!(f, "{sequence}"),
-            None => f.write_str("n/a"),
+            Some(sequence) => write!(f, "{sequence}")?,
+            None => f.write_str("n/a")?,
         }
+        write!(
+            f,
+            " primary_scanout_queued={} composition_queued={} cursor_queued={} plane_recoveries={}",
+            w.primary_scanout_queued, w.composition_queued, w.cursor_queued, w.plane_recoveries
+        )
     }
 }

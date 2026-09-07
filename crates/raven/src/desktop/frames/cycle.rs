@@ -1,27 +1,46 @@
-use smithay::{output::Output, wayland::compositor::SurfaceData};
-use std::{cell::Cell, sync::Mutex};
+use smithay::{
+    output::{Output, WeakOutput},
+    wayland::compositor::SurfaceData,
+};
+use std::{cell::Cell, sync::Mutex, time::Duration};
 
 #[derive(Default)]
 pub(crate) struct FrameCallbacks {
-    cycle: Cell<u64>,
+    pub(super) cycle: Cell<u64>,
+    pub(super) occluded: Cell<bool>,
 }
 
 #[derive(Default)]
-struct LastCallback(Mutex<Option<u64>>);
+pub(super) struct SurfaceFrames(pub Mutex<SurfaceFrameState>);
+
+#[derive(Default)]
+pub(super) struct SurfaceFrameState {
+    pub visibility: Option<(WeakOutput, bool)>,
+    pub last_cycle: Option<u64>,
+    pub last_time: Option<Duration>,
+}
 
 impl FrameCallbacks {
     pub fn advance(&self) {
         self.cycle.set(self.cycle.get().wrapping_add(1));
     }
 
-    pub fn output(&self, states: &SurfaceData, output: &Output) -> Option<Output> {
-        let last = states.data_map.get_or_insert(LastCallback::default);
-        let mut last = last.0.lock().expect("frame callback cycle poisoned");
-        let cycle = self.cycle.get();
-        if *last == Some(cycle) {
+    pub fn output(&self, states: &SurfaceData, output: &Output, time: Duration) -> Option<Output> {
+        let frames = states.data_map.get_or_insert(SurfaceFrames::default);
+        let mut frames = frames.0.lock().expect("surface frame state poisoned");
+        if frames
+            .visibility
+            .as_ref()
+            .is_some_and(|(owner, visible)| owner != output || !visible)
+        {
             return None;
         }
-        *last = Some(cycle);
+        let cycle = self.cycle.get();
+        if frames.last_cycle == Some(cycle) {
+            return None;
+        }
+        frames.last_cycle = Some(cycle);
+        frames.last_time = Some(time);
         Some(output.clone())
     }
 }

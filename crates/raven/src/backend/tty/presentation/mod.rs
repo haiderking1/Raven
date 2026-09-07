@@ -1,4 +1,6 @@
 mod clock;
+mod queued;
+pub(super) use queued::QueuedFeedback;
 mod sequence;
 
 pub(super) use clock::completion;

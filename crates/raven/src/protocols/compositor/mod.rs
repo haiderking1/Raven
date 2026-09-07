@@ -1,7 +1,8 @@
+mod delegation;
+mod subsurface;
 use crate::state::{ClientState, State};
 use smithay::{
     backend::renderer::utils::on_commit_buffer_handler,
-    delegate_compositor,
     reexports::wayland_server::{Client, protocol::wl_surface::WlSurface},
     wayland::compositor::{
         CompositorClientState, CompositorHandler, CompositorState, get_parent, is_sync_subsurface,
@@ -20,6 +21,7 @@ impl CompositorHandler for State {
     }
     fn new_surface(&mut self, surface: &WlSurface) {
         crate::protocols::dmabuf::acquire::install(surface);
+        crate::protocols::presentation::commit::install(surface);
     }
     fn commit(&mut self, surface: &WlSurface) {
         on_commit_buffer_handler::<Self>(surface);
@@ -34,7 +36,9 @@ impl CompositorHandler for State {
         self.commit_window(&root);
         self.commit_layer(&root);
         self.configure_popup(surface);
-        self.request_redraw();
+        if !self.surface_on_hidden_workspace(&root) {
+            self.request_redraw();
+        }
     }
     fn destroyed(&mut self, surface: &WlSurface) {
         self.request_redraw();
@@ -48,4 +52,3 @@ impl CompositorHandler for State {
         }
     }
 }
-delegate_compositor!(State);

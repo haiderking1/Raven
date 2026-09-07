@@ -1,7 +1,11 @@
 # Presentation feedback
 
-Raven advertises wp_presentation with CLOCK_MONOTONIC. After rendering a changed frame, it collects feedback only for surfaces present in the renderer result, including mapped layers, popups, cursor surfaces, and drag icons. That feedback travels with the DRM frame, not with whatever surface state exists when the event arrives.
+The protocol advertises CLOCK_MONOTONIC. After a changed frame is successfully queued, its payload receives feedback from that exact render result before returning to event dispatch. Failed plane attempts do not consume requests or leak their ZeroCopy flags into the composition replacement.
 
-Only an accepted pageflip completes feedback. Monotonic kernel timestamps carry HW_CLOCK; missing, zero, or realtime timestamps use the current monotonic clock without that flag. Refresh comes from the selected output mode. Sequence numbers extend across 32-bit wraps; a backwards reset reports an unknown sequence instead of fabricating progress. Constant zero counters remain zero.
+Only surfaces with positive visible area and a non-Skipped render state contribute feedback. Copied cursor BOs do not get ZeroCopy. Actual client primary scanout may receive it.
 
-Feedback dropped by failed submission, session reset, or shutdown is discarded by Smithay. No-damage renders do not claim a new hardware presentation. Client feedback for such commits remains subject to later presentation or discard.
+An accepted pageflip completes the queued payload. Nonzero monotonic kernel timestamps carry HW_CLOCK; unavailable or incompatible timestamps use monotonic dispatch time without it. Refresh comes from the output mode. Counter wraps are extended; a backwards reset reports unknown sequence. Constant zero counters stay zero.
+
+A commit marker follows Smithay cached transactions, including synchronized children and acquire blockers. Applying a superseding commit that requests no feedback discards the older unlatched request. A pre-commit must not discard still-current content before that newer transaction actually applies.
+
+Session reset and shutdown discard queued feedback. No-damage renders do not fabricate a hardware presentation; their requests wait for a real presentation or a subsequent superseding commit/destruction.

@@ -42,6 +42,11 @@ impl TtyBackend {
         // commit, including later reuse of the same wl_buffer.
         match device.renderer.import_dmabuf(&dmabuf, None) {
             Ok(_) => {
+                // Record proven import compatibility, not allocation origin.
+                // Never overwrite a known different device hint.
+                if dmabuf.node().is_none() {
+                    dmabuf.set_node(Some(device.render_node));
+                }
                 // A disconnected client needs no reply. Smithay retains the
                 // DMA-BUF in wl_buffer and the renderer caches its texture.
                 let _ = notifier.successful::<State>();

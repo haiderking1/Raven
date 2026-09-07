@@ -51,6 +51,7 @@ pub struct State {
     pub backend: Option<crate::backend::tty::TtyBackend>,
     pub(super) redraw_requested: bool,
     pub input: crate::input::InputState,
+    pub(crate) input_timing: Option<crate::input::timing::InputTiming>,
     pub(crate) clients: Option<crate::runtime::client::Clients>,
     pub(crate) workspaces: crate::desktop::workspaces::Workspaces,
     pub popup_manager: PopupManager,
