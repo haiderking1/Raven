@@ -15,7 +15,10 @@ use smithay::{
     wayland::{
         compositor::CompositorState,
         selection::data_device::DataDeviceState,
-        shell::xdg::{XdgShellState, decoration::XdgDecorationState},
+        shell::{
+            wlr_layer::WlrLayerShellState,
+            xdg::{XdgShellState, decoration::XdgDecorationState},
+        },
         shm::ShmState,
     },
 };
@@ -26,6 +29,8 @@ pub struct State {
     pub compositor_state: CompositorState,
     pub shm_state: ShmState,
     pub xdg_shell_state: XdgShellState,
+    pub layer_shell_state: WlrLayerShellState,
+    pub(crate) layers: crate::desktop::layers::Layers,
     // Retain the global handle; XDG decoration dispatch requires no state getter.
     pub(crate) _xdg_decoration_state: XdgDecorationState,
     pub data_device_state: DataDeviceState,

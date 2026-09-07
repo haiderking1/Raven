@@ -2,6 +2,34 @@ use crate::state::State;
 use smithay::utils::{Logical, Point};
 
 impl State {
+    pub fn focus_window_at(&mut self, point: Point<f64, Logical>) {
+        use smithay::wayland::shell::wlr_layer::Layer;
+        if self.seat.get_keyboard().is_some_and(|k| k.is_grabbed())
+            || self.seat.get_pointer().is_some_and(|p| p.is_grabbed())
+        {
+            return;
+        }
+        if let Some(layer) = self.exclusive_keyboard_layer() {
+            self.focus_layer(&layer);
+            return;
+        }
+        if let Some(hit) = self.layer_under(point, &[Layer::Overlay, Layer::Top]) {
+            self.focus_layer(&hit.layer);
+            return;
+        }
+        let window = self
+            .space()
+            .element_under(point)
+            .map(|(window, _)| window.clone());
+        if window.is_none()
+            && let Some(hit) = self.layer_under(point, &[Layer::Bottom, Layer::Background])
+        {
+            self.focus_layer(&hit.layer);
+            return;
+        }
+        self.activate_window(window);
+    }
+
     pub(crate) fn focus_window_on_motion(&mut self, point: Point<f64, Logical>) {
         let Some(keyboard) = self.seat.get_keyboard() else {
             return;
@@ -12,6 +40,19 @@ impl State {
                 .seat
                 .get_pointer()
                 .is_some_and(|pointer| pointer.is_grabbed())
+        {
+            return;
+        }
+        if self.exclusive_keyboard_layer().is_some()
+            || self
+                .layer_under(
+                    point,
+                    &[
+                        smithay::wayland::shell::wlr_layer::Layer::Overlay,
+                        smithay::wayland::shell::wlr_layer::Layer::Top,
+                    ],
+                )
+                .is_some()
         {
             return;
         }

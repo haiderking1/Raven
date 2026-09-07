@@ -1,10 +1,11 @@
+mod mode;
 mod popup;
 
 use crate::state::State;
 use smithay::{
     delegate_xdg_shell,
     desktop::Window,
-    reexports::wayland_server::protocol::wl_seat::WlSeat,
+    reexports::wayland_server::protocol::{wl_output::WlOutput, wl_seat::WlSeat},
     utils::Serial,
     wayland::shell::xdg::{
         PopupSurface, PositionerState, ToplevelSurface, XdgShellHandler, XdgShellState,
@@ -33,6 +34,22 @@ impl XdgShellHandler for State {
         if let Some(window) = window {
             self.remove_window(&window);
         }
+    }
+
+    fn maximize_request(&mut self, surface: ToplevelSurface) {
+        mode::keep_tiled(&surface);
+    }
+
+    fn unmaximize_request(&mut self, surface: ToplevelSurface) {
+        mode::keep_tiled(&surface);
+    }
+
+    fn fullscreen_request(&mut self, surface: ToplevelSurface, _output: Option<WlOutput>) {
+        mode::keep_tiled(&surface);
+    }
+
+    fn unfullscreen_request(&mut self, surface: ToplevelSurface) {
+        mode::keep_tiled(&surface);
     }
 
     fn new_popup(&mut self, surface: PopupSurface, positioner: PositionerState) {

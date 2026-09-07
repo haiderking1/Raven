@@ -1,4 +1,5 @@
 mod cursor;
+mod desktop;
 
 use super::device::Device;
 use crate::state::State;
@@ -15,7 +16,6 @@ use smithay::{
             gles::GlesRenderer,
         },
     },
-    desktop::space::{SpaceRenderElements, space_render_elements},
     input::pointer::{CursorImageStatus, CursorImageSurfaceData},
     reexports::wayland_server::Resource,
     utils::{Logical, Physical, Point},
@@ -27,7 +27,6 @@ render_elements! {
     SceneElement<=GlesRenderer>;
     Surface=WaylandSurfaceRenderElement<GlesRenderer>,
     Cursor=MemoryRenderBufferRenderElement<GlesRenderer>,
-    Space=SpaceRenderElements<GlesRenderer, WaylandSurfaceRenderElement<GlesRenderer>>,
 }
 
 pub(super) struct Scene {
@@ -111,11 +110,11 @@ impl Scene {
                 Kind::Unspecified,
             ));
         }
-        // Space's Window elements include XDG popups and subsurface trees.
+        // Desktop elements include layer shells, XDG popups, and subsurface trees.
         elements.extend(
-            space_render_elements(&mut device.renderer, [state.space()], output, 1.0)?
+            desktop::elements(&mut device.renderer, state, output)
                 .into_iter()
-                .map(SceneElement::Space),
+                .map(SceneElement::Surface),
         );
         // Compose every element with GLES. No client scanout or hardware cursor
         // planes are required, avoiding implicit cross-device buffer assumptions.

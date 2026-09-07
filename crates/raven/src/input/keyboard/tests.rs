@@ -6,6 +6,7 @@ fn shortcuts_swallow_repeat_and_release_after_modifiers_are_released() {
         (24, keysyms::KEY_q, false, Action::LaunchTerminal),
         (24, keysyms::KEY_q, true, Action::Quit),
         (54, keysyms::KEY_c, false, Action::CloseWindow),
+        (40, keysyms::KEY_d, false, Action::LaunchFuzzel),
         (10, keysyms::KEY_1, false, Action::SwitchWorkspace(0)),
         (18, keysyms::KEY_9, false, Action::SwitchWorkspace(8)),
         (19, keysyms::KEY_0, false, Action::SwitchWorkspace(9)),
@@ -55,7 +56,7 @@ fn shortcuts_swallow_repeat_and_release_after_modifiers_are_released() {
 }
 
 #[test]
-fn workspace_shortcuts_reject_extra_modifiers_and_non_digit_symbols() {
+fn shortcuts_reject_extra_modifiers_and_non_digit_workspace_symbols() {
     for shift in [false, true] {
         for (logo, ctrl, alt) in [
             (false, false, false),
@@ -71,7 +72,12 @@ fn workspace_shortcuts_reject_extra_modifiers_and_non_digit_symbols() {
                 shift,
                 ..Default::default()
             };
-            for symbol in [keysyms::KEY_1, keysyms::KEY_9, keysyms::KEY_0] {
+            for symbol in [
+                keysyms::KEY_1,
+                keysyms::KEY_9,
+                keysyms::KEY_0,
+                keysyms::KEY_d,
+            ] {
                 assert_eq!(shortcut(&modifiers, &[Keysym::new(symbol)]), None);
             }
         }
@@ -80,6 +86,9 @@ fn workspace_shortcuts_reject_extra_modifiers_and_non_digit_symbols() {
             shift,
             ..Default::default()
         };
+        if shift {
+            assert_eq!(shortcut(&modifiers, &[Keysym::new(keysyms::KEY_d)]), None);
+        }
         for symbol in [
             keysyms::KEY_slash,
             keysyms::KEY_colon,

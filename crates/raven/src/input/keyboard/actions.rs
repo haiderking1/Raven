@@ -5,6 +5,7 @@ pub(super) enum Action {
     Quit,
     SwitchVt(i32),
     LaunchTerminal,
+    LaunchFuzzel,
     CloseWindow,
     SwitchWorkspace(usize),
     MoveToWorkspace(usize),
@@ -27,12 +28,17 @@ impl Action {
                     eprintln!("Failed to switch to VT {vt}: {error}");
                 }
             }
-            Self::LaunchTerminal => {
+            Self::LaunchTerminal | Self::LaunchFuzzel => {
+                let program = if self == Self::LaunchTerminal {
+                    "foot"
+                } else {
+                    "fuzzel"
+                };
                 let Some(clients) = state.clients.as_mut() else {
-                    eprintln!("raven: cannot launch foot before the Wayland socket is ready");
+                    eprintln!("raven: cannot launch {program} before the Wayland socket is ready");
                     return;
                 };
-                if let Err(error) = clients.spawn(&["foot".into()]) {
+                if let Err(error) = clients.spawn(&[program.into()]) {
                     eprintln!("raven: {error}");
                 }
             }

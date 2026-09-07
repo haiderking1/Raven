@@ -65,6 +65,7 @@ impl State {
     pub fn refresh(&mut self) {
         self.workspaces.refresh();
         self.windows.retain(IsAlive::alive);
+        self.refresh_layers();
         self.refresh_tiling();
         self.popup_manager.cleanup();
         self.refresh_popup_grab();

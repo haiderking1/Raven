@@ -6,7 +6,10 @@ use smithay::{
     wayland::{
         compositor::CompositorState,
         selection::data_device::DataDeviceState,
-        shell::xdg::{XdgShellState, decoration::XdgDecorationState},
+        shell::{
+            wlr_layer::WlrLayerShellState,
+            xdg::{XdgShellState, decoration::XdgDecorationState},
+        },
         shm::ShmState,
     },
 };
@@ -21,6 +24,7 @@ impl State {
         let shm_state = ShmState::new::<Self>(&display_handle, vec![]);
         // Do not advertise window-management operations we do not implement.
         let xdg_shell_state = XdgShellState::new_with_capabilities::<Self>(&display_handle, vec![]);
+        let layer_shell_state = WlrLayerShellState::new::<Self>(&display_handle);
         let xdg_decoration_state = XdgDecorationState::new::<Self>(&display_handle);
         let data_device_state = DataDeviceState::new::<Self>(&display_handle);
         let mut seat_state = SeatState::new();
@@ -32,6 +36,8 @@ impl State {
             compositor_state,
             shm_state,
             xdg_shell_state,
+            layer_shell_state,
+            layers: Default::default(),
             _xdg_decoration_state: xdg_decoration_state,
             data_device_state,
             seat_state,

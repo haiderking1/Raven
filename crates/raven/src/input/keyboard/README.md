@@ -1,6 +1,7 @@
 # Keyboard controls
 
 - Super+Q launches Foot.
+- Super+D launches Fuzzel (the `fuzzel` executable must be on PATH).
 - Super+C asks the focused window to close.
 - Super+Shift+Q exits Raven.
 - Ctrl+Alt+F1 through F12 switches VT.

@@ -8,10 +8,11 @@ use smithay::backend::{input::InputEvent, libinput::LibinputInputBackend};
 
 use crate::state::State;
 
-/// Persistent key disposition, kept until each key's matching release.
+/// Persistent shortcut disposition and the last dispatched pointer target.
 #[derive(Debug, Default)]
 pub struct InputState {
     shortcuts: keyboard::Shortcuts,
+    pointer_refresh: pointer::PointerRefresh,
 }
 
 /// Dispatch an event from the backend's active libinput source.

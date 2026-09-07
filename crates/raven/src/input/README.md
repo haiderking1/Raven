@@ -21,7 +21,7 @@ impl State {
 ```
 
 `surface_under` returns the target surface and its origin in compositor logical
-coordinates, including subsurfaces and popups. `focus_window_at` raises and gives
+coordinates, including layer surfaces, subsurfaces, and popups. `focus_window_at` raises and gives
 keyboard focus to the window at the supplied location. Input skips that call
 while either the pointer or keyboard has a grab.
 

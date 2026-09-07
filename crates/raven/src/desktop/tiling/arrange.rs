@@ -1,15 +1,18 @@
 use super::{configure::configure_tile, geometry::master_stack};
 use crate::state::State;
-use smithay::{
-    input::pointer::MotionEvent,
-    utils::{Clock, Logical, Monotonic, Rectangle, SERIAL_COUNTER},
-};
+use smithay::utils::{Clock, Logical, Monotonic, Rectangle, SERIAL_COUNTER};
 
 impl State {
     pub(super) fn tiling_area(&self) -> Option<Rectangle<i32, Logical>> {
-        self.output
-            .as_ref()
-            .and_then(|output| self.space().output_geometry(output))
+        let output = self.output.as_ref()?;
+        let area = self.space().output_geometry(output)?;
+        let map = smithay::desktop::layer_map_for_output(output);
+        if map.len() == 0 {
+            return Some(area);
+        }
+        let mut zone = map.non_exclusive_zone();
+        zone.loc += area.loc;
+        Some(zone)
     }
 
     /// Membership and geometry belong to a workspace, not the visible output.
@@ -50,17 +53,10 @@ impl State {
     }
 
     pub(crate) fn refresh_tiling_pointer(&mut self) {
-        if let Some(pointer) = self.seat.get_pointer() {
-            let focus = self.surface_under(self.pointer_location);
-            pointer.motion(
-                self,
-                focus,
-                &MotionEvent {
-                    location: self.pointer_location,
-                    serial: SERIAL_COUNTER.next_serial(),
-                    time: Clock::<Monotonic>::new().now().as_millis(),
-                },
-            );
+        let time = Clock::<Monotonic>::new().now().as_millis();
+        if self.refresh_pointer_focus(SERIAL_COUNTER.next_serial(), time)
+            && let Some(pointer) = self.seat.get_pointer()
+        {
             pointer.frame(self);
         }
     }

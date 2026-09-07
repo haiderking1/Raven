@@ -101,16 +101,22 @@ impl Fixture {
     }
 
     pub fn buffer(&mut self) -> u32 {
+        self.buffer_sized(100, 100)
+    }
+
+    pub fn buffer_sized(&mut self, width: u32, height: u32) -> u32 {
+        let length = width * height * 4;
         let fd = memfd_create(c"raven-protocol-test", MemfdFlags::CLOEXEC).unwrap();
-        ftruncate(&fd, 100 * 100 * 4).unwrap();
+        ftruncate(&fd, u64::from(length)).unwrap();
         let pool = self.id();
         let buffer = self.id();
-        let args = [pool, 100 * 100 * 4]
+        let args = [pool, length]
             .iter()
             .flat_map(|v| u32::to_ne_bytes(*v))
             .collect::<Vec<_>>();
         self.wire.bytes(4, 0, &args, Some(fd.as_fd()));
-        self.wire.request(pool, 0, &[buffer, 0, 100, 100, 400, 0]);
+        self.wire
+            .request(pool, 0, &[buffer, 0, width, height, width * 4, 0]);
         self.wire.request(pool, 1, &[]);
         buffer
     }

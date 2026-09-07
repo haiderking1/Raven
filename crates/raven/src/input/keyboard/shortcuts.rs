@@ -71,6 +71,7 @@ fn shortcut(modifiers: &ModifiersState, symbols: &[Keysym]) -> Option<Action> {
             match symbol {
                 keysyms::KEY_q | keysyms::KEY_Q => return Some(Action::LaunchTerminal),
                 keysyms::KEY_c | keysyms::KEY_C => return Some(Action::CloseWindow),
+                keysyms::KEY_d | keysyms::KEY_D => return Some(Action::LaunchFuzzel),
                 _ => {}
             }
         }

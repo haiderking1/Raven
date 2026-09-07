@@ -11,6 +11,7 @@ impl State {
         let Some(geometry) = self.space().output_geometry(output) else {
             return;
         };
+        self.send_layer_frames(time);
         for window in self.space().elements() {
             if self
                 .space()

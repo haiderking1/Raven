@@ -29,9 +29,11 @@ impl CompositorHandler for State {
             root = parent;
         }
         self.commit_window(&root);
+        self.commit_layer(&root);
         self.configure_popup(surface);
     }
     fn destroyed(&mut self, surface: &WlSurface) {
+        self.remove_layer(surface);
         use smithay::input::pointer::CursorImageStatus;
         if matches!(&self.cursor_status, CursorImageStatus::Surface(cursor) if cursor == surface) {
             self.cursor_status = CursorImageStatus::default_named();

@@ -1,6 +1,8 @@
 mod close;
 mod decorations;
 mod fixture;
+mod initial_configure;
+mod layers;
 mod lifecycle;
 mod pointer_focus;
 mod popups;

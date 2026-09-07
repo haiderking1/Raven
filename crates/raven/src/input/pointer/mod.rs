@@ -1,5 +1,7 @@
 mod geometry;
 mod output;
+mod refresh;
+pub(super) use refresh::PointerRefresh;
 mod scroll;
 
 use smithay::{
@@ -66,8 +68,7 @@ fn motion(
     let focus = state.surface_under(location);
     // Keep motion inside Smithay's grab dispatch. Its leave path resets the
     // cursor through SeatHandler::cursor_image when client focus is lost.
-    pointer.motion(
-        state,
+    state.send_pointer_motion(
         focus.clone(),
         &MotionEvent {
             location,
@@ -99,16 +100,7 @@ pub(super) fn button(event: impl PointerButtonEvent<LibinputInputBackend>, state
         }
         // A window may have appeared beneath a stationary pointer. Refresh
         // pointer focus before delivering the click, using the same frame.
-        let focus = state.surface_under(location);
-        pointer.motion(
-            state,
-            focus,
-            &MotionEvent {
-                location,
-                serial,
-                time: event.time_msec(),
-            },
-        );
+        state.refresh_pointer_focus(serial, event.time_msec());
     }
     pointer.button(
         state,

@@ -31,7 +31,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let mut clients = client::Clients::new(socket.clone());
     TtyBackend::install(&mut state, event_loop.handle())?;
     eprintln!(
-        "raven: listening on {} on {}; Super+Q opens foot, Super+C closes the focused window, Super+Shift+Q exits, Ctrl+Alt+Fn switches VT",
+        "raven: listening on {} on {}; Super+Q opens foot, Super+D opens fuzzel, Super+C closes the focused window, Super+Shift+Q exits, Ctrl+Alt+Fn switches VT",
         socket.to_string_lossy(),
         state
             .backend
