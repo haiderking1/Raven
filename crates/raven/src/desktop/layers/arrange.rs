@@ -74,6 +74,7 @@ impl State {
             }
         }
         if std::mem::take(&mut self.layers.changed) {
+            self.request_redraw();
             // No LayerMap guard may survive into these methods.
             self.refresh_tiling();
             self.restore_focus();

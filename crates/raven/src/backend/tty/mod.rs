@@ -5,13 +5,18 @@
 //! different seat. Runtime device failures stop State's loop signal; inspect
 //! failure() after the loop to report a nonzero exit status.
 mod device;
+mod dmabuf;
 mod events;
 mod input_lifecycle;
 mod install;
+mod presentation;
+mod redraw;
 mod render;
 mod schedule;
 mod session;
 mod sources;
+mod timing;
+mod wake;
 
 use crate::state::State;
 use device::Device;
@@ -29,11 +34,14 @@ use sources::Sources;
 use std::error::Error;
 
 pub struct TtyBackend {
+    dmabuf: Option<dmabuf::Registration>,
     device: Option<Device>,
     session: LibSeatSession,
     input: Option<Libinput>,
     scene: Scene,
     schedule: Schedule,
+    presentation: presentation::Presentation,
+    timing: Option<timing::Timing>,
     sources: Sources,
     display_handle: DisplayHandle,
     output_global: Option<GlobalId>,
@@ -42,7 +50,7 @@ pub struct TtyBackend {
 
 impl TtyBackend {
     /// Open the active libseat session and install DRM, udev, libinput, session,
-    /// and idle-frame timer sources. Does not run a nested event loop.
+    /// and deadline timer sources. Does not run a nested event loop.
     pub fn install(
         state: &mut State,
         handle: LoopHandle<'static, State>,
@@ -79,6 +87,9 @@ impl TtyBackend {
         if let Some(input) = &mut self.input {
             input.suspend();
         }
+        if let Some(registration) = &mut self.dmabuf {
+            registration.disable();
+        }
         // Do not issue any more device ioctls, including DRM restoration on drop,
         // after an unplug or a fatal access error.
         if let Some(device) = &mut self.device {
@@ -94,6 +105,8 @@ impl Drop for TtyBackend {
         if let Some(input) = &mut self.input {
             input.suspend();
         }
+        // Remove client readiness fds and globals before dropping EGL/DRM.
+        self.dmabuf.take();
         self.sources.remove_devices();
         // Remove the notifier's DRM fd reference before closing the session fd.
         if let Some(mut device) = self.device.take() {

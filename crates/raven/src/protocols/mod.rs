@@ -1,7 +1,9 @@
 mod compositor;
 mod decorations;
+pub(crate) mod dmabuf;
 mod layer_shell;
 mod output;
+mod presentation;
 mod seat;
 mod selection;
 mod shm;

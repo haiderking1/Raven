@@ -5,6 +5,8 @@ use smithay::{
     reexports::{calloop::LoopSignal, wayland_server::DisplayHandle},
     wayland::{
         compositor::CompositorState,
+        dmabuf::DmabufState,
+        presentation::PresentationState,
         selection::data_device::DataDeviceState,
         shell::{
             wlr_layer::WlrLayerShellState,
@@ -22,6 +24,8 @@ impl State {
     ) -> Result<Self, Box<dyn Error>> {
         let compositor_state = CompositorState::new::<Self>(&display_handle);
         let shm_state = ShmState::new::<Self>(&display_handle, vec![]);
+        let presentation_state =
+            PresentationState::new::<Self>(&display_handle, libc::CLOCK_MONOTONIC as u32);
         // Do not advertise window-management operations we do not implement.
         let xdg_shell_state = XdgShellState::new_with_capabilities::<Self>(&display_handle, vec![]);
         let layer_shell_state = WlrLayerShellState::new::<Self>(&display_handle);
@@ -35,6 +39,8 @@ impl State {
             display_handle,
             compositor_state,
             shm_state,
+            _presentation_state: presentation_state,
+            dmabuf_state: DmabufState::new(),
             xdg_shell_state,
             layer_shell_state,
             layers: Default::default(),
@@ -44,10 +50,12 @@ impl State {
             seat,
             output: None,
             start_time: Instant::now(),
+            frame_callbacks: Default::default(),
             loop_signal,
             pointer_location: (0.0, 0.0).into(),
             cursor_status: CursorImageStatus::default_named(),
             backend: None,
+            redraw_requested: false,
             input: Default::default(),
             clients: None,
             workspaces: Default::default(),

@@ -50,6 +50,7 @@ impl State {
     }
 
     pub(crate) fn remove_window(&mut self, window: &Window) {
+        self.request_redraw();
         if let Some(toplevel) = window.toplevel() {
             self.dismiss_window_popups(toplevel.wl_surface());
         }

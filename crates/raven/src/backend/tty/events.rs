@@ -1,13 +1,13 @@
 use super::TtyBackend;
 use crate::state::State;
 use smithay::backend::{
-    drm::{DrmError, DrmEvent},
+    drm::{DrmError, DrmEvent, DrmEventMetadata},
     session::{Event as SessionEvent, Session},
     udev::UdevEvent,
 };
 use std::{error::Error, io::ErrorKind, time::Instant};
 
-fn with_backend(
+pub(super) fn with_backend(
     state: &mut State,
     action: impl FnOnce(&mut TtyBackend, &mut State) -> Result<(), Box<dyn Error>>,
 ) {
@@ -49,17 +49,20 @@ pub(super) fn session(event: SessionEvent, state: &mut State) {
                     .ok_or("libinput missing on resume")?
                     .resume()
                     .map_err(|_| "libinput failed to resume the seat")?;
-                backend.schedule.resume(Instant::now());
-                // The timer renders after notifier dispatch. No GL work is done
-                // while libseat is still delivering its activation callbacks.
+                let now = Instant::now();
+                backend.schedule.resume(now);
+                if let Some(timing) = &mut backend.timing {
+                    timing.reset(now);
+                }
+                // End-of-dispatch rendering keeps GL outside libseat callbacks.
             }
         }
         Ok(())
     });
 }
 
-pub(super) fn drm(event: DrmEvent, state: &mut State) {
-    with_backend(state, |backend, state| {
+pub(super) fn drm(event: DrmEvent, metadata: Option<DrmEventMetadata>, state: &mut State) {
+    with_backend(state, |backend, _| {
         if !backend.schedule.active() || !backend.session.is_active() {
             return Ok(());
         }
@@ -69,12 +72,25 @@ pub(super) fn drm(event: DrmEvent, state: &mut State) {
                     .device
                     .as_mut()
                     .ok_or("DRM device missing on pageflip")?;
-                if device.crtc != crtc || !backend.schedule.presented(Instant::now()) {
+                if device.crtc != crtc {
                     return Ok(());
                 }
-                device.compositor.frame_submitted()?;
-                state.send_frames(state.start_time.elapsed());
-                repaint(backend, state)?;
+                let completion = super::presentation::completion(metadata);
+                if !backend.schedule.presented(completion.instant) {
+                    return Ok(());
+                }
+                if let Some(timing) = &mut backend.timing {
+                    timing.presented(metadata);
+                }
+                if let Some(mut feedback) = device.compositor.frame_submitted()? {
+                    backend.presentation.complete(
+                        &mut feedback,
+                        metadata,
+                        &completion,
+                        device.output.current_mode().map_or(0, |mode| mode.refresh),
+                    );
+                }
+                // Callbacks and any requested repaint run after the whole event batch.
             }
             // Resume can drain a fd that calloop already marked readable in
             // this dispatch batch. Its notifier then legitimately sees EAGAIN.
@@ -113,33 +129,11 @@ pub(super) fn udev(event: UdevEvent, state: &mut State) {
     });
 }
 
-pub(super) fn timer(state: &mut State) {
-    with_backend(state, |backend, state| {
-        if !backend.session.is_active() {
-            return Ok(());
-        }
-        if backend.schedule.stalled(Instant::now()) {
-            return Err("DRM pageflip did not complete within three seconds; stopping instead of reusing an in-flight buffer".into());
-        }
-        repaint(backend, state)
-    });
-}
-
-fn repaint(backend: &mut TtyBackend, state: &mut State) -> Result<(), Box<dyn Error>> {
-    let now = Instant::now();
-    if !backend.session.is_active() || !backend.schedule.due(now) {
-        return Ok(());
+pub(super) fn timer(deadline: Instant, state: &mut State) {
+    if let Some(backend) = &mut state.backend
+        && backend.schedule.active()
+        && let Some(timing) = &mut backend.timing
+    {
+        timing.timer_wakeup(Some(deadline), Instant::now());
     }
-    let device = backend
-        .device
-        .as_mut()
-        .ok_or("DRM device missing while rendering")?;
-    let queued = backend.scene.render(device, state)?;
-    backend.schedule.rendered(queued, Instant::now());
-    if !queued {
-        // A client can request a callback without committing new pixels. There is
-        // then no pageflip to wake it, so the idle timer provides refresh pacing.
-        state.send_frames(state.start_time.elapsed());
-    }
-    Ok(())
 }

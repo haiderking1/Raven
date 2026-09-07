@@ -18,6 +18,9 @@ impl CompositorHandler for State {
             .expect("Wayland client missing raven::state::ClientState")
             .compositor_state
     }
+    fn new_surface(&mut self, surface: &WlSurface) {
+        crate::protocols::dmabuf::acquire::install(surface);
+    }
     fn commit(&mut self, surface: &WlSurface) {
         on_commit_buffer_handler::<Self>(surface);
         self.popup_manager.commit(surface);
@@ -31,8 +34,10 @@ impl CompositorHandler for State {
         self.commit_window(&root);
         self.commit_layer(&root);
         self.configure_popup(surface);
+        self.request_redraw();
     }
     fn destroyed(&mut self, surface: &WlSurface) {
+        self.request_redraw();
         self.remove_layer(surface);
         use smithay::input::pointer::CursorImageStatus;
         if matches!(&self.cursor_status, CursorImageStatus::Surface(cursor) if cursor == surface) {

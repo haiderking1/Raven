@@ -47,6 +47,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let mut flush_error = None;
     let result = event_loop.run(None, &mut state, |state| {
         state.refresh();
+        TtyBackend::dispatch(state);
         if let Err(error) = state.display_handle.flush_clients() {
             flush_error = Some(error);
             state.loop_signal.stop();

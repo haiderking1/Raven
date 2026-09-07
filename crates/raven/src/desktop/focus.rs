@@ -3,6 +3,7 @@ use smithay::{desktop::Window, utils::SERIAL_COUNTER};
 
 impl State {
     pub(crate) fn activate_window(&mut self, window: Option<Window>) {
+        self.request_redraw();
         self.workspaces.entries[self.workspaces.active].focused = window.clone();
         let exclusive = self.exclusive_keyboard_layer();
         if let Some(window) = &window {

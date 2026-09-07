@@ -48,6 +48,7 @@ impl State {
             }
         }
         if index == self.workspaces.active {
+            self.request_redraw();
             self.refresh_tiling_pointer();
         }
     }

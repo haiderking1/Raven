@@ -24,6 +24,7 @@ impl State {
             self.space_mut().unmap_output(output);
         }
         self.workspaces.active = index;
+        self.request_redraw();
         if let Some(output) = &output {
             self.space_mut().map_output(output, location);
         }

@@ -4,6 +4,9 @@ mod refresh;
 pub(super) use refresh::PointerRefresh;
 mod scroll;
 
+#[cfg(test)]
+mod tests;
+
 use smithay::{
     backend::{
         input::{
@@ -63,6 +66,7 @@ fn motion(
         return;
     };
     if moved {
+        state.request_redraw();
         state.focus_window_on_motion(location);
     }
     let focus = state.surface_under(location);
@@ -102,6 +106,8 @@ pub(super) fn button(event: impl PointerButtonEvent<LibinputInputBackend>, state
         // pointer focus before delivering the click, using the same frame.
         state.refresh_pointer_focus(serial, event.time_msec());
     }
+    // Grab dismissal and drag completion can change the scene without a commit.
+    state.request_redraw();
     pointer.button(
         state,
         &ButtonEvent {

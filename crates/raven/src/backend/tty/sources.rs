@@ -1,4 +1,4 @@
-use super::events;
+use super::{events, wake::Wake};
 use crate::state::State;
 use smithay::{
     backend::{
@@ -8,19 +8,17 @@ use smithay::{
         udev::UdevBackend,
     },
     reexports::{
-        calloop::{
-            LoopHandle, RegistrationToken,
-            timer::{TimeoutAction, Timer},
-        },
+        calloop::{LoopHandle, RegistrationToken},
         input::Libinput,
     },
 };
-use std::{error::Error, time::Duration};
+use std::{error::Error, time::Instant};
 
 /// Own registration tokens even during a partially failed install.
 pub(super) struct Sources {
     handle: LoopHandle<'static, State>,
     devices: Vec<RegistrationToken>,
+    wake: Option<Wake<State>>,
     session: Option<RegistrationToken>,
     unregistered_session: Option<LibSeatSessionNotifier>,
 }
@@ -30,6 +28,7 @@ impl Sources {
         Self {
             handle,
             devices: Vec::new(),
+            wake: None,
             session: None,
             unregistered_session: None,
         }
@@ -41,7 +40,6 @@ impl Sources {
         drm: DrmDeviceNotifier,
         udev: UdevBackend,
         input: Libinput,
-        interval: Duration,
     ) -> Result<(), Box<dyn Error>> {
         match self
             .handle
@@ -57,7 +55,9 @@ impl Sources {
         }
         self.devices.push(
             self.handle
-                .insert_source(drm, |event, _, state| events::drm(event, state))
+                .insert_source(drm, |event, metadata, state| {
+                    events::drm(event, *metadata, state)
+                })
                 .map_err(|error| error.error)?,
         );
         self.devices.push(
@@ -78,18 +78,20 @@ impl Sources {
                 })
                 .map_err(|error| error.error)?,
         );
-        self.devices.push(
-            self.handle
-                .insert_source(Timer::immediate(), move |_, _, state| {
-                    events::timer(state);
-                    TimeoutAction::ToDuration(interval)
-                })
-                .map_err(|error| error.error)?,
-        );
+        self.wake = Some(Wake::new(self.handle.clone(), events::timer)?);
+        Ok(())
+    }
+
+    pub fn arm(&mut self, deadline: Option<Instant>) -> Result<(), Box<dyn Error>> {
+        self.wake
+            .as_mut()
+            .ok_or("deadline source missing")?
+            .arm(deadline)?;
         Ok(())
     }
 
     pub fn remove_devices(&mut self) {
+        self.wake.take();
         for token in self.devices.drain(..).rev() {
             self.handle.remove(token);
         }

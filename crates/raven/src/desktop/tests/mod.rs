@@ -6,6 +6,7 @@ mod layers;
 mod lifecycle;
 mod pointer_focus;
 mod popups;
+mod redraw;
 mod tiling;
 mod wire;
 mod workspaces;

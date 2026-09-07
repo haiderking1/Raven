@@ -5,7 +5,7 @@ use super::device::Device;
 use crate::state::State;
 use smithay::{
     backend::{
-        drm::compositor::FrameFlags,
+        drm::compositor::{FrameFlags, PrimaryPlaneElement},
         renderer::{
             element::{
                 Kind,
@@ -46,7 +46,6 @@ impl Scene {
         device: &mut Device,
         state: &mut State,
     ) -> Result<bool, Box<dyn Error>> {
-        state.refresh();
         let output = &device.output;
         let scale = output.current_scale().fractional_scale();
         let pointer = state.pointer_location;
@@ -124,10 +123,16 @@ impl Scene {
             [0.055, 0.065, 0.085, 1.0],
             FrameFlags::empty(),
         )?;
+        if frame.needs_sync()
+            && let PrimaryPlaneElement::Swapchain(element) = &frame.primary_element
+        {
+            element.sync.wait()?;
+        }
         let changed = !frame.is_empty;
+        let feedback = changed.then(|| state.take_presentation_feedback(output, &frame.states));
         drop(frame);
-        if changed {
-            device.compositor.queue_frame(())?;
+        if let Some(feedback) = feedback {
+            device.compositor.queue_frame(feedback)?;
         }
         Ok(changed)
     }

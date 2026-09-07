@@ -8,7 +8,9 @@ impl State {
             return;
         };
         for layer in layer_map_for_output(output).layers() {
-            layer.send_frame(output, time, None, |_, _| Some(output.clone()));
+            layer.send_frame(output, time, None, |_, states| {
+                self.frame_callbacks.output(states, output)
+            });
         }
     }
 }

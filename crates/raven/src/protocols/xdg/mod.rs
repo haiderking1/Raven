@@ -78,6 +78,7 @@ impl XdgShellHandler for State {
     }
 
     fn popup_destroyed(&mut self, _surface: PopupSurface) {
+        self.request_redraw();
         self.popup_manager.cleanup();
     }
 }

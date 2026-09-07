@@ -1,4 +1,6 @@
-use super::{TtyBackend, device::Device, render::Scene, schedule::Schedule, sources::Sources};
+use super::{
+    TtyBackend, device::Device, render::Scene, schedule::Schedule, sources::Sources, timing::Timing,
+};
 use crate::state::State;
 use smithay::{
     backend::{
@@ -43,23 +45,27 @@ pub(super) fn install(
         .current_mode()
         .ok_or("selected output has no mode")?
         .refresh;
+    let dmabuf =
+        super::dmabuf::Registration::new(&device, state.display_handle.clone(), handle.clone())?;
     let mut backend = TtyBackend {
+        dmabuf,
         device: Some(device),
         session,
         input: Some(input),
         scene: Scene::new(),
         schedule: Schedule::new(refresh, Instant::now()),
+        timing: Timing::from_env(refresh, Instant::now()),
         sources: Sources::new(handle),
         display_handle: state.display_handle.clone(),
         output_global: None,
         failure: None,
+        presentation: Default::default(),
     };
     backend.sources.attach(
         notifier,
         drm_notifier,
         udev,
         backend.input.as_ref().expect("input initialized").clone(),
-        backend.schedule.interval(),
     )?;
     replace_bootstrap_seat(state, &backend.session.seat())?;
     let output = backend
@@ -72,7 +78,7 @@ pub(super) fn install(
     state.space_mut().map_output(&output, (0, 0));
     state.output = Some(output);
     state.backend = Some(backend);
-    // The already-registered timer performs the first render after install returns.
+    // The initial deadline wakes the first batch; rendering follows notifier dispatch.
     Ok(())
 }
 

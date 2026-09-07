@@ -1,5 +1,6 @@
 mod client;
 mod init;
+mod redraw;
 
 pub use client::ClientState;
 
@@ -14,6 +15,8 @@ use smithay::{
     utils::{Logical, Point},
     wayland::{
         compositor::CompositorState,
+        dmabuf::DmabufState,
+        presentation::PresentationState,
         selection::data_device::DataDeviceState,
         shell::{
             wlr_layer::WlrLayerShellState,
@@ -28,6 +31,9 @@ pub struct State {
     pub display_handle: DisplayHandle,
     pub compositor_state: CompositorState,
     pub shm_state: ShmState,
+    pub(crate) _presentation_state: PresentationState,
+    /// Delegate for requests from bound globals after backend teardown.
+    pub(crate) dmabuf_state: DmabufState,
     pub xdg_shell_state: XdgShellState,
     pub layer_shell_state: WlrLayerShellState,
     pub(crate) layers: crate::desktop::layers::Layers,
@@ -38,10 +44,12 @@ pub struct State {
     pub seat: Seat<Self>,
     pub output: Option<Output>,
     pub start_time: Instant,
+    pub(crate) frame_callbacks: crate::desktop::frames::FrameCallbacks,
     pub loop_signal: LoopSignal,
     pub pointer_location: Point<f64, Logical>,
     pub cursor_status: CursorImageStatus,
     pub backend: Option<crate::backend::tty::TtyBackend>,
+    pub(super) redraw_requested: bool,
     pub input: crate::input::InputState,
     pub(crate) clients: Option<crate::runtime::client::Clients>,
     pub(crate) workspaces: crate::desktop::workspaces::Workspaces,

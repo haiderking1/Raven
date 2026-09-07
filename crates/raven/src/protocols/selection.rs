@@ -28,9 +28,11 @@ impl ClientDndGrabHandler for State {
         _seat: Seat<Self>,
     ) {
         self.dnd_icon = icon;
+        self.request_redraw();
     }
     fn dropped(&mut self, _target: Option<WlSurface>, _validated: bool, _seat: Seat<Self>) {
         self.dnd_icon = None;
+        self.request_redraw();
     }
 }
 impl ServerDndGrabHandler for State {

@@ -16,14 +16,19 @@ use smithay::{
         session::libseat::LibSeatSession,
         udev::UdevBackend,
     },
+    desktop::utils::OutputPresentationFeedback,
     output::{Mode as OutputMode, Output, PhysicalProperties},
     reexports::drm::control::{Device as _, Mode, connector, crtc},
     utils::{DeviceFd, Transform},
 };
 use std::{error::Error, io::ErrorKind, path::Path};
 
-type Compositor =
-    DrmCompositor<GbmAllocator<DrmDeviceFd>, GbmFramebufferExporter<DrmDeviceFd>, (), DrmDeviceFd>;
+type Compositor = DrmCompositor<
+    GbmAllocator<DrmDeviceFd>,
+    GbmFramebufferExporter<DrmDeviceFd>,
+    OutputPresentationFeedback,
+    DrmDeviceFd,
+>;
 
 /// Fields drop in declaration order: framebuffer users, renderer, DRM, then libseat fd.
 /// The event-loop DRM notifier must be removed before dropping this object.

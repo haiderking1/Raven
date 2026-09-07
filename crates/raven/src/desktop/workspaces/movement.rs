@@ -15,6 +15,7 @@ impl State {
             window.set_activated(false);
             toplevel.send_pending_configure();
         }
+        self.request_redraw();
         self.space_mut().unmap_elem(&window);
         self.workspaces.assign(window.clone(), index);
         self.map_tiled_window(index, window);
