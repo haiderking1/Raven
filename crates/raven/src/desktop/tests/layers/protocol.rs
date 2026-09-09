@@ -8,7 +8,7 @@ use smithay::reexports::wayland_protocols_wlr::layer_shell::v1::server::{
 };
 
 #[derive(Clone, Copy)]
-pub(super) struct LayerClient {
+pub(in crate::desktop::tests) struct LayerClient {
     pub surface: u32,
     pub role: u32,
 }

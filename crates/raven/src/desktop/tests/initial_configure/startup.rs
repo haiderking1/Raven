@@ -3,10 +3,10 @@ use super::{assertions::tiled, fixture::fixture};
 use smithay::reexports::wayland_server::Resource;
 
 #[test]
-fn startup_mode_requests_wait_for_the_initial_commit_and_include_tile_geometry() {
+fn startup_maximize_requests_wait_for_the_initial_commit_and_include_tile_geometry() {
     for occupied in [false, true] {
-        // A saved maximized/fullscreen preference may arrive before the first commit.
-        for (opcode, args) in [(9, vec![]), (11, vec![0])] {
+        // A saved maximized preference may arrive before the first commit.
+        for (opcode, args) in [(9, vec![]), (10, vec![])] {
             let mut f = fixture(occupied);
             let top = f.toplevel();
             f.wire.request(top.role, opcode, &args);

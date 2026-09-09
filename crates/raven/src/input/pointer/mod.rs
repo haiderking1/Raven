@@ -1,3 +1,4 @@
+pub(crate) mod capture;
 mod geometry;
 mod output;
 mod refresh;
@@ -60,14 +61,24 @@ fn motion(
     time: u32,
     relative: Option<RelativeMotionEvent>,
 ) {
+    state.reconcile_pointer_capture();
+    let location = state.captured_pointer_location(location);
     let moved = state.pointer_location != location;
-    state.pointer_location = location;
     let Some(pointer) = state.seat.get_pointer() else {
         return;
     };
+    if state.pointer_is_locked() {
+        if let Some(event) = relative {
+            pointer.relative_motion(state, state.input.capture.focus.clone(), &event);
+        }
+        pointer.frame(state);
+        return;
+    }
     if moved {
         state.request_redraw();
-        state.focus_window_on_motion(location);
+        if !state.pointer_is_captured() {
+            state.focus_window_on_motion(location);
+        }
     }
     let focus = state.surface_under(location);
     // Keep motion inside Smithay's grab dispatch. Its leave path resets the
@@ -90,6 +101,7 @@ pub(super) fn button(event: impl PointerButtonEvent<LibinputInputBackend>, state
     let Some(pointer) = state.seat.get_pointer() else {
         return;
     };
+    state.reconcile_pointer_capture();
     let serial = SERIAL_COUNTER.next_serial();
     let location = state.pointer_location;
     let keyboard_grabbed = state
@@ -99,7 +111,10 @@ pub(super) fn button(event: impl PointerButtonEvent<LibinputInputBackend>, state
     // Check before button dispatch installs an implicit click grab. Never raise
     // or focus another window during popup, drag-and-drop, or ongoing clicks.
     if !pointer.is_grabbed() {
-        if event.state() == ButtonState::Pressed && !keyboard_grabbed {
+        if event.state() == ButtonState::Pressed
+            && !keyboard_grabbed
+            && !state.pointer_is_captured()
+        {
             state.focus_window_at(location);
         }
         // A window may have appeared beneath a stationary pointer. Refresh

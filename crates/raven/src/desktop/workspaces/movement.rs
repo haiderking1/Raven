@@ -18,8 +18,12 @@ impl State {
         self.request_redraw();
         self.space_mut().unmap_elem(&window);
         self.workspaces.assign(window.clone(), index);
-        self.map_tiled_window(index, window);
+        self.transfer_fullscreen(&window, source, index);
+        self.transfer_floating(&window, source, index);
+        self.map_layout_window(index, window);
+        self.refresh_fullscreen();
         self.refresh_workspace_tiling(source);
+        self.arrange_floating(source);
         self.restore_focus();
         self.refresh_tiling_pointer();
     }

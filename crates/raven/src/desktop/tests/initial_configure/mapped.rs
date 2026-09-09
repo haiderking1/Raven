@@ -1,7 +1,7 @@
 use super::{assertions::tiled, fixture::fixture};
 
 #[test]
-fn mapped_mode_requests_answer_with_the_existing_tile_even_when_refused() {
+fn mapped_maximize_requests_answer_with_the_existing_tile_even_when_refused() {
     let mut f = fixture(true);
     let top = f.toplevel();
     f.configure(top);
@@ -9,7 +9,7 @@ fn mapped_mode_requests_answer_with_the_existing_tile_even_when_refused() {
     f.attach(top, buffer);
     let stacking: Vec<_> = f.state.space().elements().cloned().collect();
 
-    for (opcode, args) in [(9, vec![]), (10, vec![]), (11, vec![0]), (12, vec![])] {
+    for (opcode, args) in [(9, vec![]), (10, vec![])] {
         f.wire.request(top.role, opcode, &args);
         let events = f.dispatch();
         let serial = tiled(&events, top, (501, 601));

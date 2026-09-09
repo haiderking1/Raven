@@ -8,6 +8,9 @@ impl State {
             return;
         };
         for layer in layer_map_for_output(output).layers() {
+            if !self.layer_is_visible(layer) {
+                continue;
+            }
             layer.send_frame(output, time, None, |_, states| {
                 self.frame_callbacks.output(states, output, time)
             });

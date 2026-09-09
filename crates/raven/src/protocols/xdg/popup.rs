@@ -1,13 +1,13 @@
 use crate::state::State;
 use smithay::{
     desktop::{
-        PopupKeyboardGrab, PopupKind, PopupPointerGrab, PopupUngrabStrategy, WindowSurfaceType,
-        find_popup_root_surface, get_popup_toplevel_coords, layer_map_for_output,
+        PopupKeyboardGrab, PopupKind, PopupPointerGrab, PopupUngrabStrategy,
+        find_popup_root_surface,
     },
     input::pointer::Focus,
     reexports::wayland_server::protocol::{wl_seat::WlSeat, wl_surface::WlSurface},
     utils::Serial,
-    wayland::shell::xdg::{PopupSurface, PositionerState},
+    wayland::shell::xdg::PopupSurface,
 };
 
 impl State {
@@ -17,36 +17,6 @@ impl State {
                 popup.send_popup_done();
             }
         }
-    }
-
-    pub(crate) fn position_popup(&self, popup: &PopupSurface, positioner: PositionerState) {
-        let kind = PopupKind::Xdg(popup.clone());
-        let target = find_popup_root_surface(&kind).ok().and_then(|root| {
-            let output = self.output.as_ref()?;
-            let location = if let Some(window) = self
-                .space()
-                .elements()
-                .find(|w| w.toplevel().is_some_and(|t| t.wl_surface() == &root))
-            {
-                self.space().element_location(window)?
-            } else {
-                let map = layer_map_for_output(output);
-                let layer = map.layer_for_surface(&root, WindowSurfaceType::TOPLEVEL)?;
-                let geometry = map.layer_geometry(layer)?;
-                self.space().output_geometry(output)?.loc + geometry.loc - layer.bbox().loc
-            };
-            let mut target = self.space().output_geometry(output)?;
-            // Positioners use the parent's window-geometry origin, not its buffer origin.
-            target.loc -= location + get_popup_toplevel_coords(&kind);
-            Some(target)
-        });
-        let geometry = target
-            .map(|target| positioner.get_unconstrained_geometry(target))
-            .unwrap_or_else(|| positioner.get_geometry());
-        popup.with_pending_state(|state| {
-            state.positioner = positioner;
-            state.geometry = geometry;
-        });
     }
 
     pub(crate) fn grab_popup(&mut self, popup: PopupSurface, seat: WlSeat, serial: Serial) {
@@ -77,7 +47,7 @@ impl State {
                     .as_ref()
                     == Some(&root)
         });
-        if !root_focused {
+        if !root_focused || !self.popup_root_is_visible(&root) {
             popup.send_popup_done();
             return;
         }

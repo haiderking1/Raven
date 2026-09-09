@@ -5,7 +5,7 @@ mod movement;
 mod switching;
 mod visibility;
 
-use super::tiling::Tiling;
+use super::{floating::Floating, fullscreen::Fullscreen, tiling::Tiling};
 use smithay::{
     desktop::{Space, Window},
     utils::IsAlive,
@@ -18,6 +18,8 @@ pub(crate) const COUNT: usize = 10;
 pub(crate) struct Workspace {
     pub(crate) space: Space<Window>,
     pub(crate) tiling: Tiling,
+    pub(crate) floating: Floating,
+    pub(crate) fullscreen: Fullscreen,
     pub(crate) focused: Option<Window>,
 }
 

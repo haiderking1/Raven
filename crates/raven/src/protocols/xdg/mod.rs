@@ -1,5 +1,7 @@
 mod mode;
+mod parent;
 mod popup;
+mod position;
 
 use crate::state::State;
 use smithay::{
@@ -25,6 +27,10 @@ impl XdgShellHandler for State {
         self.windows.push(window);
     }
 
+    fn parent_changed(&mut self, surface: ToplevelSurface) {
+        self.reparent_toplevel(surface);
+    }
+
     fn toplevel_destroyed(&mut self, surface: ToplevelSurface) {
         let window = self
             .windows
@@ -37,19 +43,21 @@ impl XdgShellHandler for State {
     }
 
     fn maximize_request(&mut self, surface: ToplevelSurface) {
-        mode::keep_tiled(&surface);
+        mode::reply_unchanged(&surface);
     }
 
     fn unmaximize_request(&mut self, surface: ToplevelSurface) {
-        mode::keep_tiled(&surface);
+        mode::reply_unchanged(&surface);
     }
 
     fn fullscreen_request(&mut self, surface: ToplevelSurface, _output: Option<WlOutput>) {
-        mode::keep_tiled(&surface);
+        // Optional output hints are preferences. Raven uses its sole live output
+        // and never retains or dereferences a possibly destroyed client resource.
+        self.request_fullscreen(&surface, true);
     }
 
     fn unfullscreen_request(&mut self, surface: ToplevelSurface) {
-        mode::keep_tiled(&surface);
+        self.request_fullscreen(&surface, false);
     }
 
     fn new_popup(&mut self, surface: PopupSurface, positioner: PositionerState) {

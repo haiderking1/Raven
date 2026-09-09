@@ -52,6 +52,7 @@ pub(super) fn session(event: SessionEvent, state: &mut State) {
                     .ok_or("libinput missing on resume")?
                     .resume()
                     .map_err(|_| "libinput failed to resume the seat")?;
+                state.resume_pointer_capture();
                 let now = Instant::now();
                 backend.schedule.resume(now);
                 if let Some(timing) = &mut state.input_timing {

@@ -8,7 +8,7 @@ use smithay::{
     reexports::wayland_server::Resource,
 };
 
-pub(super) fn fixture() -> Fixture {
+pub(in crate::desktop::tests) fn fixture() -> Fixture {
     let mut f = Fixture::new();
     let output = Output::new(
         "workspace-test".into(),
@@ -33,14 +33,14 @@ pub(super) fn fixture() -> Fixture {
     f
 }
 
-pub(super) fn map(f: &mut Fixture, buffer: u32) -> (Toplevel, Window) {
+pub(in crate::desktop::tests) fn map(f: &mut Fixture, buffer: u32) -> (Toplevel, Window) {
     let top = f.toplevel();
     f.configure(top);
     f.attach(top, buffer);
     (top, window(f, top))
 }
 
-pub(super) fn window(f: &Fixture, top: Toplevel) -> Window {
+pub(in crate::desktop::tests) fn window(f: &Fixture, top: Toplevel) -> Window {
     f.state
         .windows
         .iter()
@@ -49,13 +49,13 @@ pub(super) fn window(f: &Fixture, top: Toplevel) -> Window {
         .clone()
 }
 
-pub(super) fn attach(f: &mut Fixture, top: Toplevel, buffer: u32) -> Vec<Event> {
+pub(in crate::desktop::tests) fn attach(f: &mut Fixture, top: Toplevel, buffer: u32) -> Vec<Event> {
     f.wire.request(top.surface, 1, &[buffer, 0, 0]);
     f.wire.request(top.surface, 6, &[]);
     f.dispatch()
 }
 
-pub(super) fn frame(f: &mut Fixture, top: Toplevel) -> u32 {
+pub(in crate::desktop::tests) fn frame(f: &mut Fixture, top: Toplevel) -> u32 {
     let callback = f.id();
     f.wire.request(top.surface, 3, &[callback]);
     f.wire.request(top.surface, 6, &[]);

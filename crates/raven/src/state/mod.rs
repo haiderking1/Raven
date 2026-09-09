@@ -16,13 +16,16 @@ use smithay::{
     wayland::{
         compositor::CompositorState,
         dmabuf::DmabufState,
+        pointer_constraints::PointerConstraintsState,
         presentation::PresentationState,
+        relative_pointer::RelativePointerManagerState,
         selection::data_device::DataDeviceState,
         shell::{
             wlr_layer::WlrLayerShellState,
             xdg::{XdgShellState, decoration::XdgDecorationState},
         },
         shm::ShmState,
+        viewporter::ViewporterState,
     },
 };
 use std::time::Instant;
@@ -31,7 +34,11 @@ pub struct State {
     pub display_handle: DisplayHandle,
     pub compositor_state: CompositorState,
     pub shm_state: ShmState,
+    /// Display-wide global, independent of backend teardown; dispatch needs no getter.
+    pub(crate) _viewporter_state: ViewporterState,
     pub(crate) _presentation_state: PresentationState,
+    pub(crate) _pointer_constraints_state: PointerConstraintsState,
+    pub(crate) _relative_pointer_state: RelativePointerManagerState,
     /// Delegate for requests from bound globals after backend teardown.
     pub(crate) dmabuf_state: DmabufState,
     pub xdg_shell_state: XdgShellState,

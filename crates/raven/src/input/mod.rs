@@ -3,6 +3,7 @@
 
 mod keyboard;
 mod pointer;
+pub(crate) use pointer::capture::motion_hook as pointer_motion_hook;
 pub mod timing;
 
 use smithay::backend::{input::InputEvent, libinput::LibinputInputBackend};
@@ -14,6 +15,7 @@ use crate::state::State;
 pub struct InputState {
     shortcuts: keyboard::Shortcuts,
     pointer_refresh: pointer::PointerRefresh,
+    capture: pointer::capture::Capture,
 }
 
 /// Dispatch an event from the backend's active libinput source.

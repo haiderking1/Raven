@@ -1,6 +1,7 @@
 mod close;
 mod decorations;
-mod fixture;
+pub(crate) mod fixture;
+mod fullscreen;
 mod globals;
 mod initial_configure;
 mod layers;

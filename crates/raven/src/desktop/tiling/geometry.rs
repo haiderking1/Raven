@@ -6,34 +6,46 @@ pub(super) fn master_stack(
     area: Rectangle<i32, Logical>,
     count: usize,
 ) -> Vec<Rectangle<i32, Logical>> {
-    if count == 0 || area.size.w <= 0 || area.size.h <= 0 {
+    if area.size.w <= 0 || area.size.h <= 0 {
         return Vec::new();
     }
-    if count == 1 {
-        return vec![area];
+    (0..count)
+        .filter_map(|index| tile_at(area, count, index))
+        .collect()
+}
+
+/// Rendering and input clipping need one allocation, not a newly allocated
+/// vector containing every tile for every window being examined.
+pub(super) fn tile_at(
+    area: Rectangle<i32, Logical>,
+    count: usize,
+    index: usize,
+) -> Option<Rectangle<i32, Logical>> {
+    if index >= count || area.size.w <= 0 || area.size.h <= 0 {
+        return None;
     }
-    // A tile must have positive dimensions: zero means "client chooses" in XDG.
-    // On an output too small for this split, use overlapping full-output tiles
-    // instead, preserving the focused window at the top of the stack.
-    if area.size.w < 2 || count - 1 > area.size.h as usize {
-        return vec![area; count];
+    // Positive overlapping allocations preserve XDG's nonzero-size contract
+    // when the output is too small to partition into independent tiles.
+    if count == 1 || area.size.w < 2 || count - 1 > area.size.h as usize {
+        return Some(area);
     }
     let master_width = area.size.w / 2;
+    if index == 0 {
+        return Some(Rectangle::new(area.loc, (master_width, area.size.h).into()));
+    }
     let rows = (count - 1) as i32;
+    let row = (index - 1) as i32;
     let height = area.size.h / rows;
     let remainder = area.size.h % rows;
-    let mut tiles = Vec::with_capacity(count);
-    tiles.push(Rectangle::new(area.loc, (master_width, area.size.h).into()));
-    let mut y = area.loc.y;
-    for row in 0..rows {
-        let row_height = height + i32::from(row < remainder);
-        tiles.push(Rectangle::new(
-            (area.loc.x + master_width, y).into(),
-            (area.size.w - master_width, row_height).into(),
-        ));
-        y += row_height;
-    }
-    tiles
+    let y = area.loc.y + row * height + row.min(remainder);
+    Some(Rectangle::new(
+        (area.loc.x + master_width, y).into(),
+        (
+            area.size.w - master_width,
+            height + i32::from(row < remainder),
+        )
+            .into(),
+    ))
 }
 
 #[cfg(test)]

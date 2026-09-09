@@ -29,13 +29,22 @@ impl State {
             self.space_mut().map_output(output, location);
         }
         self.refresh_workspace_tiling(index);
+        self.refresh_fullscreen();
         let workspace = &self.workspaces.entries[index];
         let focus = workspace
             .focused
             .as_ref()
-            .filter(|window| workspace.space.element_location(window).is_some())
+            .filter(|window| self.window_is_visible(window))
             .cloned()
-            .or_else(|| workspace.space.elements().next_back().cloned());
+            .or_else(|| self.fullscreen_window().cloned())
+            .or_else(|| {
+                workspace
+                    .space
+                    .elements()
+                    .rev()
+                    .find(|w| self.window_is_visible(w))
+                    .cloned()
+            });
         self.activate_window(focus);
         // Also send leave when switching to an empty workspace or without output.
         self.refresh_tiling_pointer();

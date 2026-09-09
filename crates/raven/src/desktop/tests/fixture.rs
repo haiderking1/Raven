@@ -78,6 +78,12 @@ impl Fixture {
         self.wire.events()
     }
 
+    pub fn disconnect(&mut self) {
+        self.wire.socket.shutdown(std::net::Shutdown::Both).unwrap();
+        self.display.dispatch_clients(&mut self.state).unwrap();
+        self.display.flush_clients().unwrap();
+    }
+
     pub fn toplevel(&mut self) -> Toplevel {
         let top = Toplevel {
             surface: self.id(),

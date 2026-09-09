@@ -26,7 +26,7 @@ impl State {
         if self
             .popup_grab
             .as_ref()
-            .is_some_and(|(_, grab)| grab.has_ended())
+            .is_some_and(|(root, grab)| grab.has_ended() || !self.popup_root_is_visible(root))
         {
             self.release_popup_grab();
         }

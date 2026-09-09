@@ -7,6 +7,8 @@ fn shortcuts_swallow_repeat_and_release_after_modifiers_are_released() {
         (24, keysyms::KEY_q, true, Action::Quit),
         (54, keysyms::KEY_c, false, Action::CloseWindow),
         (40, keysyms::KEY_d, false, Action::LaunchFuzzel),
+        (41, keysyms::KEY_f, false, Action::ToggleFullscreen),
+        (41, keysyms::KEY_F, false, Action::ToggleFullscreen),
         (10, keysyms::KEY_1, false, Action::SwitchWorkspace(0)),
         (18, keysyms::KEY_9, false, Action::SwitchWorkspace(8)),
         (19, keysyms::KEY_0, false, Action::SwitchWorkspace(9)),
@@ -77,6 +79,8 @@ fn shortcuts_reject_extra_modifiers_and_non_digit_workspace_symbols() {
                 keysyms::KEY_9,
                 keysyms::KEY_0,
                 keysyms::KEY_d,
+                keysyms::KEY_f,
+                keysyms::KEY_F,
             ] {
                 assert_eq!(shortcut(&modifiers, &[Keysym::new(symbol)]), None);
             }
@@ -87,7 +91,9 @@ fn shortcuts_reject_extra_modifiers_and_non_digit_workspace_symbols() {
             ..Default::default()
         };
         if shift {
-            assert_eq!(shortcut(&modifiers, &[Keysym::new(keysyms::KEY_d)]), None);
+            for symbol in [keysyms::KEY_d, keysyms::KEY_f, keysyms::KEY_F] {
+                assert_eq!(shortcut(&modifiers, &[Keysym::new(symbol)]), None);
+            }
         }
         for symbol in [
             keysyms::KEY_slash,

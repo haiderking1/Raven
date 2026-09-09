@@ -4,6 +4,9 @@ use smithay::utils::{Logical, Point};
 impl State {
     pub fn focus_window_at(&mut self, point: Point<f64, Logical>) {
         use smithay::wayland::shell::wlr_layer::Layer;
+        if self.pointer_is_captured() {
+            return;
+        }
         if self.seat.get_keyboard().is_some_and(|k| k.is_grabbed())
             || self.seat.get_pointer().is_some_and(|p| p.is_grabbed())
         {
@@ -17,10 +20,7 @@ impl State {
             self.focus_layer(&hit.layer);
             return;
         }
-        let window = self
-            .space()
-            .element_under(point)
-            .map(|(window, _)| window.clone());
+        let window = self.window_under(point).map(|hit| hit.window.clone());
         if window.is_none()
             && let Some(hit) = self.layer_under(point, &[Layer::Bottom, Layer::Background])
         {
@@ -31,6 +31,9 @@ impl State {
     }
 
     pub(crate) fn focus_window_on_motion(&mut self, point: Point<f64, Logical>) {
+        if self.pointer_is_captured() {
+            return;
+        }
         let Some(keyboard) = self.seat.get_keyboard() else {
             return;
         };
@@ -56,10 +59,11 @@ impl State {
         {
             return;
         }
-        let Some((window, _)) = self.space().element_under(point) else {
+        let Some(hit) = self.window_under(point) else {
             // Moving across background should not stop typing into a window.
             return;
         };
+        let window = hit.window;
         let Some(toplevel) = window.toplevel() else {
             return;
         };

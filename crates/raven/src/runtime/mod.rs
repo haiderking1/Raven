@@ -29,8 +29,12 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     let display = Display::<State>::new()?;
     let mut state = State::new(display.handle(), event_loop.get_signal())?;
     let socket = wayland::install(display, event_loop.handle())?;
+    // Capability detection and reservation finish before input/render installation.
     let mut clients = client::Clients::new(socket.clone());
-    TtyBackend::install(&mut state, event_loop.handle())?;
+    if let Err(error) = TtyBackend::install(&mut state, event_loop.handle()) {
+        drop(state.backend.take());
+        return Err(error);
+    }
     eprintln!(
         "raven: listening on {} on {}; Super+Q opens foot, Super+D opens fuzzel, Super+C closes the focused window, Super+Shift+Q exits, Ctrl+Alt+Fn switches VT",
         socket.to_string_lossy(),
@@ -43,7 +47,10 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     eprintln!(
         "raven: Super+1..9/0 switches workspace; add Shift to move the focused window without following (0 selects workspace 10)"
     );
-    clients.spawn(&command)?;
+    if let Err(error) = clients.spawn(&command) {
+        drop(state.backend.take());
+        return Err(error);
+    }
     state.clients = Some(clients);
     let mut flush_error = None;
     let result = event_loop.run(None, &mut state, |state| {
@@ -67,6 +74,8 @@ pub fn run() -> Result<(), Box<dyn Error>> {
         .and_then(|backend| backend.failure().map(str::to_owned));
     // Restore KMS and release input while the libseat notifier is still alive.
     drop(state.backend.take());
+    // Worker joins and child waits belong to shutdown, not the active compositor.
+    drop(state.clients.take());
     result?;
     if let Some(error) = flush_error {
         return Err(error.into());

@@ -27,7 +27,11 @@ pub(super) fn render(
         let rendered_frame = device.compositor.render_frame(
             &mut device.renderer,
             elements,
-            [0.055, 0.065, 0.085, 1.0],
+            if state.fullscreen_window().is_some() {
+                [0.0, 0.0, 0.0, 1.0]
+            } else {
+                [0.055, 0.065, 0.085, 1.0]
+            },
             flags,
         );
         // Close the query even when rendering failed, before waiting or queueing.

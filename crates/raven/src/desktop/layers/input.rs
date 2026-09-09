@@ -13,16 +13,31 @@ pub(crate) struct LayerHit {
 }
 
 impl State {
+    // Read lifecycle membership without recursively locking Smithay's LayerMap.
+    pub(crate) fn layer_is_mapped(&self, layer: &LayerSurface) -> bool {
+        self.layers
+            .entries
+            .get(layer.wl_surface())
+            .is_some_and(|entry| entry.mapped && self.output.as_ref() == Some(&entry.output))
+    }
+
     pub(crate) fn layer_under(
         &self,
         point: Point<f64, Logical>,
         levels: &[Layer],
     ) -> Option<LayerHit> {
         let output = self.output.as_ref()?;
-        let output_origin = self.space().output_geometry(output)?.loc;
+        let output_geometry = self.space().output_geometry(output)?;
+        if !output_geometry.to_f64().contains(point) {
+            return None;
+        }
+        let output_origin = output_geometry.loc;
         let map = layer_map_for_output(output);
         for level in levels {
             for layer in map.layers_on(*level).rev() {
+                if !self.layer_is_visible(layer) {
+                    continue;
+                }
                 let Some(geometry) = map.layer_geometry(layer) else {
                     continue;
                 };

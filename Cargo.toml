@@ -1,5 +1,6 @@
 [workspace]
 members = ["crates/raven"]
+exclude = ["vendor/smithay"]
 resolver = "3"
 
 [workspace.package]
@@ -12,3 +13,6 @@ smithay = "=0.7.0"
 calloop = { version = "=0.14.4", features = ["signals"] }
 libc = "=0.2.189"
 tracing-subscriber = { version = "=0.3.23", features = ["env-filter"] }
+
+[patch.crates-io]
+smithay = { path = "vendor/smithay" }

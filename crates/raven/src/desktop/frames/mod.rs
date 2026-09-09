@@ -25,10 +25,11 @@ impl State {
         };
         self.send_layer_frames(time);
         for window in self.space().elements() {
-            if self
-                .space()
-                .element_bbox(window)
-                .is_some_and(|bbox| bbox.overlaps(geometry))
+            if self.window_is_visible(window)
+                && self
+                    .space()
+                    .element_bbox(window)
+                    .is_some_and(|bbox| bbox.overlaps(geometry))
             {
                 window.send_frame(output, time, None, |_, states| {
                     self.frame_callbacks.output(states, output, time)

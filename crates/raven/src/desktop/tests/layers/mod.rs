@@ -1,8 +1,8 @@
-mod assertions;
-mod fixture;
+pub(super) mod assertions;
+pub(super) mod fixture;
 mod focus;
 mod interactivity;
 mod lifecycle;
 mod pointer_refresh;
 mod pointer_wire;
-mod protocol;
+pub(super) mod protocol;

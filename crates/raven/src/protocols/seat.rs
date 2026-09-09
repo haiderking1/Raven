@@ -16,6 +16,7 @@ impl SeatHandler for State {
     }
 
     fn focus_changed(&mut self, seat: &Seat<Self>, focused: Option<&WlSurface>) {
+        self.pointer_capture_keyboard_focus(focused);
         set_data_device_focus(
             &self.display_handle,
             seat,

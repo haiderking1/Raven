@@ -8,7 +8,7 @@ use smithay::{
     reexports::wayland_server::Resource,
 };
 
-pub(super) fn fixture() -> (Fixture, u32) {
+pub(in crate::desktop::tests) fn fixture() -> (Fixture, u32) {
     let mut f = Fixture::new();
     let output = Output::new(
         "layer-test".into(),
@@ -54,7 +54,7 @@ pub(super) fn fixture() -> (Fixture, u32) {
     (f, shell)
 }
 
-pub(super) fn map_window(f: &mut Fixture, buffer: u32) -> (Toplevel, Window) {
+pub(in crate::desktop::tests) fn map_window(f: &mut Fixture, buffer: u32) -> (Toplevel, Window) {
     let top = f.toplevel();
     f.configure(top);
     f.attach(top, buffer);

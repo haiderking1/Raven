@@ -135,3 +135,6 @@ impl Drop for TtyBackend {
         }
     }
 }
+
+#[cfg(test)]
+pub(crate) use render::test_scene_size;

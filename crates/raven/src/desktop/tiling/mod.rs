@@ -1,3 +1,4 @@
+mod allocation;
 mod arrange;
 mod configure;
 mod geometry;

@@ -12,17 +12,10 @@ impl State {
         let Some(output) = &self.output else {
             return;
         };
-        let Some(geometry) = self.space().output_geometry(output) else {
-            return;
-        };
+        // Include fullscreen-suppressed trees here, not in the scene. Successful
+        // render states mark them occluded for the 250ms callback path.
         for window in self.space().elements() {
-            if self
-                .space()
-                .element_bbox(window)
-                .is_some_and(|bbox| bbox.overlaps(geometry))
-            {
-                window.with_surfaces(&mut visit);
-            }
+            window.with_surfaces(&mut visit);
         }
         for layer in layer_map_for_output(output).layers() {
             layer.with_surfaces(&mut visit);

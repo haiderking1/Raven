@@ -68,6 +68,10 @@ impl State {
         let Some(pointer) = self.seat.get_pointer() else {
             return false;
         };
+        self.reconcile_pointer_capture();
+        if self.pointer_is_locked() {
+            return false;
+        }
         let focus = self.surface_under(self.pointer_location);
         if self
             .input

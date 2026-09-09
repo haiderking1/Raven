@@ -1,5 +1,5 @@
 mod assertions;
-mod fixture;
+pub(super) mod fixture;
 mod frame_visibility;
 mod movement;
 mod switching;

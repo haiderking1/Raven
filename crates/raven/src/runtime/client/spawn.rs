@@ -6,7 +6,11 @@ use std::{
     process::{Child, Command},
 };
 
-pub(super) fn client(args: &[OsString], socket: &OsStr) -> Result<Option<Child>, Box<dyn Error>> {
+pub(super) fn client(
+    args: &[OsString],
+    socket: &OsStr,
+    display: Option<&OsStr>,
+) -> Result<Option<Child>, Box<dyn Error>> {
     let Some(program) = args.first() else {
         return Ok(None);
     };
@@ -18,6 +22,9 @@ pub(super) fn client(args: &[OsString], socket: &OsStr) -> Result<Option<Child>,
         .env("XDG_CURRENT_DESKTOP", "Raven")
         .env_remove("DISPLAY")
         .env_remove("WAYLAND_SOCKET");
+    if let Some(display) = display {
+        command.env("DISPLAY", display).env_remove("XAUTHORITY");
+    }
     // SAFETY: the callback only invokes async-signal-safe signal syscalls.
     unsafe {
         command.pre_exec(signals::unblock_in_child);

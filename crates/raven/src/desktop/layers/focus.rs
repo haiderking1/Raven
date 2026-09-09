@@ -12,14 +12,16 @@ impl State {
             map.layers_on(level)
                 .rev()
                 .find(|layer| {
-                    layer.cached_state().keyboard_interactivity == KeyboardInteractivity::Exclusive
+                    self.layer_is_visible(layer)
+                        && layer.cached_state().keyboard_interactivity
+                            == KeyboardInteractivity::Exclusive
                 })
                 .cloned()
         })
     }
 
     pub(crate) fn focus_layer(&mut self, layer: &LayerSurface) {
-        if !layer.can_receive_keyboard_focus() {
+        if !self.layer_is_visible(layer) || !layer.can_receive_keyboard_focus() {
             return;
         }
         if self
@@ -70,6 +72,6 @@ impl State {
         };
         layer_map_for_output(output)
             .layer_for_surface(&focus, WindowSurfaceType::ALL)
-            .is_some_and(|layer| layer.can_receive_keyboard_focus())
+            .is_some_and(|layer| self.layer_is_visible(layer) && layer.can_receive_keyboard_focus())
     }
 }

@@ -1,12 +1,7 @@
-use super::SceneElement;
+use super::{SceneElement, layers, windows};
 use crate::state::State;
 use smithay::{
-    backend::renderer::{
-        element::{AsRenderElements, surface::WaylandSurfaceRenderElement},
-        gles::GlesRenderer,
-    },
-    desktop::{LayerMap, layer_map_for_output},
-    output::Output,
+    backend::renderer::gles::GlesRenderer, output::Output, utils::Rectangle,
     wayland::shell::wlr_layer::Layer,
 };
 
@@ -16,60 +11,34 @@ pub(super) fn append(
     output: &Output,
     elements: &mut Vec<SceneElement>,
 ) {
+    let Some(area) = state.space().output_geometry(output) else {
+        return;
+    };
     let scale = output.current_scale().fractional_scale();
-    let map = layer_map_for_output(output);
-    // Front to back, matching hit testing. Smithay's space_render_elements only
-    // partitions upper/lower layers, so a later Top could cover an older Overlay.
-    append_layers(
+    let clip = Rectangle::from_size(area.size);
+    // Front to back, in the same order as State::surface_under. Each layer
+    // pass owns its lock: window clipping reads the layer-reserved workarea
+    // and must never run under an already-held LayerMap guard.
+    layers::append(
         renderer,
-        &map,
+        state,
+        output,
         &[Layer::Overlay, Layer::Top],
         scale,
+        clip,
         elements,
     );
-    if let Some(area) = state.space().output_geometry(output) {
-        elements.extend(
-            state
-                .space()
-                .render_elements_for_region(renderer, &area, scale, 1.0)
-                .into_iter()
-                .map(SceneElement::Surface),
-        );
-    }
-    append_layers(
+    windows::append(renderer, state, area, scale, elements);
+    layers::append(
         renderer,
-        &map,
+        state,
+        output,
         &[Layer::Bottom, Layer::Background],
         scale,
+        clip,
         elements,
     );
 }
 
-fn append_layers(
-    renderer: &mut GlesRenderer,
-    map: &LayerMap,
-    levels: &[Layer],
-    scale: f64,
-    elements: &mut Vec<SceneElement>,
-) {
-    for level in levels {
-        for layer in map.layers_on(*level).rev() {
-            let Some(geometry) = map.layer_geometry(layer) else {
-                continue;
-            };
-            // Layer geometry includes the surface-tree bounding-box offset.
-            let origin = geometry.loc - layer.bbox().loc;
-            elements.extend(
-                layer
-                    .render_elements::<WaylandSurfaceRenderElement<GlesRenderer>>(
-                        renderer,
-                        origin.to_physical_precise_round(scale),
-                        scale.into(),
-                        1.0,
-                    )
-                    .into_iter()
-                    .map(SceneElement::Surface),
-            );
-        }
-    }
-}
+#[cfg(test)]
+mod tests;

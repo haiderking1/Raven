@@ -10,7 +10,7 @@ use smithay::{
     reexports::wayland_server::Resource,
 };
 
-pub(super) fn layer(f: &Fixture, client: LayerClient) -> LayerSurface {
+pub(in crate::desktop::tests) fn layer(f: &Fixture, client: LayerClient) -> LayerSurface {
     f.state
         .layers
         .surfaces
@@ -20,7 +20,7 @@ pub(super) fn layer(f: &Fixture, client: LayerClient) -> LayerSurface {
         .clone()
 }
 
-pub(super) fn focus(f: &Fixture, surface: u32) {
+pub(in crate::desktop::tests) fn focus(f: &Fixture, surface: u32) {
     assert_eq!(
         f.state
             .seat
@@ -32,7 +32,7 @@ pub(super) fn focus(f: &Fixture, surface: u32) {
     );
 }
 
-pub(super) fn hit(f: &Fixture, point: (f64, f64), surface: u32) {
+pub(in crate::desktop::tests) fn hit(f: &Fixture, point: (f64, f64), surface: u32) {
     assert_eq!(
         f.state
             .surface_under(point.into())
@@ -41,18 +41,18 @@ pub(super) fn hit(f: &Fixture, point: (f64, f64), surface: u32) {
     );
 }
 
-pub(super) fn mapped(f: &Fixture, client: LayerClient, expected: bool) {
+pub(in crate::desktop::tests) fn mapped(f: &Fixture, client: LayerClient, expected: bool) {
     let map = layer_map_for_output(f.state.output.as_ref().unwrap());
     assert_eq!(map.layer_geometry(&layer(f, client)).is_some(), expected);
 }
 
-pub(super) fn frame_done(events: &[Event], callback: u32) -> bool {
+pub(in crate::desktop::tests) fn frame_done(events: &[Event], callback: u32) -> bool {
     events
         .iter()
         .any(|event| event.object == callback && event.opcode == 0)
 }
 
-pub(super) fn tile_size(events: &[Event], top: Toplevel, expected: (u32, u32)) {
+pub(in crate::desktop::tests) fn tile_size(events: &[Event], top: Toplevel, expected: (u32, u32)) {
     let configure = events
         .iter()
         .rev()

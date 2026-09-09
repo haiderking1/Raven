@@ -6,6 +6,7 @@ impl State {
         let focus = self.seat.get_keyboard()?.current_focus()?;
         self.space()
             .elements()
+            .filter(|window| self.window_is_visible(window))
             .find(|window| {
                 let mut owns_focus = false;
                 window.with_surfaces(|surface, _| owns_focus |= surface == &focus);
