@@ -4,6 +4,7 @@ use smithay::{
     wayland::{compositor::with_states, shell::xdg::XdgToplevelSurfaceData},
 };
 
+/// Explicit Firefox-family IDs sharing the same GTK fullscreen handling.
 pub(crate) fn is_firefox(window: &Window) -> bool {
     let Some(top) = window.toplevel() else {
         return false;
@@ -16,14 +17,18 @@ pub(crate) fn is_firefox(window: &Window) -> bool {
         role.app_id.as_deref().is_some_and(|id| {
             matches!(
                 id.to_ascii_lowercase().as_str(),
-                "firefox" | "firefox-esr" | "org.mozilla.firefox" | "org.mozilla.firefox_esr"
+                "firefox"
+                    | "firefox-esr"
+                    | "org.mozilla.firefox"
+                    | "org.mozilla.firefox_esr"
+                    | "zen"
             )
         })
     })
 }
 
 /// GTK can restore CSD shadow margins despite all four tiled flags. Keep the
-/// maximized hint stable for Firefox, including floating and fullscreen exits.
+/// maximized hint stable for Firefox and Zen, including floating and fullscreen exits.
 /// This affects client decoration policy, not Raven's allocation or layout mode.
 pub(crate) fn configure_client_decorations(window: &Window) {
     let maximized_hint = is_firefox(window);
