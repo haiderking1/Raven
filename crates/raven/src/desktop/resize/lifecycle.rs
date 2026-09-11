@@ -5,6 +5,7 @@ use std::time::Instant;
 impl State {
     /// Safe inside a pre-commit/destruction hook: defer queue re-entry to ping.
     pub(crate) fn cancel_resize_surface(&mut self, surface: &WlSurface) {
+        self.cancel_resize_callbacks(Some(surface));
         let before = self.resize.held.len();
         self.resize.held.retain(|window, _| {
             !window
@@ -31,6 +32,7 @@ impl State {
     /// Workspace/VT/output teardown discards layout holds, but never touches
     /// acquire blockers. Wake queued surface commits on the event source.
     pub(crate) fn cancel_resize_transactions(&mut self) {
+        self.cancel_resize_callbacks(None);
         let windows = self.resize.held.keys().cloned().collect();
         self.publish_resize_windows(windows);
         if let Some(batch) = &mut self.resize.batch {

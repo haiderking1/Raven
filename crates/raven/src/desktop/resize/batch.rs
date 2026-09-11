@@ -78,6 +78,7 @@ impl State {
                     target_frame: Some(frame),
                     target_client: Some(client),
                     configure: None,
+                    fullscreen_commits: None,
                     ready: None,
                     applied: false,
                     queued: false,

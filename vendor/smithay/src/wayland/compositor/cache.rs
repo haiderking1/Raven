@@ -23,6 +23,8 @@
 // The logic for generating these commit ids and deciding when to apply them is implemented
 // and described in `transaction.rs`.
 
+mod callbacks;
+
 use std::{
     collections::VecDeque,
     sync::{Mutex, MutexGuard},

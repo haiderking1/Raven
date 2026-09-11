@@ -18,6 +18,8 @@ pub(super) struct SurfaceFrameState {
     pub visibility: Option<(WeakOutput, bool)>,
     pub last_cycle: Option<u64>,
     pub last_time: Option<Duration>,
+    pub coordination_pending: bool,
+    pub coordination_until: Option<Duration>,
 }
 
 impl FrameCallbacks {
@@ -32,6 +34,11 @@ impl FrameCallbacks {
             .visibility
             .as_ref()
             .is_some_and(|(owner, visible)| owner != output || !visible)
+        {
+            return None;
+        }
+        if frames.coordination_pending
+            || frames.coordination_until.is_some_and(|until| time < until)
         {
             return None;
         }

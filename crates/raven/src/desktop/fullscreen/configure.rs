@@ -33,12 +33,18 @@ impl State {
                     .or_else(|| self.window_tile_geometry(window))
             },
         };
-        if !force
-            && entry
-                .transition
-                .as_ref()
-                .is_some_and(|t| t.target == target)
+        if entry
+            .transition
+            .as_ref()
+            .is_some_and(|t| t.target == target)
         {
+            // A client request still needs a configure response, but an unchanged
+            // target must not move the serial we are waiting for. The client may
+            // already be committing the original configure.
+            if force {
+                set_pending(window, target, self.window_is_floating(window));
+                toplevel.send_configure();
+            }
             return;
         }
         if !force && entry.transition.is_none() && entry.applied == target.geometry.filter(|_| full)
@@ -48,7 +54,7 @@ impl State {
         self.begin_resize_batch(index);
         set_pending(window, target, self.window_is_floating(window));
         let serial = toplevel.send_configure();
-        self.track_resize_configure(window, Some(serial));
+        self.track_fullscreen_resize_configure(window, serial);
         self.workspaces.entries[index]
             .fullscreen
             .entries

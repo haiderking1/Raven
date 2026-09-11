@@ -7,7 +7,8 @@ use smithay::reexports::calloop::{
 use std::{error::Error, time::Instant};
 
 impl State {
-    /// Install before dispatching clients. No scheduler or pacing source changes.
+    /// Install before dispatching clients. Callback pacing timers share this handle
+    /// but run independently of transaction readiness and the render scheduler.
     pub(crate) fn install_resize_transactions(
         &mut self,
         handle: LoopHandle<'static, State>,
@@ -71,6 +72,7 @@ impl State {
         if self.resize.depth != 0 || self.resize.releasing {
             return;
         }
+        self.notify_fullscreen_resize_clients();
         let Some(batch) = &self.resize.batch else {
             return;
         };

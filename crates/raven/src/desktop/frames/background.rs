@@ -17,6 +17,9 @@ impl State {
         self.with_frame_surfaces(|_, states| {
             let frames = states.data_map.get_or_insert(SurfaceFrames::default);
             let mut frames = frames.0.lock().expect("surface frame state poisoned");
+            if frames.coordination_pending {
+                return;
+            }
             if !frames
                 .visibility
                 .as_ref()

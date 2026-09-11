@@ -327,6 +327,7 @@ impl PrivateSurfaceData {
             let transactions = queue.take_ready();
             // release the queue lock
             std::mem::drop(queue_guard);
+            state.commit_queued(surface);
             // apply might call commit, which might call blocker_cleared, so we need to free the queue before applying
             for transaction in transactions {
                 transaction.apply(dh, state)

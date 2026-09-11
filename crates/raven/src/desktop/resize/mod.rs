@@ -1,8 +1,10 @@
 //! Coordinated surface application and displayed allocations.
 mod batch;
 mod blocker;
+mod callbacks;
 mod commit;
 mod configure;
+mod fullscreen;
 mod geometry;
 mod lifecycle;
 mod readiness;
@@ -42,6 +44,7 @@ pub(super) struct Held {
     target_frame: Option<Rectangle<i32, Logical>>,
     target_client: Option<Rectangle<i32, Logical>>,
     configure: Option<Configure>,
+    fullscreen_commits: Option<fullscreen::FullscreenCommits>,
     ready: Option<Vec<readiness::Readiness>>,
     applied: bool,
     queued: bool,
@@ -58,6 +61,8 @@ pub(super) struct Batch {
 #[derive(Default)]
 pub(crate) struct Transactions {
     held: HashMap<Window, Held>,
+    callbacks: callbacks::Callbacks,
+    fullscreen_notifications: Vec<smithay::reexports::wayland_server::Client>,
     batch: Option<Batch>,
     depth: usize,
     dirty: bool,

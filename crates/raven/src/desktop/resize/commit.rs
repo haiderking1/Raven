@@ -50,6 +50,21 @@ fn pre_commit(state: &mut State, _: &DisplayHandle, surface: &WlSurface) {
     if state.resize.held[&window].configure.is_none() {
         return;
     }
+    let fullscreen = state.fullscreen_manages(&window)
+        && state.resize.held[&window].fullscreen_commits.is_some();
+    let fullscreen_response = if fullscreen {
+        let serial = with_states(surface, |states| {
+            states
+                .data_map
+                .get::<XdgToplevelSurfaceData>()?
+                .lock()
+                .unwrap()
+                .configure_serial
+        });
+        serial.and_then(|serial| state.fullscreen_resize_response(&window, serial))
+    } else {
+        None
+    };
     let acknowledged = with_states(surface, |states| {
         let data = states.data_map.get::<XdgToplevelSurfaceData>()?;
         let role = data.lock().unwrap();
@@ -79,9 +94,31 @@ fn pre_commit(state: &mut State, _: &DisplayHandle, surface: &WlSurface) {
         state.send_queued_resize(&window);
     }
     if let Some(batch) = &state.resize.batch {
-        // Older replies are gated too. They must not replace current content
-        // while the displayed allocation still describes the old layout.
-        add_blocker(surface, Coordination(batch.released.clone()));
+        if fullscreen {
+            let waiting_for_others = state.resize.held.iter().any(|(other, held)| {
+                other != &window
+                    && held.configure.is_some()
+                    && !held.applied
+                    && !held
+                        .ready
+                        .as_ref()
+                        .is_some_and(|waits| waits.iter().all(|wait| wait.is_ready()))
+            });
+            // GPU acquire blockers remain installed independently. The last
+            // fullscreen participant needs no additional coordination blocker.
+            if waiting_for_others && let Some(response) = fullscreen_response {
+                add_blocker(
+                    surface,
+                    super::fullscreen::FullscreenCoordination {
+                        batch: batch.released.clone(),
+                        response,
+                    },
+                );
+            }
+        } else {
+            // Preserve atomic content publication for ordinary tiled resizes.
+            add_blocker(surface, Coordination(batch.released.clone()));
+        }
         state.wake_resize_transactions();
     }
 }

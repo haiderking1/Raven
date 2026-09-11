@@ -25,6 +25,9 @@ impl CompositorHandler for State {
         crate::protocols::presentation::commit::install(surface);
         crate::desktop::animation::install(surface);
     }
+    fn commit_queued(&mut self, surface: &WlSurface) {
+        self.resize_commit_queued(surface);
+    }
     fn commit(&mut self, surface: &WlSurface) {
         crate::desktop::resize::apply_role_state(surface);
         on_commit_buffer_handler::<Self>(surface);

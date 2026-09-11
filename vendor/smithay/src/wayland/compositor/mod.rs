@@ -586,6 +586,14 @@ pub trait CompositorHandler {
         let _ = parent;
     }
 
+    /// A non-synchronized commit and its synchronized descendants were queued.
+    ///
+    /// Runs after snapshots are cached, before any ready state is applied, with
+    /// no surface or transaction queue locks held. Unlike post-commit hooks,
+    /// this also runs for blocked transactions. Synchronized child commits do
+    /// not notify until their non-synchronized ancestor commits.
+    fn commit_queued(&mut self, _surface: &WlSurface) {}
+
     /// Surface commit handler
     ///
     /// This is called when any changed state from a commit actually becomes visible.

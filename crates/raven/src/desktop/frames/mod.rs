@@ -1,4 +1,5 @@
 mod background;
+mod coordination;
 mod cycle;
 mod surfaces;
 mod visibility;
