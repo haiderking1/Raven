@@ -63,6 +63,10 @@ pub(super) fn floating(
             .into(),
         size,
     );
+    let frame = Rectangle::new(
+        expected.loc - smithay::utils::Point::from((2, 2)),
+        (size.w + 4, size.h + 4).into(),
+    );
     let current = top.current_state();
     let tiled = [
         xdg_toplevel::State::TiledLeft,
@@ -73,6 +77,7 @@ pub(super) fn floating(
     if !state.window_is_floating(window)
         || state.floating_geometry(window) != Some(expected)
         || state.window_layout_geometry(window) != Some(expected)
+        || state.window_frame_geometry(window) != Some(frame)
         || state.window_tile_geometry(window).is_some()
         || window.geometry().size != size
         || state.space().element_location(window) != Some(expected.loc - window.geometry().loc)

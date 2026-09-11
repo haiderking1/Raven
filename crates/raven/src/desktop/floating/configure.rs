@@ -17,7 +17,8 @@ pub(super) fn bounded_size(
             .filter(|v| *v > 0)
             .unwrap_or_else(|| if min > 0 && min == max { min } else { 0 });
         if requested == 0 {
-            return 0;
+            // Client choice has no useful range when only one pixel fits.
+            return i32::from(bound.is_some_and(|extent| extent <= 1));
         }
         let lower = min.max(1);
         let upper = if max > 0 { max.max(lower) } else { i32::MAX };
@@ -51,8 +52,15 @@ impl State {
         let Some(entry) = self.workspaces.entries[index].floating.entries.get(window) else {
             return false;
         };
-        let bounds = self.tiling_area().map(|area| area.size);
-        let size = bounded_size(&Hints::committed(window), entry.natural, bounds);
+        let bounds = self
+            .tiling_area()
+            .map(|area| self.appearance.client_rect(area).size);
+        // Before a natural size exists, zero still means client choice. Once
+        // mapped, always configure the positive allocated client rectangle.
+        let size = entry
+            .geometry
+            .map(|client| client.size)
+            .unwrap_or_else(|| bounded_size(&Hints::committed(window), entry.natural, bounds));
         let top = window.toplevel().expect("Wayland window");
         top.with_pending_state(|state| {
             state.size = Some(size);

@@ -16,6 +16,7 @@ pub(super) fn with_backend(
     };
     if backend.failure.is_none() {
         if let Err(error) = action(&mut backend, state) {
+            state.cancel_resize_transactions();
             backend.fail(state, error);
         }
     }
@@ -26,6 +27,8 @@ pub(super) fn session(event: SessionEvent, state: &mut State) {
     with_backend(state, |backend, state| {
         match event {
             SessionEvent::PauseSession => {
+                state.animations.clear_intents();
+                state.suspend_resize_transactions();
                 backend.pause_frames();
                 if let Some(input) = &mut backend.input {
                     super::input_lifecycle::suspend(input, state);
@@ -38,6 +41,7 @@ pub(super) fn session(event: SessionEvent, state: &mut State) {
                 }
             }
             SessionEvent::ActivateSession => {
+                state.animations.clear_intents();
                 if backend.schedule.active() {
                     return Ok(());
                 }
@@ -52,6 +56,7 @@ pub(super) fn session(event: SessionEvent, state: &mut State) {
                     .ok_or("libinput missing on resume")?
                     .resume()
                     .map_err(|_| "libinput failed to resume the seat")?;
+                state.resume_resize_transactions();
                 state.resume_pointer_capture();
                 let now = Instant::now();
                 backend.schedule.resume(now);

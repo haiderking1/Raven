@@ -65,6 +65,7 @@ fn pre_commit(state: &mut State, display: &DisplayHandle, surface: &WlSurface) {
     let Ok((fence, source)) = dmabuf.generate_blocker(Interest::READ) else {
         return; // Smithay polled the planes and found them already ready.
     };
+    let mut resize_acquire = Some(crate::desktop::resize::acquire_started(surface));
     let cancelled = Arc::new(AtomicBool::new(false));
     let blocker = AcquireBlocker {
         fence,
@@ -76,6 +77,9 @@ fn pre_commit(state: &mut State, display: &DisplayHandle, surface: &WlSurface) {
         Some(backend) => {
             backend.wait_for_dmabuf(source, surface.id(), cancelled.clone(), move |_, state| {
                 // DmabufSource releases its blocker before invoking this callback.
+                if let Some(acquire) = resize_acquire.take() {
+                    acquire.complete(state);
+                }
                 wake_client(state, &wake);
                 Ok(())
             })

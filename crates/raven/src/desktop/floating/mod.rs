@@ -26,4 +26,5 @@ struct Placement {
     hints: Option<Hints>,
     natural: Option<Size<i32, Logical>>,
     geometry: Option<Rectangle<i32, Logical>>,
+    frame: Option<Rectangle<i32, Logical>>,
 }

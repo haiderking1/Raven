@@ -26,6 +26,8 @@ impl State {
         rendered: &RenderElementStates,
         copied_cursor: Option<&Id>,
     ) -> OutputPresentationFeedback {
+        let projected = self.animation_render_states(rendered);
+        let rendered = projected.as_ref();
         let mut feedback = OutputPresentationFeedback::new(output);
         let primary = |surface: &WlSurface, _: &SurfaceData| {
             rendered

@@ -1,3 +1,5 @@
+mod ownership;
+
 use std::{
     error::Error,
     fs,
@@ -28,6 +30,10 @@ impl Sockets {
         for path in &paths {
             fs::symlink_metadata(path)?;
         }
+        ownership::record(
+            number,
+            wayland.parent().ok_or("Wayland socket has no runtime")?,
+        )?;
         Ok(Self {
             paths,
             abstract_name: format!("/tmp/.X11-unix/X{number}"),

@@ -28,7 +28,10 @@ impl Fixture {
     pub fn new() -> Self {
         let display = Display::new().unwrap();
         let event_loop = EventLoop::<State>::try_new().unwrap();
-        let state = State::new(display.handle(), event_loop.get_signal()).unwrap();
+        let mut state = State::new(display.handle(), event_loop.get_signal()).unwrap();
+        state
+            .set_appearance(crate::desktop::appearance::Appearance::disabled())
+            .unwrap();
         let (server, client) = UnixStream::pair().unwrap();
         display
             .handle()

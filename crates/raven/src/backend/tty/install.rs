@@ -80,6 +80,7 @@ pub(super) fn install(
     backend.output_global = Some(output.create_global::<State>(&state.display_handle));
     state.space_mut().map_output(&output, (0, 0));
     state.output = Some(output);
+    state.refresh_workspace_protocol();
     state.backend = Some(backend);
     // The initial deadline wakes the first batch; rendering follows notifier dispatch.
     Ok(())

@@ -21,9 +21,12 @@ impl CompositorHandler for State {
     }
     fn new_surface(&mut self, surface: &WlSurface) {
         crate::protocols::dmabuf::acquire::install(surface);
+        crate::desktop::resize::install_surface(surface);
         crate::protocols::presentation::commit::install(surface);
+        crate::desktop::animation::install(surface);
     }
     fn commit(&mut self, surface: &WlSurface) {
+        crate::desktop::resize::apply_role_state(surface);
         on_commit_buffer_handler::<Self>(surface);
         self.popup_manager.commit(surface);
         if is_sync_subsurface(surface) {
@@ -34,6 +37,7 @@ impl CompositorHandler for State {
             root = parent;
         }
         self.commit_window(&root);
+        self.resize_surface_applied(&root);
         self.commit_layer(&root);
         self.configure_popup(surface);
         if !self.surface_on_hidden_workspace(&root) {

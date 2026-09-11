@@ -5,6 +5,7 @@ use smithay::{
 
 impl State {
     pub(super) fn forget_layer(&mut self, surface: &WlSurface) {
+        self.cancel_workspace_activation_surface(surface);
         let Some(index) = self
             .layers
             .surfaces

@@ -9,6 +9,7 @@ pub(super) fn append(
     renderer: &mut GlesRenderer,
     state: &State,
     output: &Output,
+    animations: &mut super::animation::Animations,
     elements: &mut Vec<SceneElement>,
 ) {
     let Some(area) = state.space().output_geometry(output) else {
@@ -28,7 +29,7 @@ pub(super) fn append(
         clip,
         elements,
     );
-    windows::append(renderer, state, area, scale, elements);
+    windows::append(renderer, state, area, scale, animations, elements);
     layers::append(
         renderer,
         state,

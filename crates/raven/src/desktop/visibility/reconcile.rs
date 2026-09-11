@@ -10,6 +10,7 @@ impl State {
             .filter_map(|window| window.toplevel().map(|t| t.wl_surface().clone()))
             .collect();
         for root in hidden {
+            self.cancel_resize_surface(&root);
             self.dismiss_window_popups(&root);
         }
         self.refresh_popup_grab();

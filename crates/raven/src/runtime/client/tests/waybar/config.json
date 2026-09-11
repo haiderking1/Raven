@@ -1,0 +1,15 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 32,
+  "exclusive": true,
+  "modules-left": [
+    "ext/workspaces"
+  ],
+  "ext/workspaces": {
+    "format": "{name}",
+    "on-click": "activate",
+    "sort-by-name": true,
+    "all-outputs": false
+  }
+}

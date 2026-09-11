@@ -11,7 +11,7 @@ impl State {
         if self.window_is_floating(window) {
             return self.configure_floating(window);
         }
-        let Some(area) = self.fullscreen_transient_geometry(window) else {
+        let Some(area) = self.refresh_fullscreen_transient_geometry(window) else {
             return false;
         };
         let Some(toplevel) = window.toplevel() else {

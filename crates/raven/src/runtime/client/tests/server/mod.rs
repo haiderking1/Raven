@@ -1,3 +1,4 @@
+mod pointer;
 mod renderer;
 pub(super) mod sockets;
 
@@ -86,6 +87,7 @@ impl Server {
             )?;
             self.state.display_handle.flush_clients()?;
             self.state.refresh();
+            self.state.refresh_workspace_protocol();
             // Exercise production desktop import. Only this real scene build earns callbacks.
             self.scene_size = crate::backend::tty::test_scene_size(&mut self.renderer, &self.state);
             self.state.send_frames(self.state.start_time.elapsed());

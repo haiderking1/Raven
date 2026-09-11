@@ -2,6 +2,9 @@ use crate::state::State;
 
 impl State {
     pub(crate) fn position_fullscreen_windows(&mut self, index: usize) {
+        if self.defer_resize_layout(index) {
+            return;
+        }
         if self.workspaces.entries[index]
             .fullscreen
             .displayed
@@ -9,6 +12,7 @@ impl State {
         {
             return;
         }
+        self.begin_resize_batch(index);
         let windows: Vec<_> = self.workspaces.entries[index]
             .space
             .elements()
@@ -22,7 +26,7 @@ impl State {
                     && let Some(toplevel) = w.toplevel()
                     && toplevel.is_initial_configure_sent()
                 {
-                    toplevel.send_pending_configure();
+                    self.send_resize_configure(w);
                 }
                 self.fullscreen_location(w)
                     .or_else(|| self.fullscreen_transient_geometry(w).map(|area| area.loc))
@@ -34,18 +38,22 @@ impl State {
             .zip(&positions)
             .any(|(w, p)| p.is_some() && space.element_location(w) != *p);
         if !changed {
+            self.end_resize_batch();
             return;
         }
         // Mapping raises. Rebuild the existing stack order, never the tile order.
         for (window, position) in windows.into_iter().zip(positions) {
             if let Some(position) = position {
-                space.map_element(window, position, false);
+                self.place_resize_window(index, &window, position);
             } else {
-                space.raise_element(&window, false);
+                self.workspaces.entries[index]
+                    .space
+                    .raise_element(&window, false);
             }
         }
         self.arrange_floating(index);
         self.refresh_reactive_popups(index);
+        self.end_resize_batch();
         if index == self.workspaces.active {
             self.request_redraw();
             self.refresh_tiling_pointer();

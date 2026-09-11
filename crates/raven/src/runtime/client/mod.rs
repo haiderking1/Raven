@@ -1,6 +1,7 @@
 mod children;
 mod satellite;
 mod spawn;
+mod startup;
 
 #[cfg(test)]
 mod tests;
@@ -12,6 +13,7 @@ use std::{error::Error, ffi::OsString};
 pub(crate) struct Clients {
     socket: OsString,
     children: Children,
+    startup_started: bool,
     satellite: Option<satellite::Satellite>,
 }
 
@@ -21,6 +23,7 @@ impl Clients {
         Self {
             socket,
             children: Children::default(),
+            startup_started: false,
             satellite,
         }
     }
@@ -30,7 +33,8 @@ impl Clients {
             .satellite
             .as_ref()
             .and_then(satellite::Satellite::display);
-        if let Some(child) = spawn::client(args, &self.socket, display)? {
+        if let Some(child) = spawn::client(args, None, &Default::default(), &self.socket, display)?
+        {
             self.children.track(child);
         }
         Ok(())

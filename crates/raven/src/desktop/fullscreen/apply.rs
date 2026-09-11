@@ -29,6 +29,11 @@ impl State {
         if self.fullscreen_area().is_none() {
             next = None;
         }
+        let applying = full.displayed != next
+            || full
+                .entries
+                .values()
+                .any(|entry| entry.transition.as_ref().is_some_and(|t| t.committed));
         let hidden = if full.displayed != next {
             self.fullscreen_hidden_roots(index, next.as_ref())
         } else {
@@ -38,7 +43,11 @@ impl State {
             return;
         }
         for root in hidden {
+            self.cancel_resize_surface(&root);
             self.dismiss_window_popups(&root);
+        }
+        if applying {
+            self.begin_resize_batch(index);
         }
         let full = &mut self.workspaces.entries[index].fullscreen;
         let mut changed = full.displayed != next;
@@ -61,6 +70,9 @@ impl State {
                 self.restore_focus();
                 self.refresh_tiling_pointer();
             }
+        }
+        if applying {
+            self.end_resize_batch();
         }
     }
 }

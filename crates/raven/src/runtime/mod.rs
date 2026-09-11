@@ -3,7 +3,9 @@ mod cli;
 pub(crate) mod client;
 mod environment;
 mod flush;
+pub mod settings;
 mod signals;
+pub(crate) mod startup;
 mod wayland;
 
 use crate::{backend::tty::TtyBackend, state::State};
@@ -12,6 +14,11 @@ use smithay::reexports::wayland_server::Display;
 use std::error::Error;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
+    run_with_settings(settings::Settings::default())
+}
+
+/// Run with typed settings. Configuration parsing stays outside the compositor loop.
+pub fn run_with_settings(settings: settings::Settings) -> Result<(), Box<dyn Error>> {
     let Some(command) = cli::parse(std::env::args_os().skip(1))? else {
         return Ok(());
     };
@@ -22,12 +29,17 @@ pub fn run() -> Result<(), Box<dyn Error>> {
         .with_writer(std::io::stderr)
         .try_init()
         .map_err(|error| format!("cannot initialize logging: {error}"))?;
+    settings.appearance.validate()?;
+    let startup = settings.startup.validate();
     environment::validate()?;
     let mut event_loop: EventLoop<'static, State> = EventLoop::try_new()?;
     // Block termination signals before EGL/libinput can create worker threads.
     signals::install(event_loop.handle())?;
     let display = Display::<State>::new()?;
     let mut state = State::new(display.handle(), event_loop.get_signal())?;
+    state.install_resize_transactions(event_loop.handle())?;
+    state.set_appearance(settings.appearance)?;
+    state.set_resize_animations(settings.resize_animations);
     let socket = wayland::install(display, event_loop.handle())?;
     // Capability detection and reservation finish before input/render installation.
     let mut clients = client::Clients::new(socket.clone());
@@ -47,6 +59,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
     eprintln!(
         "raven: Super+1..9/0 switches workspace; add Shift to move the focused window without following (0 selects workspace 10)"
     );
+    clients.start_startup(&startup);
     if let Err(error) = clients.spawn(&command) {
         drop(state.backend.take());
         return Err(error);
@@ -61,6 +74,7 @@ pub fn run() -> Result<(), Box<dyn Error>> {
             return;
         }
         state.refresh();
+        state.refresh_workspace_protocol();
         TtyBackend::dispatch(state);
         // Submission-time callbacks and presentation events must also go out now.
         if let Err(error) = flush::clients(state) {

@@ -27,6 +27,7 @@ impl ClientDndGrabHandler for State {
         icon: Option<WlSurface>,
         _seat: Seat<Self>,
     ) {
+        self.cancel_workspace_activation();
         self.dnd_icon = icon;
         self.request_redraw();
     }

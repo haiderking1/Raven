@@ -3,6 +3,7 @@ use smithay::{desktop::Window, utils::IsAlive};
 
 impl State {
     pub(crate) fn map_tiled_window(&mut self, index: usize, window: Window) {
+        self.begin_resize_batch(index);
         let origin = self.tiling_area().map(|area| area.loc).unwrap_or_default();
         let workspace = &mut self.workspaces.entries[index];
         if !workspace.tiling.windows.contains(&window) {
@@ -10,10 +11,23 @@ impl State {
         }
         workspace.space.map_element(window, origin, false);
         self.retile_workspace(index);
+        self.end_resize_batch();
     }
 
     pub(crate) fn refresh_workspace_tiling(&mut self, index: usize) {
+        if self.defer_resize_layout(index) {
+            return;
+        }
         let area = self.tiling_area();
+        let workspace = &self.workspaces.entries[index];
+        let dirty = workspace.tiling.geometry != area
+            || workspace.tiling.windows.iter().any(|window| {
+                !window.alive() || workspace.space.element_location(window).is_none()
+            });
+        if !dirty {
+            return;
+        }
+        self.begin_resize_batch(index);
         let workspace = &mut self.workspaces.entries[index];
         let before = workspace.tiling.windows.len();
         workspace
@@ -23,6 +37,7 @@ impl State {
         if before != workspace.tiling.windows.len() || workspace.tiling.geometry != area {
             self.retile_workspace(index);
         }
+        self.end_resize_batch();
     }
 
     pub(crate) fn refresh_tiling(&mut self) {

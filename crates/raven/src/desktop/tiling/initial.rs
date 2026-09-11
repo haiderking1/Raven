@@ -1,4 +1,4 @@
-use super::{configure::configure_tile, geometry::master_stack};
+use super::configure::configure_tile;
 use crate::state::State;
 use smithay::{desktop::Window, reexports::wayland_protocols::xdg::shell::server::xdg_toplevel};
 
@@ -16,17 +16,11 @@ impl State {
                 state.bounds = None;
             });
         }
-        let Some(index) = self.workspaces.index_of(window) else {
-            return;
-        };
         if self.configure_floating(window) || self.configure_transient(window) {
             return;
         }
-        let count = self.workspaces.entries[index].tiling.windows.len();
-        if let Some(area) = self.tiling_area()
-            && let Some(tile) = master_stack(area, count + 1).last()
-        {
-            configure_tile(window, *tile);
+        if let Some(tile) = self.window_tile_geometry(window) {
+            configure_tile(window, tile);
         }
     }
 }

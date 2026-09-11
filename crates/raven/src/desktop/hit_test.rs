@@ -12,8 +12,28 @@ pub(crate) struct WindowHit<'a> {
     pub(crate) origin: Point<f64, Logical>,
 }
 
+enum WindowTarget<'a> {
+    Surface(WindowHit<'a>),
+    Border(&'a Window),
+}
+
 impl State {
+    #[cfg(test)]
     pub(crate) fn window_under(&self, point: Point<f64, Logical>) -> Option<WindowHit<'_>> {
+        match self.window_target_under(point)? {
+            WindowTarget::Surface(hit) => Some(hit),
+            WindowTarget::Border(_) => None,
+        }
+    }
+
+    pub(crate) fn window_focus_under(&self, point: Point<f64, Logical>) -> Option<&Window> {
+        match self.window_target_under(point)? {
+            WindowTarget::Surface(hit) => Some(hit.window),
+            WindowTarget::Border(window) => Some(window),
+        }
+    }
+
+    fn window_target_under(&self, point: Point<f64, Logical>) -> Option<WindowTarget<'_>> {
         let output = self
             .output
             .as_ref()
@@ -46,11 +66,22 @@ impl State {
                     .flatten()
             });
             if let Some((surface, offset)) = hit {
-                return Some(WindowHit {
+                return Some(WindowTarget::Surface(WindowHit {
                     window,
                     surface,
                     origin: (origin + offset).to_f64(),
-                });
+                }));
+            }
+            if self
+                .window_frame_geometry(window)
+                .is_some_and(|frame| frame.to_f64().contains(point))
+                && self
+                    .window_client_geometry(window)
+                    .is_some_and(|client| !client.to_f64().contains(point))
+            {
+                // A compositor border blocks lower windows/layers but has no
+                // wl_surface. Focus the owner without inventing content input.
+                return Some(WindowTarget::Border(window));
             }
         }
         None
@@ -63,8 +94,10 @@ impl State {
         if let Some(hit) = self.layer_under(point, &[Layer::Overlay, Layer::Top]) {
             return Some((hit.surface, hit.origin));
         }
-        if let Some(hit) = self.window_under(point) {
-            return Some((hit.surface, hit.origin));
+        match self.window_target_under(point) {
+            Some(WindowTarget::Surface(hit)) => return Some((hit.surface, hit.origin)),
+            Some(WindowTarget::Border(_)) => return None,
+            None => {}
         }
         self.layer_under(point, &[Layer::Bottom, Layer::Background])
             .map(|hit| (hit.surface, hit.origin))

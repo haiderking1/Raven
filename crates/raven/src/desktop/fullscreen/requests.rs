@@ -30,6 +30,7 @@ impl State {
             }
             return;
         }
+        self.begin_resize_batch(index);
         self.workspaces.entries[index]
             .fullscreen
             .entries
@@ -44,6 +45,7 @@ impl State {
             self.workspaces.entries[index].fullscreen.requested = None;
         }
         self.configure_fullscreen(&window, true);
+        self.end_resize_batch();
     }
 
     pub(crate) fn toggle_fullscreen(&mut self) {

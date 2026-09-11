@@ -1,0 +1,4 @@
+* { font-family: sans-serif; font-size: 12px; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; transition: none; }
+window#waybar { background: #101010; color: #ffffff; }
+#workspaces button { min-width: 48px; min-height: 32px; background: #202020; color: #ffffff; }
+#workspaces button.active { background: #008800; }

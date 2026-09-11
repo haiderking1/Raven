@@ -106,7 +106,7 @@ fn open(
             Ok(server.state.windows.len() == count + 1
                 && server.state.space().elements().count() == count + 1
                 && server.state.windows.iter().all(assertions::imported)
-                && server.scene_size == baseline.scene_size + count)
+                && server.scene_size == baseline.scene_size + 5 * count)
         },
     )?;
     let added: Vec<_> = server
@@ -158,7 +158,7 @@ fn close(
                 && server.state.windows.len() == remaining + 1
                 && server.state.space().elements().count() == remaining + 1
                 && server.state.space().element_location(window).is_none()
-                && server.scene_size == baseline.scene_size + remaining)
+                && server.scene_size == baseline.scene_size + 5 * remaining)
         },
     )?;
     if server.state.window_is_floating(window) || server.state.floating_geometry(window).is_some() {

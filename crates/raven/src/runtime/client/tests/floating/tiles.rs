@@ -10,6 +10,7 @@ pub(super) struct Baseline {
     workspace: usize,
     tile: Rectangle<i32, Logical>,
     geometry: Rectangle<i32, Logical>,
+    frame: Rectangle<i32, Logical>,
     order: Vec<Window>,
     pub scene_size: usize,
 }
@@ -25,14 +26,21 @@ impl Baseline {
             workspace: server.state.workspaces.active,
             tile,
             geometry: main.geometry(),
+            frame: server
+                .state
+                .window_frame_geometry(main)
+                .ok_or("main has no frame")?,
             order: tile_order(server),
             scene_size: server.scene_size,
         };
+        super::super::appearance::tiled(server, main, server.area)?;
         if baseline.order != [main.clone()]
-            || baseline.scene_size != 1
+            || baseline.scene_size != 5
             || server.state.workspace_floating_count(baseline.workspace) != 0
         {
-            return Err("initial main window is not the sole tiled scene element".into());
+            return Err(
+                "initial scene must contain one imported client and four border elements".into(),
+            );
         }
         baseline.check(server, 0)?;
         Ok(baseline)
@@ -46,6 +54,7 @@ impl Baseline {
             || state.window_is_floating(&self.main)
             || state.window_tile_geometry(&self.main) != Some(self.tile)
             || state.window_layout_geometry(&self.main) != Some(self.tile)
+            || state.window_frame_geometry(&self.main) != Some(self.frame)
             || self.main.geometry() != self.geometry
             || self.geometry.size != self.tile.size
             || top.current_state().size != Some(self.tile.size)

@@ -3,6 +3,7 @@ use crate::state::State;
 
 impl State {
     pub(crate) fn move_focused_to_workspace(&mut self, index: usize) {
+        self.cancel_workspace_activation();
         let source = self.workspaces.active;
         if index >= COUNT || index == source || !self.prepare_workspace_change() {
             return;
@@ -10,6 +11,8 @@ impl State {
         let Some(window) = self.focused_window() else {
             return;
         };
+        self.cancel_resize_transactions();
+        self.cancel_resize_visuals();
         if let Some(toplevel) = window.toplevel() {
             self.dismiss_window_popups(toplevel.wl_surface());
             window.set_activated(false);

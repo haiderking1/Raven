@@ -45,8 +45,10 @@ impl State {
         {
             return;
         }
+        self.begin_resize_batch(index);
         set_pending(window, target, self.window_is_floating(window));
         let serial = toplevel.send_configure();
+        self.track_resize_configure(window, Some(serial));
         self.workspaces.entries[index]
             .fullscreen
             .entries
@@ -57,6 +59,7 @@ impl State {
             target,
             committed: false,
         });
+        self.end_resize_batch();
     }
 
     /// Called only for the first bufferless commit of each mapping cycle.

@@ -10,4 +10,5 @@ mod seat;
 mod selection;
 mod shm;
 mod viewport;
+pub(crate) mod workspace;
 mod xdg;

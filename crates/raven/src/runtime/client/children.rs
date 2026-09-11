@@ -1,5 +1,10 @@
 use std::process::Child;
 
+// The regression waits on private owned handles, without polling or a compositor.
+#[cfg(test)]
+#[path = "../startup/tests/mod.rs"]
+mod startup_tests;
+
 /// Own only processes Raven started, never arbitrary connected Wayland clients.
 #[derive(Default)]
 pub(super) struct Children(Vec<Child>);

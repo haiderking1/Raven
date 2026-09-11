@@ -15,4 +15,5 @@ use smithay::{
 pub(crate) struct Tiling {
     windows: Vec<Window>,
     geometry: Option<Rectangle<i32, Logical>>,
+    frames: Vec<Rectangle<i32, Logical>>,
 }

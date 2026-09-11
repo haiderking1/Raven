@@ -9,10 +9,17 @@ impl TtyBackend {
     /// Run once after all ready sources and desktop reconciliation, before flushing clients.
     pub(crate) fn dispatch(state: &mut State) {
         with_backend(state, |backend, state| {
+            if let Some(device) = &backend.device {
+                if backend.scene.animations.reconcile(state, &device.output) {
+                    state.request_redraw();
+                }
+            }
             if state.take_redraw_request() {
                 backend.schedule.request_redraw();
             }
             if !backend.schedule.active() || !backend.session.is_active() {
+                backend.cancel_resize_animations();
+                state.animations.clear_intents();
                 backend.sources.arm(None)?;
                 return Ok(());
             }
@@ -21,6 +28,12 @@ impl TtyBackend {
             }
             if backend.schedule.render_due(Instant::now()) {
                 frame::render(backend, state)?;
+                // One content request after an animation frame. The existing
+                // pending/successor admission and one-shot wake chain decide
+                // when it can render; no animation tick timer or idle polling.
+                if backend.scene.animations.active() {
+                    backend.schedule.request_redraw();
+                }
             }
             // An empty render after a long idle may have callbacks already due.
             send_callbacks(backend, state);
@@ -41,6 +54,7 @@ impl TtyBackend {
                 .into_iter()
                 .chain(backend.timing.as_ref().map(|timing| timing.deadline()))
                 .chain(background_deadline)
+                .chain(backend.scene.animations.deadline())
                 .chain(state.input_timing.as_ref().map(|timing| timing.deadline()))
                 .min();
             backend.sources.arm(deadline)?;

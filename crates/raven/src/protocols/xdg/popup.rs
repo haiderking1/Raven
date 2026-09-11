@@ -67,6 +67,7 @@ impl State {
         keyboard.set_focus(self, grab.current_grab(), serial);
         keyboard.set_grab(self, PopupKeyboardGrab::new(&grab), serial);
         pointer.set_grab(self, PopupPointerGrab::new(&grab), serial, Focus::Keep);
+        self.cancel_workspace_activation();
         self.popup_grab = Some((root, grab));
     }
 }

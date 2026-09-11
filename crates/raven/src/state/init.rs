@@ -31,6 +31,10 @@ impl State {
         let compositor_state = CompositorState::new::<Self>(&display_handle);
         let shm_state = ShmState::new::<Self>(&display_handle, vec![]);
         let viewporter_state = ViewporterState::new::<Self>(&display_handle);
+        let output_manager_state =
+            smithay::wayland::output::OutputManagerState::new_with_xdg_output::<Self>(
+                &display_handle,
+            );
         let presentation_state =
             PresentationState::new::<Self>(&display_handle, libc::CLOCK_MONOTONIC as u32);
         // Do not advertise window-management operations we do not implement.
@@ -48,11 +52,14 @@ impl State {
             .set_motion_hook(crate::input::pointer_motion_hook);
         let pointer_constraints_state = PointerConstraintsState::new::<Self>(&display_handle);
         let relative_pointer_state = RelativePointerManagerState::new::<Self>(&display_handle);
+        let workspace_protocol =
+            crate::protocols::workspace::WorkspaceProtocol::new(&display_handle);
         Ok(Self {
             display_handle,
             compositor_state,
             shm_state,
             _viewporter_state: viewporter_state,
+            _output_manager_state: output_manager_state,
             _presentation_state: presentation_state,
             _pointer_constraints_state: pointer_constraints_state,
             _relative_pointer_state: relative_pointer_state,
@@ -76,6 +83,10 @@ impl State {
             input_timing: crate::input::timing::InputTiming::from_env(),
             clients: None,
             workspaces: Default::default(),
+            resize: Default::default(),
+            workspace_protocol,
+            appearance: Default::default(),
+            animations: Default::default(),
             popup_manager: PopupManager::default(),
             popup_grab: None,
             windows: Vec::new(),

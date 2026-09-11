@@ -1,0 +1,11 @@
+{
+  "layer": "top",
+  "position": "top",
+  "modules-left": ["ext/workspaces"],
+  "ext/workspaces": {
+    "format": "{name}",
+    "on-click": "activate",
+    "sort-by-name": true,
+    "all-outputs": false
+  }
+}

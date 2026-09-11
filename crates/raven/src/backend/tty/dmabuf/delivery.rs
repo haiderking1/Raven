@@ -33,6 +33,8 @@ impl FeedbackDelivery {
         feedback: &Feedback,
         primary_enabled: bool,
     ) {
+        let projected = state.animation_render_states(rendered);
+        let rendered = projected.as_ref();
         std::mem::swap(&mut self.advised, &mut self.scratch);
         let (advised, previous) = (&mut self.advised, &mut self.scratch);
         advised.clear();

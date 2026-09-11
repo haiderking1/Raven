@@ -1,5 +1,7 @@
+mod appearance;
 mod floating;
 mod server;
+mod waybar;
 mod x11;
 
 use super::Clients;
@@ -15,15 +17,16 @@ use std::{
 use x11::{Client, Command};
 
 #[test]
-#[ignore = "requires installed xwayland-satellite with listenfds, Xwayland and an EGL device; run under external timeout"]
+#[ignore = "requires installed satellite, Xwayland, Waybar and EGL; run tests/server/run.sh"]
 fn installed_satellite_maps_and_fullscreens_through_real_scene() -> Result<(), Box<dyn Error>> {
     let _ = tracing_subscriber::fmt()
         .with_env_filter("info")
         .with_writer(std::io::stderr)
         .try_init();
-    let deadline = Instant::now() + Duration::from_secs(30);
+    let fixture = waybar::Fixture::new()?;
+    let deadline = Instant::now() + Duration::from_secs(45);
     let mut server = Server::new()?;
-    let clients = Clients::new(server.socket.clone().into_os_string());
+    let mut clients = Clients::new(server.socket.clone().into_os_string());
     // Descendant access deliberately verifies the production reservation, not ambient DISPLAY.
     let display = clients
         .satellite
@@ -66,6 +69,14 @@ fn installed_satellite_maps_and_fullscreens_through_real_scene() -> Result<(), B
             server.scene_size
         );
         floating::exercise(&mut server, &mut client, &window, deadline)?;
+        let bar = waybar::exercise(
+            &mut server,
+            &mut clients,
+            &mut client,
+            &window,
+            &fixture,
+            deadline,
+        )?;
         client.command(Command::Fullscreen)?;
         server.until(
             deadline,
@@ -85,6 +96,7 @@ fn installed_satellite_maps_and_fullscreens_through_real_scene() -> Result<(), B
                     && server.scene_size > 0)
             },
         )?;
+        waybar::fullscreen(&server, &window, &bar, &fixture)?;
         client.command(Command::Inspect)?;
         server.until(
             deadline,
@@ -123,13 +135,37 @@ fn installed_satellite_maps_and_fullscreens_through_real_scene() -> Result<(), B
         },
     );
     drop(clients);
+    let waybar_shutdown = if fixture.pid().is_ok() {
+        fixture.assert_stopped().and_then(|()| {
+            server.until(
+                Instant::now() + Duration::from_secs(3),
+                "owned Waybar layer removed",
+                |server| {
+                    Ok(smithay::desktop::layer_map_for_output(
+                        server.state.output.as_ref().ok_or("output disappeared")?,
+                    )
+                    .len()
+                        == 0
+                        && server.scene_size == 0)
+                },
+            )
+        })
+    } else {
+        Ok(())
+    };
     let joined = client.join();
     drop(server);
     let removed = sockets.assert_removed();
+    let generated = fixture.cleanup();
     eprintln!(
         "satellite regression cleanup: unmap={shutdown:?}, client={joined:?}, sockets={removed:?}"
     );
+    eprintln!(
+        "Waybar regression cleanup: child/layer={waybar_shutdown:?}, generated files={generated:?}"
+    );
     result?;
+    waybar_shutdown?;
+    generated?;
     shutdown?;
     joined?;
     removed?;

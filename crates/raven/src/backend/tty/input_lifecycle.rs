@@ -12,6 +12,7 @@ use smithay::{
 /// Forward no new presses or motion from the old VT. Using the regular input
 /// handler also clears its shortcut press/release bookkeeping and Smithay grabs.
 pub(super) fn suspend(input: &mut Libinput, state: &mut State) {
+    state.cancel_workspace_activation();
     state.suspend_pointer_capture();
     input.suspend();
     for event in input {

@@ -1,4 +1,5 @@
 //! Run with an external timeout: a recursive mutex lock must fail, not hang CI.
+mod appearance;
 use crate::desktop::tests::fixture::Fixture;
 use smithay::{
     backend::{
@@ -59,4 +60,7 @@ fn first_tiled_window_builds_real_scene_without_relocking_layer_map() {
         elements[0].geometry(1.0.into()),
         Rectangle::new((0, 0).into(), (800, 600).into())
     );
+    // Preserve the original deadlock/client-buffer assertions before adding borders.
+    elements.clear();
+    appearance::assert_border_scene(&mut fixture, &mut renderer, &output);
 }

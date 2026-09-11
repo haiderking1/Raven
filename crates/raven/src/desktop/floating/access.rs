@@ -28,7 +28,20 @@ impl State {
         })
     }
 
-    /// Normal floating allocation, retained while fullscreen; None before placement.
+    /// Normal floating frame, including borders, retained while fullscreen.
+    pub(crate) fn floating_frame_geometry(
+        &self,
+        window: &Window,
+    ) -> Option<Rectangle<i32, Logical>> {
+        let index = self.workspaces.index_of(window)?;
+        self.workspaces.entries[index]
+            .floating
+            .entries
+            .get(window)?
+            .frame
+    }
+
+    /// Normal client allocation, excluding borders, retained while fullscreen.
     pub fn floating_geometry(&self, window: &Window) -> Option<Rectangle<i32, Logical>> {
         let index = self.workspaces.index_of(window)?;
         self.workspaces.entries[index]

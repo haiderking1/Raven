@@ -1,3 +1,5 @@
+pub mod animation;
+pub mod appearance;
 mod close;
 pub(crate) mod floating;
 mod focus;
@@ -9,6 +11,7 @@ mod lifecycle;
 mod pointer_focus;
 mod popups;
 mod presentation;
+pub(crate) mod resize;
 pub(crate) mod tiling;
 mod visibility;
 pub(crate) mod workspaces;

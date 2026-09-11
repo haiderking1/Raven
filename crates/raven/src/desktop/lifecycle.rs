@@ -26,6 +26,7 @@ impl State {
             .element_location(&window)
             .is_some();
         if mapped && !has_buffer {
+            self.cancel_resize_window(&window);
             self.dismiss_window_popups(surface);
             window.set_activated(false);
             self.clear_fullscreen(&window);
@@ -78,6 +79,7 @@ impl State {
     }
 
     pub(crate) fn remove_window(&mut self, window: &Window) {
+        self.cancel_resize_window(window);
         self.request_redraw();
         self.clear_fullscreen(window);
         if let Some(toplevel) = window.toplevel() {
@@ -117,6 +119,7 @@ impl State {
     }
 
     pub fn refresh(&mut self) {
+        self.refresh_resize_lifecycle();
         self.workspaces.refresh();
         self.windows.retain(IsAlive::alive);
         self.refresh_layers();

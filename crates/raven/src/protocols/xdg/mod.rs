@@ -32,6 +32,7 @@ impl XdgShellHandler for State {
     }
 
     fn toplevel_destroyed(&mut self, surface: ToplevelSurface) {
+        self.cancel_surface_animation(surface.wl_surface());
         let window = self
             .windows
             .iter()
@@ -39,6 +40,16 @@ impl XdgShellHandler for State {
             .cloned();
         if let Some(window) = window {
             self.remove_window(&window);
+        }
+    }
+
+    fn ack_configure(
+        &mut self,
+        surface: smithay::reexports::wayland_server::protocol::wl_surface::WlSurface,
+        configure: smithay::wayland::shell::xdg::Configure,
+    ) {
+        if let smithay::wayland::shell::xdg::Configure::Toplevel(configure) = configure {
+            self.acknowledge_resize_animation(&surface, configure);
         }
     }
 

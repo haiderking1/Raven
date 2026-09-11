@@ -3,9 +3,12 @@ use crate::state::State;
 
 impl State {
     pub(crate) fn switch_workspace(&mut self, index: usize) {
+        self.cancel_workspace_activation();
         if index >= COUNT || index == self.workspaces.active || !self.prepare_workspace_change() {
             return;
         }
+        self.cancel_resize_transactions();
+        self.cancel_resize_visuals();
         let leaving: Vec<_> = self.space().elements().cloned().collect();
         for window in leaving {
             if let Some(toplevel) = window.toplevel() {

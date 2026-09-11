@@ -18,7 +18,10 @@ Device access requires logind or seatd; do not run as root.
 Super+Shift+Q    Exit Raven and return to the TTY
 Ctrl+Alt+F1..F12 Switch virtual terminal
 
-Optional COMMAND launches with Raven's WAYLAND_DISPLAY.
+Waybar starts once per Raven session, including when COMMAND is provided.
+Startup failures are logged and do not stop Raven or other startup entries.
+Optional COMMAND launches in addition, with Raven's WAYLAND_DISPLAY.
+Arguments are passed literally, without shell parsing.
 Example: raven -- foot"
             );
             Ok(None)

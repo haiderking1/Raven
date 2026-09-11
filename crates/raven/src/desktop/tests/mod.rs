@@ -1,3 +1,4 @@
+mod appearance;
 mod close;
 mod decorations;
 pub(crate) mod fixture;

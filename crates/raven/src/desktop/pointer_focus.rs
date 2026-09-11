@@ -20,7 +20,7 @@ impl State {
             self.focus_layer(&hit.layer);
             return;
         }
-        let window = self.window_under(point).map(|hit| hit.window.clone());
+        let window = self.window_focus_under(point).cloned();
         if window.is_none()
             && let Some(hit) = self.layer_under(point, &[Layer::Bottom, Layer::Background])
         {
@@ -59,11 +59,10 @@ impl State {
         {
             return;
         }
-        let Some(hit) = self.window_under(point) else {
+        let Some(window) = self.window_focus_under(point) else {
             // Moving across background should not stop typing into a window.
             return;
         };
-        let window = hit.window;
         let Some(toplevel) = window.toplevel() else {
             return;
         };

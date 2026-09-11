@@ -71,6 +71,7 @@ impl State {
     }
 
     pub(super) fn unmap_layer(&mut self, layer: &LayerSurface) {
+        self.cancel_workspace_activation_surface(layer.wl_surface());
         let Some(entry) = self.layers.entries.get_mut(layer.wl_surface()) else {
             return;
         };

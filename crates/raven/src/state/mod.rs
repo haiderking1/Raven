@@ -36,6 +36,7 @@ pub struct State {
     pub shm_state: ShmState,
     /// Display-wide global, independent of backend teardown; dispatch needs no getter.
     pub(crate) _viewporter_state: ViewporterState,
+    pub(crate) _output_manager_state: smithay::wayland::output::OutputManagerState,
     pub(crate) _presentation_state: PresentationState,
     pub(crate) _pointer_constraints_state: PointerConstraintsState,
     pub(crate) _relative_pointer_state: RelativePointerManagerState,
@@ -61,6 +62,10 @@ pub struct State {
     pub(crate) input_timing: Option<crate::input::timing::InputTiming>,
     pub(crate) clients: Option<crate::runtime::client::Clients>,
     pub(crate) workspaces: crate::desktop::workspaces::Workspaces,
+    pub(crate) resize: crate::desktop::resize::Transactions,
+    pub(crate) workspace_protocol: crate::protocols::workspace::WorkspaceProtocol,
+    pub(crate) appearance: crate::desktop::appearance::Appearance,
+    pub(crate) animations: crate::desktop::animation::Animations,
     pub popup_manager: PopupManager,
     pub(crate) popup_grab: Option<(WlSurface, PopupGrab<Self>)>,
     /// Includes unmapped toplevels so a null-buffer commit can later remap them.
