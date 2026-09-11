@@ -1,7 +1,9 @@
 mod apply;
+mod animation;
 mod commits;
 mod configure;
 mod geometry;
+mod firefox;
 mod grabs;
 mod placement;
 mod refresh;

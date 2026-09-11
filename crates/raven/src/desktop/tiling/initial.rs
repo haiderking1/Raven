@@ -1,4 +1,5 @@
 use super::configure::configure_tile;
+use crate::desktop::appearance::configure_client_decorations;
 use crate::state::State;
 use smithay::{desktop::Window, reexports::wayland_protocols::xdg::shell::server::xdg_toplevel};
 
@@ -10,11 +11,11 @@ impl State {
         if let Some(toplevel) = window.toplevel() {
             toplevel.with_pending_state(|state| {
                 state.states.unset(xdg_toplevel::State::Fullscreen);
-                state.states.unset(xdg_toplevel::State::Maximized);
                 state.fullscreen_output = None;
                 state.size = None;
                 state.bounds = None;
             });
+            configure_client_decorations(window);
         }
         if self.configure_floating(window) || self.configure_transient(window) {
             return;

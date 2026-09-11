@@ -28,6 +28,8 @@ use super::{CommitCounter, DamageBag, DamageSet, DamageSnapshot, SurfaceView};
 use tracing::{error, instrument, warn};
 use wayland_server::protocol::{wl_buffer::WlBuffer, wl_surface::WlSurface};
 
+mod repaint;
+
 /// Type stored in WlSurface states data_map
 ///
 /// ```rs

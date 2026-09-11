@@ -1,9 +1,6 @@
-use super::super::{SceneElement, borders};
+use super::super::SceneElement;
 use super::element::Animated;
-use crate::{
-    desktop::animation::{geometry::Geometry, timeline::Sample},
-    state::State,
-};
+use crate::state::State;
 use smithay::{
     backend::renderer::{
         element::{
@@ -20,7 +17,9 @@ use smithay::{
 
 pub(in crate::backend::tty::render) type LiveElement = Animated<
     CropRenderElement<
-        RelocateRenderElement<RescaleRenderElement<WaylandSurfaceRenderElement<GlesRenderer>>>,
+        RelocateRenderElement<
+            RescaleRenderElement<CropRenderElement<WaylandSurfaceRenderElement<GlesRenderer>>>,
+        >,
     >,
 >;
 
@@ -41,34 +40,14 @@ pub(super) fn append_live(
     window: &Window,
     area: Rectangle<i32, Logical>,
     scale: f64,
-    active: bool,
-    sample: Sample,
+    target: Rectangle<i32, Physical>,
     commit: CommitCounter,
     elements: &mut Vec<SceneElement>,
 ) {
     let output_clip = physical(area, area, scale);
-    borders::append_at(
-        state,
-        window,
-        area,
-        scale,
-        active,
-        sample.geometry.frame,
-        sample.geometry.client,
-        1.0,
-        elements,
-    );
-    let Some(current) = Geometry::of(state, window) else {
+    let Some(source) = super::content::bounds(state, window, area, scale) else {
         return;
     };
-    let Some(top) = window.toplevel() else {
-        return;
-    };
-    let Some(origin) = state.window_surface_origin(window) else {
-        return;
-    };
-    let source = physical(current.client, area, scale);
-    let target = physical(sample.geometry.client, area, scale);
     if source.is_empty() || target.is_empty() {
         return;
     }
@@ -78,6 +57,12 @@ pub(super) fn append_live(
     let resize = Scale {
         x: f64::from(target.size.w) / f64::from(source.size.w),
         y: f64::from(target.size.h) / f64::from(source.size.h),
+    };
+    let Some(top) = window.toplevel() else {
+        return;
+    };
+    let Some(origin) = state.window_surface_origin(window) else {
+        return;
     };
     let surfaces: Vec<WaylandSurfaceRenderElement<GlesRenderer>> =
         render_elements_from_surface_tree(
@@ -89,6 +74,11 @@ pub(super) fn append_live(
             Kind::Unspecified,
         );
     for surface in surfaces {
+        // Discard pixels outside committed XDG geometry before rescaling; an
+        // early fullscreen-sized attachment is not the new window rectangle.
+        let Some(surface) = CropRenderElement::from_element(surface, scale, source) else {
+            continue;
+        };
         let location = surface.geometry(scale.into()).loc;
         let opaque = surface
             .opaque_regions(scale.into())

@@ -1,4 +1,5 @@
 use super::{Target, Transition};
+use crate::desktop::appearance::configure_client_decorations;
 use crate::state::State;
 use smithay::{desktop::Window, reexports::wayland_protocols::xdg::shell::server::xdg_toplevel};
 
@@ -65,6 +66,7 @@ impl State {
             target,
             committed: false,
         });
+        self.capture_fullscreen_animation(window, serial);
         self.end_resize_batch();
     }
 
@@ -113,7 +115,6 @@ fn set_pending(window: &Window, target: Target, floating: bool) {
         // Raven has one output. A client resource hint is not retained across
         // output removal or resource destruction; placement uses the live output.
         state.fullscreen_output = None;
-        state.states.unset(xdg_toplevel::State::Maximized);
         if target.fullscreen {
             state.states.set(xdg_toplevel::State::Fullscreen);
         } else {
@@ -125,11 +126,15 @@ fn set_pending(window: &Window, target: Target, floating: bool) {
             xdg_toplevel::State::TiledTop,
             xdg_toplevel::State::TiledBottom,
         ] {
-            if target.fullscreen || floating {
+            // Fullscreen changes the size and mode, not the underlying layout
+            // or decoration policy. Toggling tiled edges here makes GTK clients
+            // reconfigure CSD and shadow geometry during the fullscreen resize.
+            if floating {
                 state.states.unset(edge);
             } else {
                 state.states.set(edge);
             }
         }
     });
+    configure_client_decorations(window);
 }

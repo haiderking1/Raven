@@ -59,15 +59,27 @@ pub(super) fn append_body(
     active: bool,
     elements: &mut Vec<SceneElement>,
 ) {
-    let Some(toplevel) = window.toplevel() else {
+    borders::append(state, window, area, scale, active, elements);
+    append_content(renderer, state, window, area, scale, elements);
+}
+
+/// Root content only. Borders and popups are composed separately.
+pub(super) fn append_content(
+    renderer: &mut GlesRenderer,
+    state: &State,
+    window: &Window,
+    area: Rectangle<i32, Logical>,
+    scale: f64,
+    elements: &mut Vec<SceneElement>,
+) {
+    let Some(top) = window.toplevel() else {
         return;
     };
     let Some(origin) = state.window_surface_origin(window) else {
         return;
     };
-    borders::append(state, window, area, scale, active, elements);
     let Some(mut clip) = state
-        .window_layout_geometry(window)
+        .window_render_geometry(window)
         .and_then(|allocation| allocation.intersection(area))
     else {
         return;
@@ -75,7 +87,7 @@ pub(super) fn append_body(
     clip.loc -= area.loc;
     let surfaces = render_elements_from_surface_tree(
         renderer,
-        toplevel.wl_surface(),
+        top.wl_surface(),
         (origin - area.loc).to_physical_precise_round(scale),
         scale,
         1.0,

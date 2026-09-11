@@ -1,4 +1,5 @@
 use super::hints::Hints;
+use crate::desktop::appearance::configure_client_decorations;
 use crate::state::State;
 use smithay::{
     desktop::Window,
@@ -68,7 +69,6 @@ impl State {
             state.fullscreen_output = None;
             for flag in [
                 xdg_toplevel::State::Fullscreen,
-                xdg_toplevel::State::Maximized,
                 xdg_toplevel::State::TiledLeft,
                 xdg_toplevel::State::TiledRight,
                 xdg_toplevel::State::TiledTop,
@@ -77,6 +77,7 @@ impl State {
                 state.states.unset(flag);
             }
         });
+        configure_client_decorations(window);
         true
     }
 }

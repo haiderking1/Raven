@@ -37,7 +37,9 @@ impl Animations {
                 changed = true;
                 return false;
             }
-            entry.snapshot.retire_inputs();
+            if let Some(snapshot) = &entry.snapshot {
+                snapshot.retire_inputs();
+            }
             let Some(window) = state
                 .visible_windows()
                 .find(|w| w.toplevel().is_some_and(|top| top.wl_surface() == root))

@@ -1,3 +1,4 @@
+use crate::desktop::appearance::configure_client_decorations;
 use crate::state::State;
 use smithay::{
     desktop::Window,
@@ -23,7 +24,6 @@ impl State {
             state.fullscreen_output = None;
             for flag in [
                 xdg_toplevel::State::Fullscreen,
-                xdg_toplevel::State::Maximized,
                 xdg_toplevel::State::TiledLeft,
                 xdg_toplevel::State::TiledRight,
                 xdg_toplevel::State::TiledTop,
@@ -32,6 +32,7 @@ impl State {
                 state.states.unset(flag);
             }
         });
+        configure_client_decorations(window);
         true
     }
 }
@@ -42,7 +43,6 @@ pub(super) fn configure_tile(window: &Window, tile: Rectangle<i32, Logical>) {
     };
     toplevel.with_pending_state(|state| {
         state.states.unset(xdg_toplevel::State::Fullscreen);
-        state.states.unset(xdg_toplevel::State::Maximized);
         state.fullscreen_output = None;
         state.size = Some(tile.size);
         state.bounds = Some(tile.size);
@@ -55,4 +55,5 @@ pub(super) fn configure_tile(window: &Window, tile: Rectangle<i32, Logical>) {
             state.states.set(edge);
         }
     });
+    configure_client_decorations(window);
 }

@@ -41,6 +41,7 @@ impl CompositorHandler for State {
         }
         self.commit_window(&root);
         self.resize_surface_applied(&root);
+        self.repaint_committed_subsurfaces(&root, surface);
         self.commit_layer(&root);
         self.configure_popup(surface);
         if !self.surface_on_hidden_workspace(&root) {

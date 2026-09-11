@@ -12,6 +12,7 @@ mod pointer_focus;
 mod popups;
 mod presentation;
 pub(crate) mod resize;
+mod repaint;
 pub(crate) mod tiling;
 mod visibility;
 pub(crate) mod workspaces;

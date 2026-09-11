@@ -51,14 +51,20 @@ pub(super) fn build(
     window: &Window,
     area: Rectangle<i32, Logical>,
     scale: f64,
-    active: bool,
     entry: &Transition,
     sample: Sample,
     commit: CommitCounter,
     program: Rc<GlesTexProgram>,
     available: usize,
 ) -> Result<Blend, Box<dyn Error>> {
-    let bounds = paint::physical(sample.geometry.frame, area, scale);
+    let snapshot = entry
+        .snapshot
+        .as_ref()
+        .ok_or("live transition has no blend source")?;
+    let target = super::content::bounds(state, window, area, scale)
+        .ok_or("resize content has no visible window geometry")?;
+    let bounds =
+        super::content::interpolate(entry.content_from, target, f64::from(sample.progress));
     let mut elements = Vec::<SceneElement>::new();
     let (current, live) = if sample.progress > 0.0 {
         let bytes = (bounds.size.w as usize)
@@ -77,8 +83,7 @@ pub(super) fn build(
             window,
             area,
             scale,
-            active,
-            sample,
+            bounds,
             commit,
             &mut elements,
         );
@@ -88,9 +93,9 @@ pub(super) fn build(
             live,
         )
     } else {
-        (entry.snapshot.clone(), Vec::new())
+        (snapshot.clone(), Vec::new())
     };
-    let old_opaque = scaled_opaque(&entry.snapshot, bounds);
+    let old_opaque = scaled_opaque(snapshot, bounds);
     let current_opaque = scaled_opaque(&current, bounds);
     let opaque = if sample.progress <= 0.0 {
         old_opaque
@@ -108,7 +113,7 @@ pub(super) fn build(
     };
     Ok(Blend {
         id: entry.id.clone(),
-        old: entry.snapshot.clone(),
+        old: snapshot.clone(),
         current,
         bounds,
         progress: sample.progress,

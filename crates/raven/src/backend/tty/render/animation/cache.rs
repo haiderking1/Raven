@@ -17,7 +17,7 @@ use smithay::{
     desktop::Window,
     output::Output,
     reexports::wayland_server::protocol::wl_surface::WlSurface,
-    utils::{Logical, Rectangle, Serial, Transform},
+    utils::{Logical, Physical, Rectangle, Serial, Transform},
 };
 use std::{
     collections::HashMap,
@@ -34,8 +34,11 @@ pub(super) struct Transition {
     pub(super) last_queued_image: Option<Blend>,
     pub(super) rendered_image: Option<Blend>,
     pub(super) serial: Serial,
-    pub(super) snapshot: Rc<Snapshot>,
+    /// None selects direct live surfaces; no intermediate textures or blend.
+    pub(super) snapshot: Option<Rc<Snapshot>>,
+    pub(super) live_content: super::direct::Content,
     pub(super) from: Geometry,
+    pub(super) content_from: Rectangle<i32, Physical>,
     pub(super) captured: Instant,
     pub(super) timeline: Option<Timeline>,
     pub(super) last_queued: Sample,
@@ -123,9 +126,6 @@ impl Animations {
         let Some(entry) = self.entries.get_mut(top.wl_surface()) else {
             return false;
         };
-        let Some(program) = self.program.clone() else {
-            return false;
-        };
         let sample = entry
             .timeline
             .as_ref()
@@ -138,13 +138,46 @@ impl Animations {
             self.entries.remove(top.wl_surface());
             return false;
         }
+        if entry.snapshot.is_none() {
+            let live = super::direct::append(
+                renderer,
+                state,
+                window,
+                area,
+                scale,
+                sample.geometry.client,
+                self.commit,
+                &entry.live_content,
+            );
+            if live.is_empty() {
+                self.entries.remove(top.wl_surface());
+                return false;
+            }
+            entry.rendered = sample;
+            entry.rendered_image = None;
+            super::super::borders::append_at(
+                state,
+                window,
+                area,
+                scale,
+                active,
+                sample.geometry.frame,
+                sample.geometry.client,
+                1.0,
+                elements,
+            );
+            elements.extend(live);
+            return true;
+        }
+        let Some(program) = self.program.clone() else {
+            return false;
+        };
         match super::frame::build(
             renderer,
             state,
             window,
             area,
             scale,
-            active,
             entry,
             sample,
             self.commit,
@@ -154,6 +187,17 @@ impl Animations {
             Ok(image) => {
                 entry.rendered = sample;
                 entry.rendered_image = Some(image.clone());
+                super::super::borders::append_at(
+                    state,
+                    window,
+                    area,
+                    scale,
+                    active,
+                    sample.geometry.frame,
+                    sample.geometry.client,
+                    1.0,
+                    elements,
+                );
                 elements.push(SceneElement::ResizeBlend(image));
                 true
             }

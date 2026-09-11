@@ -7,7 +7,10 @@ impl Animations {
         self.entries
             .values()
             .map(|entry| {
-                let mut bytes = entry.snapshot.retained_bytes(&mut seen);
+                let mut bytes = entry
+                    .snapshot
+                    .as_ref()
+                    .map_or(0, |snapshot| snapshot.retained_bytes(&mut seen));
                 for image in entry
                     .last_queued_image
                     .iter()
