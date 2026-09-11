@@ -2,7 +2,7 @@
 
 A direct-TTY [Wayland](https://wayland.freedesktop.org/) compositor written in Rust on [Smithay](https://github.com/Smithay/smithay) (vendored and patched in-tree).
 
-Built as a personal compositor — tiling and floating windows, workspaces, Waybar, Xwayland, and an adaptive frame pipeline — with an emphasis on correct DRM/input behavior rather than feature checklist completeness.
+Built as a personal **tiling** compositor — workspaces, Waybar, Xwayland, and an adaptive frame pipeline — with an emphasis on correct DRM/input behavior rather than feature checklist completeness. Floating windows are not implemented yet.
 
 ## Status
 
@@ -16,7 +16,7 @@ Actively used and under development. Single GPU and single output today. Multi-o
 Main modules under `crates/raven/src/`:
 
 - `backend/` — DRM/KMS, libinput, libseat, rendering and frame scheduling
-- `desktop/` — tiling, floating, fullscreen, workspaces, layers, animations
+- `desktop/` — tiling, fullscreen, workspaces, layers, animations
 - `input/` — keyboard, pointer, timing
 - `protocols/` — Wayland protocol handlers
 - `runtime/` — startup, clients, settings, event loop
