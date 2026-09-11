@@ -69,7 +69,3 @@ RAVEN_FRAME_PIPELINE=deadline
 | Super+Shift+number | Move focused window to workspace |
 | Super+Shift+Q | Exit Raven |
 | Ctrl+Alt+F1…F12 | Switch VT |
-
-## Notes for readers
-
-Useful as a portfolio signal for **Rust + Wayland systems programming** (DRM session, input, protocols, frame scheduling). Implementation details and design notes live in `README.md` files next to the modules under `crates/raven/src/`.
