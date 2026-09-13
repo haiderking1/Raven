@@ -1,0 +1,88 @@
+{
+  "nav": "Configuration",
+  "title": "Configuration",
+  "intro": "Raven reads ~/.config/raven/raven.lua. Changes apply when the file is saved.",
+  "keywords": [
+    "setup",
+    "file",
+    "quickstart",
+    "home"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Configuration file"
+    },
+    {
+      "type": "text",
+      "text": "The file is created on first startup. If XDG_CONFIG_HOME is an absolute path, Raven uses $XDG_CONFIG_HOME/raven/raven.lua instead."
+    },
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "text": "raven.commands {\n    terminal = { \"foot\" },\n    launcher = { \"rofi\", \"-show\", \"drun\" },\n}\n\nraven.appearance {\n    inner = 8,\n    outer = 8,\n    border = { width = 2 },\n}",
+      "language": "Lua"
+    },
+    {
+      "type": "text",
+      "text": "Edit the matching sections in your existing file. Omitted options use their defaults."
+    },
+    {
+      "type": "heading",
+      "text": "Configuration sections"
+    },
+    {
+      "type": "links",
+      "items": [
+        [
+          "commands.html",
+          "Terminal and launcher"
+        ],
+        [
+          "bindings.html",
+          "Keybindings"
+        ],
+        [
+          "startup.html",
+          "Startup applications"
+        ],
+        [
+          "appearance.html",
+          "Appearance"
+        ],
+        [
+          "cursor.html",
+          "Cursor"
+        ],
+        [
+          "workspaces.html",
+          "Workspaces"
+        ]
+      ]
+    },
+    {
+      "type": "heading",
+      "text": "Reloading"
+    },
+    {
+      "type": "text",
+      "text": "Save the file or press Super+Shift+R. Invalid changes are rejected; the last working settings remain active. Startup applications are the exception: changes to their list take effect next session."
+    },
+    {
+      "type": "links",
+      "items": [
+        [
+          "reload.html",
+          "Reloading"
+        ],
+        [
+          "troubleshooting.html",
+          "Troubleshooting"
+        ]
+      ]
+    }
+  ]
+}

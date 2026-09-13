@@ -1,0 +1,53 @@
+{
+  "nav": "Reloading",
+  "title": "Reloading",
+  "intro": "Saving raven.lua reloads the configuration. Super+Shift+R requests a reload by default.",
+  "keywords": [
+    "reload",
+    "save",
+    "rollback",
+    "copy",
+    "error",
+    "last",
+    "startup"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Application"
+    },
+    {
+      "type": "text",
+      "text": "Valid changes apply together after active window drags and resize/fullscreen transactions finish. Omitted options return to defaults. Startup applications are not relaunched."
+    },
+    {
+      "type": "heading",
+      "text": "Errors"
+    },
+    {
+      "type": "text",
+      "text": "An invalid reload leaves the working settings active. Fix the file and save again. The error window closes after a successful reload; Close or Escape dismisses it without changing settings. Copy error includes the report and technical details."
+    },
+    {
+      "type": "heading",
+      "text": "Initial configuration"
+    },
+    {
+      "type": "text",
+      "text": "If the initial configuration is invalid, Raven starts with built-in defaults and displays the error. Deleting the file during a session is an error, not a reset."
+    },
+    {
+      "type": "links",
+      "items": [
+        [
+          "startup.html",
+          "Startup applications"
+        ],
+        [
+          "troubleshooting.html",
+          "Troubleshooting"
+        ]
+      ]
+    }
+  ]
+}

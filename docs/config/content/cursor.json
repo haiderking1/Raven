@@ -1,0 +1,52 @@
+{
+  "nav": "Cursor",
+  "title": "Cursor",
+  "intro": "raven.cursor selects an installed raster Xcursor theme and its size.",
+  "keywords": [
+    "cursor",
+    "adwaita",
+    "xcursor",
+    "pointer",
+    "size"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Configuration"
+    },
+    {
+      "type": "code",
+      "text": "raven.cursor {\n    theme = \"Adwaita\",\n    size = 24,\n}",
+      "language": "Lua"
+    },
+    {
+      "type": "table",
+      "label": "Cursor options",
+      "headers": [
+        "Option",
+        "Default",
+        "Description"
+      ],
+      "rows": [
+        [
+          "theme",
+          "\"default\"",
+          "Installed Xcursor theme name. Theme inheritance and fallback apply."
+        ],
+        [
+          "size",
+          "24",
+          "Positive whole-number size in logical pixels."
+        ]
+      ]
+    },
+    {
+      "type": "heading",
+      "text": "Theme support"
+    },
+    {
+      "type": "text",
+      "text": "Theme and size reload together. If cursor preparation fails, the reload is rejected. SVG-only themes are not supported. Applications supplying their own cursor may render it differently."
+    }
+  ]
+}

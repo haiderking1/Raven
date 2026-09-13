@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Keybindings · Raven configuration</title>
+<link rel="stylesheet" href="assets/styles.css">
+<script defer src="assets/handbook.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<aside class="rail">
+<a class="brand" href="index.html">RAVEN<span>Configuration handbook</span></a>
+
+<details class="contents" open><summary>Browse the handbook</summary>
+<div class="section-search" hidden><label for="section-search">Find a section</label><input id="section-search" type="search" placeholder="Try rofi, colors, errors" autocomplete="off"></div>
+<nav aria-label="Handbook sections"><ol id="sections"><li data-keywords="setup file quickstart home"><a href="index.html">Configuration</a></li><li data-keywords="syntax comma quotes table beginner"><a href="syntax.html">Basic syntax</a></li><li data-keywords="rofi foot foote fuzzel terminal launcher drun argv"><a href="commands.html">Terminal and launcher</a></li><li data-keywords="keys shortcuts super shift ctrl actions vt"><a href="bindings.html" aria-current="page">Keybindings</a></li><li data-keywords="waybar awww wallpaper cwd env session"><a href="startup.html">Startup applications</a></li><li data-keywords="appearance colors green border width animation resize gaps"><a href="appearance.html">Appearance</a></li><li data-keywords="cursor adwaita xcursor pointer size"><a href="cursor.html">Cursor</a></li><li data-keywords="workspace waybar persistent occupied hidden panel"><a href="workspaces.html">Workspaces</a></li><li data-keywords="reload save rollback copy error last startup"><a href="reload.html">Reloading</a></li><li data-keywords="error mistakes rofi foote comma syntax line startup csd"><a href="troubleshooting.html">Troubleshooting</a></li></ol><p id="search-status" role="status"></p></nav>
+</details>
+<p class="rail-foot">Local documentation<br>No network required</p>
+</aside>
+<main id="main" tabindex="-1">
+<header><p class="eyebrow"><a href="index.html">Raven configuration</a></p><h1>Keybindings</h1><p class="intro">raven.bind assigns an action to a key combination. Reusing a combination replaces its binding.</p></header>
+<nav class="page-toc" aria-label="On this page"><strong>Contents</strong><ul><li><a href="#binding">Binding</a></li><li><a href="#actions">Actions</a></li><li><a href="#removing-bindings">Removing bindings</a></li><li><a href="#defaults">Defaults</a></li></ul></nav>
+<article><h2 id="binding">Binding</h2>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.bind(&quot;Super+Return&quot;, &quot;terminal&quot;)
+raven.bind(&quot;Super+E&quot;, { spawn = { &quot;nautilus&quot;, &quot;--new-window&quot; } })</code></pre><p class="copy-status" role="status"></p></div>
+<p>Combine Super, Shift, Ctrl, and Alt with +. Key names include Return, space, F2, plus, and XF86AudioRaiseVolume. Use an unshifted key name with an explicit Shift modifier.</p>
+<h2 id="actions">Actions</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Binding actions"><table><caption>Binding actions</caption><thead><tr><th scope="col">Action</th><th scope="col">Argument</th><th scope="col">Effect</th></tr></thead><tbody><tr><td>terminal / launcher</td><td>None</td><td>Run the configured terminal or launcher.</td></tr><tr><td>close</td><td>None</td><td>Close the focused window.</td></tr><tr><td>fullscreen / floating</td><td>None</td><td>Toggle the focused window’s mode.</td></tr><tr><td>quit</td><td>None</td><td>Exit Raven.</td></tr><tr><td>reload</td><td>None</td><td>Reload the configuration.</td></tr><tr><td>workspace</td><td>1 to 10</td><td>Switch workspace.</td></tr><tr><td>move_to_workspace</td><td>1 to 10</td><td>Move the focused window.</td></tr><tr><td>vt</td><td>1 to 12</td><td>Switch virtual terminal.</td></tr><tr><td>{ spawn = { ... } }</td><td>Executable and arguments</td><td>Launch a command. Not preflight-checked on reload.</td></tr></tbody></table></div>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.bind(&quot;Super+2&quot;, &quot;workspace&quot;, 2)
+raven.bind(&quot;Super+Shift+2&quot;, &quot;move_to_workspace&quot;, 2)
+raven.bind(&quot;Ctrl+Alt+F2&quot;, &quot;vt&quot;, 2)</code></pre><p class="copy-status" role="status"></p></div>
+<h2 id="removing-bindings">Removing bindings</h2>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.unbind(&quot;Super+Q&quot;)</code></pre><p class="copy-status" role="status"></p></div>
+<p>Other bindings remain unchanged. raven.clear_bindings() removes every configured binding, including quit and VT switching; add any required recovery bindings afterward.</p>
+<h2 id="defaults">Defaults</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Default keybindings"><table><caption>Default keybindings</caption><thead><tr><th scope="col">Keys</th><th scope="col">Action</th></tr></thead><tbody><tr><td>Super+Q / Super+D</td><td>Terminal / launcher</td></tr><tr><td>Super+C</td><td>Close</td></tr><tr><td>Super+F / Super+V</td><td>Fullscreen / floating</td></tr><tr><td>Super+Shift+Q</td><td>Quit</td></tr><tr><td>Super+Shift+R</td><td>Reload</td></tr><tr><td>Super+1 through Super+9, Super+0</td><td>Workspaces 1 through 10</td></tr><tr><td>Super+Shift+1 through Super+Shift+9, Super+Shift+0</td><td>Move to workspace 1 through 10</td></tr><tr><td>Ctrl+Alt+F1 through F12</td><td>Switch virtual terminal</td></tr><tr><td>Escape during a window drag</td><td>Cancel drag</td></tr></tbody></table></div>
+<p class="related">See also: <a href="commands.html">Terminal and launcher</a></p></article>
+<nav class="pagination" aria-label="Adjacent pages"><a href="commands.html">Previous: Terminal and launcher</a><a href="startup.html">Next: Startup applications</a></nav>
+<footer>Edit ~/.config/raven/raven.lua and save to apply changes.</footer>
+</main>
+</body>
+</html>

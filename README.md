@@ -28,6 +28,7 @@ Main modules under `crates/raven/src/`:
 - Run as your normal login user on a real VT (not root)
 - Rust toolchain from `rust-toolchain.toml` (pinned nightly)
 - Typical Smithay/DRM stack (libseat, libinput, GBM/GLES, etc.)
+- GTK4 development files and pkg-config for the separate configuration error window
 
 ## Build
 
@@ -43,13 +44,13 @@ From a free VT as your login user:
 cargo run --release --locked -p raven
 ```
 
-Optional: launch an extra client after Waybar’s default startup entry:
+Optional: launch an extra client alongside the configured startup applications:
 
 ```bash
 cargo run --release --locked -p raven -- -- foot
 ```
 
-Frame pipeline (optional):
+Developer-only frame-pipeline diagnostics:
 
 ```bash
 RAVEN_FRAME_PIPELINE=adaptive   # default
@@ -57,7 +58,30 @@ RAVEN_FRAME_PIPELINE=immediate
 RAVEN_FRAME_PIPELINE=deadline
 ```
 
-### Shortcuts
+### Wallpapers
+
+Layer-shell wallpaper tools such as awww and swaybg work through Raven's existing
+background layers. No wallpaper daemon is forced on users. See
+[wallpaper setup and compatibility checks](crates/raven/src/desktop/layers/wallpapers/README.md).
+
+### Configuration
+
+Raven creates `~/.config/raven/raven.lua` on first startup, or uses
+`$XDG_CONFIG_HOME/raven/raven.lua` when configured. Save to hot reload. Invalid
+changes keep the working settings and open an error window with a Copy error
+button. `Super+Shift+R` reloads manually by default.
+
+Open the [HTML configuration handbook](docs/config/index.html) for step-by-step
+examples, argument syntax, and troubleshooting. It works offline.
+The [Lua configuration guide](crates/raven/src/runtime/config/README.md) also
+documents the implementation and reload behavior.
+Check a configuration without starting a compositor:
+
+```sh
+./target/debug/raven --check-config
+```
+
+### Default shortcuts
 
 | Binding | Action |
 | --- | --- |

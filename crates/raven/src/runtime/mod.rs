@@ -1,6 +1,7 @@
 //! Process startup and the compositor event loop.
 mod cli;
 pub(crate) mod client;
+pub(crate) mod config;
 mod environment;
 mod flush;
 pub mod settings;
@@ -14,11 +15,21 @@ use smithay::reexports::wayland_server::Display;
 use std::error::Error;
 
 pub fn run() -> Result<(), Box<dyn Error>> {
-    run_with_settings(settings::Settings::default())
+    if let Some(result) = config::dialog::run_if_requested() {
+        return result;
+    }
+    if let Some(result) = config::check_if_requested() {
+        return result;
+    }
+    run_session(settings::Settings::default(), true)
 }
 
-/// Run with typed settings. Configuration parsing stays outside the compositor loop.
+/// Programmatic settings do not read or overwrite the user configuration file.
 pub fn run_with_settings(settings: settings::Settings) -> Result<(), Box<dyn Error>> {
+    run_session(settings, false)
+}
+
+fn run_session(settings: settings::Settings, use_file: bool) -> Result<(), Box<dyn Error>> {
     let Some(command) = cli::parse(std::env::args_os().skip(1))? else {
         return Ok(());
     };
@@ -29,8 +40,9 @@ pub fn run_with_settings(settings: settings::Settings) -> Result<(), Box<dyn Err
         .with_writer(std::io::stderr)
         .try_init()
         .map_err(|error| format!("cannot initialize logging: {error}"))?;
-    settings.appearance.validate()?;
-    let startup = settings.startup.validate();
+    let defaults = settings.clone();
+    let (prepared, config_path, initial_error) = config::initial(settings, use_file)?;
+    let startup = prepared.settings.startup.clone().validate();
     environment::validate()?;
     let mut event_loop: EventLoop<'static, State> = EventLoop::try_new()?;
     // Block termination signals before EGL/libinput can create worker threads.
@@ -38,8 +50,7 @@ pub fn run_with_settings(settings: settings::Settings) -> Result<(), Box<dyn Err
     let display = Display::<State>::new()?;
     let mut state = State::new(display.handle(), event_loop.get_signal())?;
     state.install_resize_transactions(event_loop.handle())?;
-    state.set_appearance(settings.appearance)?;
-    state.set_resize_animations(settings.resize_animations);
+    state.apply_configuration(prepared);
     let socket = wayland::install(display, event_loop.handle())?;
     // Capability detection and reservation finish before input/render installation.
     let mut clients = client::Clients::new(socket.clone());
@@ -48,7 +59,7 @@ pub fn run_with_settings(settings: settings::Settings) -> Result<(), Box<dyn Err
         return Err(error);
     }
     eprintln!(
-        "raven: listening on {} on {}; Super+Q opens foot, Super+D opens fuzzel, Super+C closes the focused window, Super+Shift+Q exits, Ctrl+Alt+Fn switches VT",
+        "raven: listening on {} on {}",
         socket.to_string_lossy(),
         state
             .backend
@@ -56,15 +67,34 @@ pub fn run_with_settings(settings: settings::Settings) -> Result<(), Box<dyn Err
             .expect("backend installed")
             .seat_name()
     );
-    eprintln!(
-        "raven: Super+1..9/0 switches workspace; add Shift to move the focused window without following (0 selects workspace 10)"
-    );
     clients.start_startup(&startup);
     if let Err(error) = clients.spawn(&command) {
         drop(state.backend.take());
         return Err(error);
     }
     state.clients = Some(clients);
+    let config_service = if let Some(path) = config_path {
+        eprintln!("raven: configuration {}", path.display());
+        match config::Service::install(
+            path,
+            defaults,
+            &mut state,
+            event_loop.handle(),
+            socket.clone(),
+        ) {
+            Ok(service) => Some(service),
+            Err(error) => {
+                drop(state.backend.take());
+                drop(state.clients.take());
+                return Err(error);
+            }
+        }
+    } else {
+        None
+    };
+    if let Some(error) = initial_error {
+        state.config.startup_error(error);
+    }
     let mut flush_error = None;
     let result = event_loop.run(None, &mut state, |state| {
         // Deliver the input batch before desktop reconciliation or any GPU wait.
@@ -74,6 +104,7 @@ pub fn run_with_settings(settings: settings::Settings) -> Result<(), Box<dyn Err
             return;
         }
         state.refresh();
+        config::dispatch(state);
         state.refresh_workspace_protocol();
         TtyBackend::dispatch(state);
         // Submission-time callbacks and presentation events must also go out now.
@@ -90,6 +121,7 @@ pub fn run_with_settings(settings: settings::Settings) -> Result<(), Box<dyn Err
     drop(state.backend.take());
     // Worker joins and child waits belong to shutdown, not the active compositor.
     drop(state.clients.take());
+    drop(config_service);
     result?;
     if let Some(error) = flush_error {
         return Err(error.into());

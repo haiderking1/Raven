@@ -1,0 +1,53 @@
+{
+  "nav": "Basic syntax",
+  "title": "Basic syntax",
+  "intro": "Settings are written as calls to raven.* functions.",
+  "keywords": [
+    "syntax",
+    "comma",
+    "quotes",
+    "table",
+    "beginner"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Example"
+    },
+    {
+      "type": "code",
+      "text": "-- Terminal and launcher\nraven.commands {\n    terminal = { \"foot\" },\n    launcher = { \"rofi\", \"-show\", \"drun\" },\n}",
+      "language": "Lua"
+    },
+    {
+      "type": "text",
+      "text": "Quote text, separate entries with commas, and keep matching braces. Lines beginning with -- are comments."
+    },
+    {
+      "type": "heading",
+      "text": "Commands with arguments"
+    },
+    {
+      "type": "code",
+      "text": "raven.commands { launcher = { \"rofi\", \"-show\", \"drun\" } }",
+      "language": "Lua"
+    },
+    {
+      "type": "text",
+      "text": "The first entry is the executable. Each following entry is one argument. No shell splitting or expansion is performed."
+    },
+    {
+      "type": "links",
+      "items": [
+        [
+          "commands.html#arguments",
+          "Arguments"
+        ],
+        [
+          "troubleshooting.html",
+          "Troubleshooting"
+        ]
+      ]
+    }
+  ]
+}

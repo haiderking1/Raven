@@ -30,6 +30,13 @@ impl Default for StartupPlan {
 }
 
 impl StartupPlan {
+    pub(crate) fn validate_all(&self) -> Result<(), String> {
+        for (index, entry) in self.entries.iter().enumerate() {
+            validation::entry(entry).map_err(|error| format!("startup[{}]: {error}", index + 1))?;
+        }
+        Ok(())
+    }
+
     /// Validate before acquiring the backend. Keep errors beside valid entries so
     /// one invalid entry cannot prevent the others from launching.
     /// Executable lookup and filesystem access remain fallible at spawn time.

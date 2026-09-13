@@ -1,4 +1,8 @@
 mod actions;
+mod bindings;
+mod configuration;
+pub use actions::Action;
+pub use bindings::Bindings;
 mod shortcuts;
 pub(super) use shortcuts::Shortcuts;
 

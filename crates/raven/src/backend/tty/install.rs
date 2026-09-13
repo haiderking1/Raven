@@ -22,7 +22,7 @@ pub(super) fn install(
         );
     }
     let policy = super::schedule::Policy::from_env()?;
-    let scene = Scene::new()?;
+    let scene = Scene::new(state.config.initial_cursor.take())?;
     let (mut session, notifier) = LibSeatSession::new()
         .map_err(|error| format!("cannot open a libseat session: {error}; run Raven as your login user on an active VT with logind or seatd access"))?;
     if !session.is_active() {

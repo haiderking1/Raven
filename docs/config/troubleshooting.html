@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Troubleshooting · Raven configuration</title>
+<link rel="stylesheet" href="assets/styles.css">
+<script defer src="assets/handbook.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<aside class="rail">
+<a class="brand" href="index.html">RAVEN<span>Configuration handbook</span></a>
+
+<details class="contents" open><summary>Browse the handbook</summary>
+<div class="section-search" hidden><label for="section-search">Find a section</label><input id="section-search" type="search" placeholder="Try rofi, colors, errors" autocomplete="off"></div>
+<nav aria-label="Handbook sections"><ol id="sections"><li data-keywords="setup file quickstart home"><a href="index.html">Configuration</a></li><li data-keywords="syntax comma quotes table beginner"><a href="syntax.html">Basic syntax</a></li><li data-keywords="rofi foot foote fuzzel terminal launcher drun argv"><a href="commands.html">Terminal and launcher</a></li><li data-keywords="keys shortcuts super shift ctrl actions vt"><a href="bindings.html">Keybindings</a></li><li data-keywords="waybar awww wallpaper cwd env session"><a href="startup.html">Startup applications</a></li><li data-keywords="appearance colors green border width animation resize gaps"><a href="appearance.html">Appearance</a></li><li data-keywords="cursor adwaita xcursor pointer size"><a href="cursor.html">Cursor</a></li><li data-keywords="workspace waybar persistent occupied hidden panel"><a href="workspaces.html">Workspaces</a></li><li data-keywords="reload save rollback copy error last startup"><a href="reload.html">Reloading</a></li><li data-keywords="error mistakes rofi foote comma syntax line startup csd"><a href="troubleshooting.html" aria-current="page">Troubleshooting</a></li></ol><p id="search-status" role="status"></p></nav>
+</details>
+<p class="rail-foot">Local documentation<br>No network required</p>
+</aside>
+<main id="main" tabindex="-1">
+<header><p class="eyebrow"><a href="index.html">Raven configuration</a></p><h1>Troubleshooting</h1><p class="intro">Common configuration errors and their fixes.</p></header>
+<nav class="page-toc" aria-label="On this page"><strong>Contents</strong><ul><li><a href="#command-not-found">Command not found</a></li><li><a href="#command-with-arguments-rejected">Command with arguments rejected</a></li><li><a href="#syntax-error-on-a-correct-line">Syntax error on a correct line</a></li><li><a href="#unknown-setting">Unknown setting</a></li><li><a href="#program-found-but-does-not-launch">Program found but does not launch</a></li><li><a href="#startup-application-does-not-restart">Startup application does not restart</a></li><li><a href="#empty-workspaces-remain-visible">Empty workspaces remain visible</a></li></ul></nav>
+<article><h2 id="command-not-found">Command not found</h2>
+<p>Check spelling, installation, and Raven’s PATH. Shell aliases are not executable files. If foote was a typo for foot:</p>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.commands { terminal = { &quot;foot&quot; } }</code></pre><p class="copy-status" role="status"></p></div>
+<h2 id="command-with-arguments-rejected">Command with arguments rejected</h2>
+<p>Arguments must be separate entries. Replace { &quot;rofi -show drun&quot; } with:</p>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.commands { launcher = { &quot;rofi&quot;, &quot;-show&quot;, &quot;drun&quot; } }</code></pre><p class="copy-status" role="status"></p></div>
+<h2 id="syntax-error-on-a-correct-line">Syntax error on a correct line</h2>
+<p>Check the preceding lines for missing commas, unmatched braces or quotes, and stray text. Lua can report where it detects the problem rather than where the mistake began. Raven may suggest an earlier line after checking a temporary correction; it never edits your file.</p>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.appearance {
+    border = {
+        width = 2, -- comma required before the next entry
+        active = &quot;#228B22&quot;,
+    },
+}</code></pre><p class="copy-status" role="status"></p></div>
+<h2 id="unknown-setting">Unknown setting</h2>
+<p>Setting names must match exactly. For example, use width rather than widht. The error lists the allowed names.</p>
+<h2 id="program-found-but-does-not-launch">Program found but does not launch</h2>
+<p>Run the command in a terminal to inspect its error. It may have invalid arguments or missing dependencies. Raven’s executable check does not verify everything a program or wrapper does.</p>
+<h2 id="startup-application-does-not-restart">Startup application does not restart</h2>
+<p>Startup applications run once per session. Changes to their list apply next session.</p>
+<h2 id="empty-workspaces-remain-visible">Empty workspaces remain visible</h2>
+<p>Set ignore-hidden to true in Waybar’s ext/workspaces module to honor Raven’s visibility hints.</p>
+<p class="related">See also: <a href="commands.html">Command configuration</a> · <a href="syntax.html">Basic syntax</a> · <a href="reload.html">Reloading</a></p></article>
+<nav class="pagination" aria-label="Adjacent pages"><a href="reload.html">Previous: Reloading</a></nav>
+<footer>Edit ~/.config/raven/raven.lua and save to apply changes.</footer>
+</main>
+</body>
+</html>

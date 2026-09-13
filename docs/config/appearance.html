@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Appearance · Raven configuration</title>
+<link rel="stylesheet" href="assets/styles.css">
+<script defer src="assets/handbook.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<aside class="rail">
+<a class="brand" href="index.html">RAVEN<span>Configuration handbook</span></a>
+
+<details class="contents" open><summary>Browse the handbook</summary>
+<div class="section-search" hidden><label for="section-search">Find a section</label><input id="section-search" type="search" placeholder="Try rofi, colors, errors" autocomplete="off"></div>
+<nav aria-label="Handbook sections"><ol id="sections"><li data-keywords="setup file quickstart home"><a href="index.html">Configuration</a></li><li data-keywords="syntax comma quotes table beginner"><a href="syntax.html">Basic syntax</a></li><li data-keywords="rofi foot foote fuzzel terminal launcher drun argv"><a href="commands.html">Terminal and launcher</a></li><li data-keywords="keys shortcuts super shift ctrl actions vt"><a href="bindings.html">Keybindings</a></li><li data-keywords="waybar awww wallpaper cwd env session"><a href="startup.html">Startup applications</a></li><li data-keywords="appearance colors green border width animation resize gaps"><a href="appearance.html" aria-current="page">Appearance</a></li><li data-keywords="cursor adwaita xcursor pointer size"><a href="cursor.html">Cursor</a></li><li data-keywords="workspace waybar persistent occupied hidden panel"><a href="workspaces.html">Workspaces</a></li><li data-keywords="reload save rollback copy error last startup"><a href="reload.html">Reloading</a></li><li data-keywords="error mistakes rofi foote comma syntax line startup csd"><a href="troubleshooting.html">Troubleshooting</a></li></ol><p id="search-status" role="status"></p></nav>
+</details>
+<p class="rail-foot">Local documentation<br>No network required</p>
+</aside>
+<main id="main" tabindex="-1">
+<header><p class="eyebrow"><a href="index.html">Raven configuration</a></p><h1>Appearance</h1><p class="intro">raven.appearance controls tiled-window gaps and window borders. Sizes use logical pixels.</p></header>
+<nav class="page-toc" aria-label="On this page"><strong>Contents</strong><ul><li><a href="#configuration">Configuration</a></li><li><a href="#per-axis-and-per-edge-gaps">Per-axis and per-edge gaps</a></li><li><a href="#resize-animation">Resize animation</a></li></ul></nav>
+<article><h2 id="configuration">Configuration</h2>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.appearance {
+    inner = 8,
+    outer = 8,
+    border = {
+        width = 2,
+        active = &quot;#228B22&quot;,
+        inactive = &quot;#355E3B&quot;,
+    },
+}</code></pre><p class="copy-status" role="status"></p></div>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Appearance options"><table><caption>Appearance options</caption><thead><tr><th scope="col">Option</th><th scope="col">Description</th></tr></thead><tbody><tr><td>inner</td><td>Gap between tiled windows. Default: 8.</td></tr><tr><td>outer</td><td>Gap around the tiling area. Default: 8.</td></tr><tr><td>border.width</td><td>Border thickness. Default: 2. Use 0 to disable.</td></tr><tr><td>border.active</td><td>Focused-window border color.</td></tr><tr><td>border.inactive</td><td>Unfocused-window border color.</td></tr></tbody></table></div>
+<p>Gap and border widths accept whole numbers from 0 to 65535, constrained to fit the screen. Colors use #RRGGBB or #RRGGBBAA. Fullscreen windows have no gaps or border.</p>
+<h2 id="per-axis-and-per-edge-gaps">Per-axis and per-edge gaps</h2>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.appearance {
+    inner = { horizontal = 8, vertical = 12 },
+    outer = { top = 8, right = 12, bottom = 8, left = 12 },
+}</code></pre><p class="copy-status" role="status"></p></div>
+<h2 id="resize-animation">Resize animation</h2>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.animations { resize_ms = 200 }</code></pre><p class="copy-status" role="status"></p></div>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Animation options"><table><caption>Animation options</caption><thead><tr><th scope="col">Option</th><th scope="col">Default</th><th scope="col">Description</th></tr></thead><tbody><tr><td>resize_ms</td><td>200</td><td>Duration in milliseconds, from 0 to 2000. Set 0 to disable the visual animation.</td></tr></tbody></table></div></article>
+<nav class="pagination" aria-label="Adjacent pages"><a href="startup.html">Previous: Startup applications</a><a href="cursor.html">Next: Cursor</a></nav>
+<footer>Edit ~/.config/raven/raven.lua and save to apply changes.</footer>
+</main>
+</body>
+</html>

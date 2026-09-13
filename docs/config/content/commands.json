@@ -1,0 +1,90 @@
+{
+  "nav": "Terminal and launcher",
+  "title": "Terminal and launcher",
+  "intro": "raven.commands sets the programs used by the terminal and launcher actions.",
+  "keywords": [
+    "rofi",
+    "foot",
+    "foote",
+    "fuzzel",
+    "terminal",
+    "launcher",
+    "drun",
+    "argv"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Configuration"
+    },
+    {
+      "type": "code",
+      "text": "raven.commands {\n    terminal = { \"foot\" },\n    launcher = { \"rofi\", \"-show\", \"drun\" },\n}",
+      "language": "Lua"
+    },
+    {
+      "type": "table",
+      "label": "Command options",
+      "headers": [
+        "Option",
+        "Default",
+        "Description"
+      ],
+      "rows": [
+        [
+          "terminal",
+          "{ \"foot\" }",
+          "Terminal command. Bound to Super+Q by default."
+        ],
+        [
+          "launcher",
+          "{ \"fuzzel\" }",
+          "Launcher command. Bound to Super+D by default."
+        ]
+      ]
+    },
+    {
+      "type": "heading",
+      "text": "Arguments"
+    },
+    {
+      "type": "text",
+      "text": "Use one list entry per argument. Keep spaces within an argument in the same string."
+    },
+    {
+      "type": "code",
+      "text": "raven.commands {\n    terminal = { \"foot\", \"--title\", \"My terminal\" },\n    launcher = { \"rofi\", \"-show\", \"drun\" },\n}",
+      "language": "Lua"
+    },
+    {
+      "type": "note",
+      "title": "Note",
+      "text": "{ \"rofi -show drun\" } is a single executable name, not a command with arguments."
+    },
+    {
+      "type": "heading",
+      "text": "Executable lookup"
+    },
+    {
+      "type": "text",
+      "text": "Names are searched in Raven’s PATH. A name containing / is used as a path; relative paths start from Raven’s working directory. Shell aliases, ~, $HOME, and pipes are not expanded."
+    },
+    {
+      "type": "text",
+      "text": "A missing or non-executable terminal or launcher rejects the reload. This check does not run the program or verify its arguments, dependencies, or wrapper commands."
+    },
+    {
+      "type": "links",
+      "items": [
+        [
+          "bindings.html",
+          "Keybindings"
+        ],
+        [
+          "troubleshooting.html#command-not-found",
+          "Command not found"
+        ]
+      ]
+    }
+  ]
+}

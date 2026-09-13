@@ -1,0 +1,77 @@
+{
+  "nav": "Startup applications",
+  "title": "Startup applications",
+  "intro": "raven.startup replaces the list of applications launched at session startup.",
+  "keywords": [
+    "waybar",
+    "awww",
+    "wallpaper",
+    "cwd",
+    "env",
+    "session"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Configuration"
+    },
+    {
+      "type": "code",
+      "text": "raven.startup {\n    { \"waybar\" },\n    { \"awww-daemon\" },\n}",
+      "language": "Lua"
+    },
+    {
+      "type": "text",
+      "text": "The default list contains Waybar. Saving changes does not start, restart, or stop these applications; the list runs once next session. A missing startup program does not stop the other entries."
+    },
+    {
+      "type": "heading",
+      "text": "Entry options"
+    },
+    {
+      "type": "code",
+      "text": "raven.startup {\n    { \"waybar\" },\n    {\n        argv = { \"foot\", \"--title\", \"Notes\" },\n        cwd = raven.env(\"HOME\"),\n        env = { EDITOR = \"nvim\" },\n    },\n}",
+      "language": "Lua"
+    },
+    {
+      "type": "table",
+      "label": "Startup entry options",
+      "headers": [
+        "Field",
+        "Description"
+      ],
+      "rows": [
+        [
+          "argv",
+          "Executable followed by separate arguments. Required in the expanded form."
+        ],
+        [
+          "cwd",
+          "Working directory. Defaults to Raven’s working directory."
+        ],
+        [
+          "env",
+          "Environment overrides for this application. Raven controls display routing."
+        ]
+      ]
+    },
+    {
+      "type": "heading",
+      "text": "Disabling startup applications"
+    },
+    {
+      "type": "code",
+      "text": "raven.startup {}",
+      "language": "Lua"
+    },
+    {
+      "type": "links",
+      "items": [
+        [
+          "commands.html#arguments",
+          "Command arguments"
+        ]
+      ]
+    }
+  ]
+}

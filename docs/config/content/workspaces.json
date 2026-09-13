@@ -1,0 +1,62 @@
+{
+  "nav": "Workspaces",
+  "title": "Workspaces",
+  "intro": "raven.workspaces controls panel visibility hints. It does not change the ten-workspace count.",
+  "keywords": [
+    "workspace",
+    "waybar",
+    "persistent",
+    "occupied",
+    "hidden",
+    "panel"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Configuration"
+    },
+    {
+      "type": "code",
+      "text": "raven.workspaces {\n    show = \"occupied\",\n    persistent = { 1, 2, 3, 4, 5 },\n}",
+      "language": "Lua"
+    },
+    {
+      "type": "table",
+      "label": "Workspace options",
+      "headers": [
+        "Option",
+        "Default",
+        "Description"
+      ],
+      "rows": [
+        [
+          "show",
+          "\"occupied\"",
+          "\"occupied\" shows occupied, active, and persistent workspaces. \"all\" shows all ten."
+        ],
+        [
+          "persistent",
+          "{}",
+          "Workspace numbers from 1 to 10 that remain visible when empty."
+        ]
+      ]
+    },
+    {
+      "type": "heading",
+      "text": "Show all workspaces"
+    },
+    {
+      "type": "code",
+      "text": "raven.workspaces { show = \"all\" }",
+      "language": "Lua"
+    },
+    {
+      "type": "heading",
+      "text": "Waybar"
+    },
+    {
+      "type": "text",
+      "text": "Use the ext/workspaces module with ignore-hidden set to true. With false, Waybar shows all ten regardless of Raven’s hints. Raven does not edit the Waybar configuration."
+    }
+  ]
+}

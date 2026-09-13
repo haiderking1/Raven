@@ -3,6 +3,7 @@ mod activation;
 mod binding;
 mod dispatch;
 mod refresh;
+mod settings;
 #[cfg(test)]
 mod tests;
 mod visibility;
@@ -26,6 +27,7 @@ pub(crate) struct WorkspaceProtocol {
     subscriptions: Vec<Subscription>,
     last_states: Option<[Flags; COUNT]>,
     persistent: [bool; COUNT],
+    show_all: bool,
     last_output: Option<smithay::output::Output>,
     outputs_dirty: bool,
     deferred: Option<activation::Deferred>,
@@ -51,16 +53,16 @@ impl WorkspaceProtocol {
         self.outputs_dirty = true;
     }
 
-    pub(crate) fn new(display: &DisplayHandle) -> std::io::Result<Self> {
-        let persistent = visibility::persistent_from_env()?;
-        Ok(Self {
+    pub(crate) fn new(display: &DisplayHandle) -> Self {
+        Self {
             _global: display.create_global::<crate::state::State, ExtWorkspaceManagerV1, _>(1, ()),
             subscriptions: Vec::new(),
             last_states: None,
-            persistent,
+            persistent: [false; COUNT],
+            show_all: false,
             last_output: None,
             outputs_dirty: true,
             deferred: None,
-        })
+        }
     }
 }

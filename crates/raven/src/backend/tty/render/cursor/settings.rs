@@ -1,6 +1,7 @@
 use std::{env, io};
 
-pub(super) struct Settings {
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Settings {
     pub theme: String,
     pub size: u32,
 }

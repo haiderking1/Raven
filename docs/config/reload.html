@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Reloading · Raven configuration</title>
+<link rel="stylesheet" href="assets/styles.css">
+<script defer src="assets/handbook.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<aside class="rail">
+<a class="brand" href="index.html">RAVEN<span>Configuration handbook</span></a>
+
+<details class="contents" open><summary>Browse the handbook</summary>
+<div class="section-search" hidden><label for="section-search">Find a section</label><input id="section-search" type="search" placeholder="Try rofi, colors, errors" autocomplete="off"></div>
+<nav aria-label="Handbook sections"><ol id="sections"><li data-keywords="setup file quickstart home"><a href="index.html">Configuration</a></li><li data-keywords="syntax comma quotes table beginner"><a href="syntax.html">Basic syntax</a></li><li data-keywords="rofi foot foote fuzzel terminal launcher drun argv"><a href="commands.html">Terminal and launcher</a></li><li data-keywords="keys shortcuts super shift ctrl actions vt"><a href="bindings.html">Keybindings</a></li><li data-keywords="waybar awww wallpaper cwd env session"><a href="startup.html">Startup applications</a></li><li data-keywords="appearance colors green border width animation resize gaps"><a href="appearance.html">Appearance</a></li><li data-keywords="cursor adwaita xcursor pointer size"><a href="cursor.html">Cursor</a></li><li data-keywords="workspace waybar persistent occupied hidden panel"><a href="workspaces.html">Workspaces</a></li><li data-keywords="reload save rollback copy error last startup"><a href="reload.html" aria-current="page">Reloading</a></li><li data-keywords="error mistakes rofi foote comma syntax line startup csd"><a href="troubleshooting.html">Troubleshooting</a></li></ol><p id="search-status" role="status"></p></nav>
+</details>
+<p class="rail-foot">Local documentation<br>No network required</p>
+</aside>
+<main id="main" tabindex="-1">
+<header><p class="eyebrow"><a href="index.html">Raven configuration</a></p><h1>Reloading</h1><p class="intro">Saving raven.lua reloads the configuration. Super+Shift+R requests a reload by default.</p></header>
+<nav class="page-toc" aria-label="On this page"><strong>Contents</strong><ul><li><a href="#application">Application</a></li><li><a href="#errors">Errors</a></li><li><a href="#initial-configuration">Initial configuration</a></li></ul></nav>
+<article><h2 id="application">Application</h2>
+<p>Valid changes apply together after active window drags and resize/fullscreen transactions finish. Omitted options return to defaults. Startup applications are not relaunched.</p>
+<h2 id="errors">Errors</h2>
+<p>An invalid reload leaves the working settings active. Fix the file and save again. The error window closes after a successful reload; Close or Escape dismisses it without changing settings. Copy error includes the report and technical details.</p>
+<h2 id="initial-configuration">Initial configuration</h2>
+<p>If the initial configuration is invalid, Raven starts with built-in defaults and displays the error. Deleting the file during a session is an error, not a reset.</p>
+<p class="related">See also: <a href="startup.html">Startup applications</a> · <a href="troubleshooting.html">Troubleshooting</a></p></article>
+<nav class="pagination" aria-label="Adjacent pages"><a href="workspaces.html">Previous: Workspaces</a><a href="troubleshooting.html">Next: Troubleshooting</a></nav>
+<footer>Edit ~/.config/raven/raven.lua and save to apply changes.</footer>
+</main>
+</body>
+</html>

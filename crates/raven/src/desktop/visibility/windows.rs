@@ -9,7 +9,9 @@ impl State {
         window.alive()
             && self.space().element_location(window).is_some()
             && self.fullscreen_window().is_none_or(|owner| {
-                owner == window || self.fullscreen_transient_depth(window).is_some()
+                owner == window
+                    || self.fullscreen_transient_depth(window).is_some()
+                    || self.is_configuration_error(window)
             })
     }
 
@@ -24,7 +26,14 @@ impl State {
                     .filter(|window| self.window_is_visible(window)),
             );
             // Stable sorting retains Space order among siblings at the same depth.
-            windows.sort_by_key(|window| self.fullscreen_transient_depth(window).unwrap_or(0));
+            // Only our private error-client connection can appear above fullscreen
+            // without a parent. App IDs, titles, and ordinary clients confer no privilege.
+            windows.sort_by_key(|window| {
+                (
+                    self.is_configuration_error(window),
+                    self.fullscreen_transient_depth(window).unwrap_or(0),
+                )
+            });
         }
         // The ordinary floating stack is repaired on lifecycle/focus changes.
         // Both layout tiers stay borrowed on pointer motion and normal rendering.

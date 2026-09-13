@@ -1,8 +1,10 @@
 use crate::state::State;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(super) enum Action {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Action {
     Quit,
+    ReloadConfig,
+    Spawn(Vec<std::ffi::OsString>),
     CancelWindowDrag,
     SwitchVt(i32),
     LaunchTerminal,
@@ -16,9 +18,15 @@ pub(super) enum Action {
 
 impl Action {
     pub(super) fn execute(self, state: &mut State) {
+        if self == Self::ReloadConfig {
+            state.config.request_reload();
+            return;
+        }
         // A workspace/fullscreen/VT shortcut must not act through a move grab.
         state.cancel_window_drag();
         match self {
+            Self::ReloadConfig => unreachable!(),
+            Self::Spawn(argv) => launch(state, &argv),
             Self::CancelWindowDrag => state.cancel_window_drag(),
             Self::CloseWindow => state.close_focused_window(),
             Self::ToggleFullscreen => state.toggle_fullscreen(),
@@ -37,19 +45,21 @@ impl Action {
                 }
             }
             Self::LaunchTerminal | Self::LaunchFuzzel => {
-                let program = if self == Self::LaunchTerminal {
-                    "foot"
+                let argv = if self == Self::LaunchTerminal {
+                    state.config.settings.terminal.clone()
                 } else {
-                    "fuzzel"
+                    state.config.settings.launcher.clone()
                 };
-                let Some(clients) = state.clients.as_mut() else {
-                    eprintln!("raven: cannot launch {program} before the Wayland socket is ready");
-                    return;
-                };
-                if let Err(error) = clients.spawn(&[program.into()]) {
-                    eprintln!("raven: {error}");
-                }
+                launch(state, &argv);
             }
+        }
+    }
+}
+
+fn launch(state: &mut State, argv: &[std::ffi::OsString]) {
+    if let Some(clients) = state.clients.as_mut() {
+        if let Err(error) = clients.spawn(argv) {
+            eprintln!("raven: {error}");
         }
     }
 }

@@ -1,0 +1,106 @@
+{
+  "nav": "Troubleshooting",
+  "title": "Troubleshooting",
+  "intro": "Common configuration errors and their fixes.",
+  "keywords": [
+    "error",
+    "mistakes",
+    "rofi",
+    "foote",
+    "comma",
+    "syntax",
+    "line",
+    "startup",
+    "csd"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Command not found"
+    },
+    {
+      "type": "text",
+      "text": "Check spelling, installation, and Raven’s PATH. Shell aliases are not executable files. If foote was a typo for foot:"
+    },
+    {
+      "type": "code",
+      "text": "raven.commands { terminal = { \"foot\" } }",
+      "language": "Lua"
+    },
+    {
+      "type": "heading",
+      "text": "Command with arguments rejected"
+    },
+    {
+      "type": "text",
+      "text": "Arguments must be separate entries. Replace { \"rofi -show drun\" } with:"
+    },
+    {
+      "type": "code",
+      "text": "raven.commands { launcher = { \"rofi\", \"-show\", \"drun\" } }",
+      "language": "Lua"
+    },
+    {
+      "type": "heading",
+      "text": "Syntax error on a correct line"
+    },
+    {
+      "type": "text",
+      "text": "Check the preceding lines for missing commas, unmatched braces or quotes, and stray text. Lua can report where it detects the problem rather than where the mistake began. Raven may suggest an earlier line after checking a temporary correction; it never edits your file."
+    },
+    {
+      "type": "code",
+      "text": "raven.appearance {\n    border = {\n        width = 2, -- comma required before the next entry\n        active = \"#228B22\",\n    },\n}",
+      "language": "Lua"
+    },
+    {
+      "type": "heading",
+      "text": "Unknown setting"
+    },
+    {
+      "type": "text",
+      "text": "Setting names must match exactly. For example, use width rather than widht. The error lists the allowed names."
+    },
+    {
+      "type": "heading",
+      "text": "Program found but does not launch"
+    },
+    {
+      "type": "text",
+      "text": "Run the command in a terminal to inspect its error. It may have invalid arguments or missing dependencies. Raven’s executable check does not verify everything a program or wrapper does."
+    },
+    {
+      "type": "heading",
+      "text": "Startup application does not restart"
+    },
+    {
+      "type": "text",
+      "text": "Startup applications run once per session. Changes to their list apply next session."
+    },
+    {
+      "type": "heading",
+      "text": "Empty workspaces remain visible"
+    },
+    {
+      "type": "text",
+      "text": "Set ignore-hidden to true in Waybar’s ext/workspaces module to honor Raven’s visibility hints."
+    },
+    {
+      "type": "links",
+      "items": [
+        [
+          "commands.html",
+          "Command configuration"
+        ],
+        [
+          "syntax.html",
+          "Basic syntax"
+        ],
+        [
+          "reload.html",
+          "Reloading"
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+{
+  "nav": "Keybindings",
+  "title": "Keybindings",
+  "intro": "raven.bind assigns an action to a key combination. Reusing a combination replaces its binding.",
+  "keywords": [
+    "keys",
+    "shortcuts",
+    "super",
+    "shift",
+    "ctrl",
+    "actions",
+    "vt"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Binding"
+    },
+    {
+      "type": "code",
+      "text": "raven.bind(\"Super+Return\", \"terminal\")\nraven.bind(\"Super+E\", { spawn = { \"nautilus\", \"--new-window\" } })",
+      "language": "Lua"
+    },
+    {
+      "type": "text",
+      "text": "Combine Super, Shift, Ctrl, and Alt with +. Key names include Return, space, F2, plus, and XF86AudioRaiseVolume. Use an unshifted key name with an explicit Shift modifier."
+    },
+    {
+      "type": "heading",
+      "text": "Actions"
+    },
+    {
+      "type": "table",
+      "label": "Binding actions",
+      "headers": [
+        "Action",
+        "Argument",
+        "Effect"
+      ],
+      "rows": [
+        [
+          "terminal / launcher",
+          "None",
+          "Run the configured terminal or launcher."
+        ],
+        [
+          "close",
+          "None",
+          "Close the focused window."
+        ],
+        [
+          "fullscreen / floating",
+          "None",
+          "Toggle the focused window’s mode."
+        ],
+        [
+          "quit",
+          "None",
+          "Exit Raven."
+        ],
+        [
+          "reload",
+          "None",
+          "Reload the configuration."
+        ],
+        [
+          "workspace",
+          "1 to 10",
+          "Switch workspace."
+        ],
+        [
+          "move_to_workspace",
+          "1 to 10",
+          "Move the focused window."
+        ],
+        [
+          "vt",
+          "1 to 12",
+          "Switch virtual terminal."
+        ],
+        [
+          "{ spawn = { ... } }",
+          "Executable and arguments",
+          "Launch a command. Not preflight-checked on reload."
+        ]
+      ]
+    },
+    {
+      "type": "code",
+      "text": "raven.bind(\"Super+2\", \"workspace\", 2)\nraven.bind(\"Super+Shift+2\", \"move_to_workspace\", 2)\nraven.bind(\"Ctrl+Alt+F2\", \"vt\", 2)",
+      "language": "Lua"
+    },
+    {
+      "type": "heading",
+      "text": "Removing bindings"
+    },
+    {
+      "type": "code",
+      "text": "raven.unbind(\"Super+Q\")",
+      "language": "Lua"
+    },
+    {
+      "type": "text",
+      "text": "Other bindings remain unchanged. raven.clear_bindings() removes every configured binding, including quit and VT switching; add any required recovery bindings afterward."
+    },
+    {
+      "type": "heading",
+      "text": "Defaults"
+    },
+    {
+      "type": "table",
+      "label": "Default keybindings",
+      "headers": [
+        "Keys",
+        "Action"
+      ],
+      "rows": [
+        [
+          "Super+Q / Super+D",
+          "Terminal / launcher"
+        ],
+        [
+          "Super+C",
+          "Close"
+        ],
+        [
+          "Super+F / Super+V",
+          "Fullscreen / floating"
+        ],
+        [
+          "Super+Shift+Q",
+          "Quit"
+        ],
+        [
+          "Super+Shift+R",
+          "Reload"
+        ],
+        [
+          "Super+1 through Super+9, Super+0",
+          "Workspaces 1 through 10"
+        ],
+        [
+          "Super+Shift+1 through Super+Shift+9, Super+Shift+0",
+          "Move to workspace 1 through 10"
+        ],
+        [
+          "Ctrl+Alt+F1 through F12",
+          "Switch virtual terminal"
+        ],
+        [
+          "Escape during a window drag",
+          "Cancel drag"
+        ]
+      ]
+    },
+    {
+      "type": "links",
+      "items": [
+        [
+          "commands.html",
+          "Terminal and launcher"
+        ]
+      ]
+    }
+  ]
+}

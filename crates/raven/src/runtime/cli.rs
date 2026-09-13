@@ -11,6 +11,7 @@ pub(super) fn parse(
                 "Raven direct-TTY Wayland compositor
 
 Usage: raven [-- COMMAND [ARG...]]
+       raven --check-config [path]
 
 Run as your normal login user on an active Linux VT.
 Device access requires logind or seatd; do not run as root.
@@ -18,7 +19,9 @@ Device access requires logind or seatd; do not run as root.
 Super+Shift+Q    Exit Raven and return to the TTY
 Ctrl+Alt+F1..F12 Switch virtual terminal
 
-Waybar starts once per Raven session, including when COMMAND is provided.
+Settings load from $XDG_CONFIG_HOME/raven/raven.lua, or ~/.config/raven/raven.lua.
+Saving the file reloads settings; Super+Shift+R reloads manually by default.
+Startup entries run once per session. The default configuration starts Waybar.
 Startup failures are logged and do not stop Raven or other startup entries.
 Optional COMMAND launches in addition, with Raven's WAYLAND_DISPLAY.
 Arguments are passed literally, without shell parsing.

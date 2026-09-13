@@ -1,5 +1,8 @@
 mod frames;
 mod paint;
+mod prepared;
+pub(crate) use prepared::PreparedCursor;
+pub use settings::Settings as CursorSettings;
 mod settings;
 mod theme;
 
@@ -20,27 +23,21 @@ pub(in crate::backend::tty) struct Cursors {
 
 impl Cursors {
     pub fn new() -> io::Result<Self> {
-        let settings = Settings::from_env()?;
-        let theme = CursorTheme::load(&settings.theme);
-        let fallback = Rc::new(
-            theme::load(&theme, CursorIcon::Default, settings.size, settings.size).map_err(
-                |error| {
-                    io::Error::new(
-                        error.kind(),
-                        format!("cannot load cursor theme {:?}: {error}", settings.theme),
-                    )
-                },
-            )?,
-        );
-        let cache = HashMap::from([((CursorIcon::Default, settings.size), fallback.clone())]);
-        Ok(Self {
-            theme,
-            size: settings.size,
+        Ok(Self::prepared(PreparedCursor::load(Settings::from_env()?)?))
+    }
+
+    pub fn prepared(prepared: PreparedCursor) -> Self {
+        let fallback = Rc::new(prepared.fallback);
+        let size = prepared.settings.size;
+        let cache = HashMap::from([((CursorIcon::Default, size), fallback.clone())]);
+        Self {
+            theme: prepared.theme,
+            size,
             cache,
             fallback,
             active: None,
             deadline: None,
-        })
+        }
     }
 
     pub fn suspend(&mut self) {

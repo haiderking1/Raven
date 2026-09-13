@@ -21,9 +21,9 @@ workspace handles are not window handles.
 ## Workspace display choices
 
 By default, Waybar shows occupied workspaces and the active workspace. Use
-`"ignore-hidden": false` in `ext/workspaces` to show all ten, or set
-`RAVEN_WORKSPACE_PERSISTENT=1,2,3,4,5` when launching Raven to keep selected
-workspaces visible even when empty. See [visibility settings](visibility/README.md)
+`"ignore-hidden": false` in `ext/workspaces` to show all ten, or configure
+`raven.workspaces { show = "occupied", persistent = { 1, 2, 3, 4, 5 } }`
+in raven.lua to keep selected workspaces visible even when empty. See [visibility settings](visibility/README.md)
 for details. These settings do not change workspace count or shortcuts.
 
 ## Published state

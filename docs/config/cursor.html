@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Cursor · Raven configuration</title>
+<link rel="stylesheet" href="assets/styles.css">
+<script defer src="assets/handbook.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<aside class="rail">
+<a class="brand" href="index.html">RAVEN<span>Configuration handbook</span></a>
+
+<details class="contents" open><summary>Browse the handbook</summary>
+<div class="section-search" hidden><label for="section-search">Find a section</label><input id="section-search" type="search" placeholder="Try rofi, colors, errors" autocomplete="off"></div>
+<nav aria-label="Handbook sections"><ol id="sections"><li data-keywords="setup file quickstart home"><a href="index.html">Configuration</a></li><li data-keywords="syntax comma quotes table beginner"><a href="syntax.html">Basic syntax</a></li><li data-keywords="rofi foot foote fuzzel terminal launcher drun argv"><a href="commands.html">Terminal and launcher</a></li><li data-keywords="keys shortcuts super shift ctrl actions vt"><a href="bindings.html">Keybindings</a></li><li data-keywords="waybar awww wallpaper cwd env session"><a href="startup.html">Startup applications</a></li><li data-keywords="appearance colors green border width animation resize gaps"><a href="appearance.html">Appearance</a></li><li data-keywords="cursor adwaita xcursor pointer size"><a href="cursor.html" aria-current="page">Cursor</a></li><li data-keywords="workspace waybar persistent occupied hidden panel"><a href="workspaces.html">Workspaces</a></li><li data-keywords="reload save rollback copy error last startup"><a href="reload.html">Reloading</a></li><li data-keywords="error mistakes rofi foote comma syntax line startup csd"><a href="troubleshooting.html">Troubleshooting</a></li></ol><p id="search-status" role="status"></p></nav>
+</details>
+<p class="rail-foot">Local documentation<br>No network required</p>
+</aside>
+<main id="main" tabindex="-1">
+<header><p class="eyebrow"><a href="index.html">Raven configuration</a></p><h1>Cursor</h1><p class="intro">raven.cursor selects an installed raster Xcursor theme and its size.</p></header>
+<nav class="page-toc" aria-label="On this page"><strong>Contents</strong><ul><li><a href="#configuration">Configuration</a></li><li><a href="#theme-support">Theme support</a></li></ul></nav>
+<article><h2 id="configuration">Configuration</h2>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.cursor {
+    theme = &quot;Adwaita&quot;,
+    size = 24,
+}</code></pre><p class="copy-status" role="status"></p></div>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Cursor options"><table><caption>Cursor options</caption><thead><tr><th scope="col">Option</th><th scope="col">Default</th><th scope="col">Description</th></tr></thead><tbody><tr><td>theme</td><td>&quot;default&quot;</td><td>Installed Xcursor theme name. Theme inheritance and fallback apply.</td></tr><tr><td>size</td><td>24</td><td>Positive whole-number size in logical pixels.</td></tr></tbody></table></div>
+<h2 id="theme-support">Theme support</h2>
+<p>Theme and size reload together. If cursor preparation fails, the reload is rejected. SVG-only themes are not supported. Applications supplying their own cursor may render it differently.</p></article>
+<nav class="pagination" aria-label="Adjacent pages"><a href="appearance.html">Previous: Appearance</a><a href="workspaces.html">Next: Workspaces</a></nav>
+<footer>Edit ~/.config/raven/raven.lua and save to apply changes.</footer>
+</main>
+</body>
+</html>

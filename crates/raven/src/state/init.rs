@@ -56,7 +56,7 @@ impl State {
         let pointer_constraints_state = PointerConstraintsState::new::<Self>(&display_handle);
         let relative_pointer_state = RelativePointerManagerState::new::<Self>(&display_handle);
         let workspace_protocol =
-            crate::protocols::workspace::WorkspaceProtocol::new(&display_handle)?;
+            crate::protocols::workspace::WorkspaceProtocol::new(&display_handle);
         Ok(Self {
             display_handle,
             compositor_state,
@@ -82,6 +82,7 @@ impl State {
             loop_signal,
             pointer_location: (0.0, 0.0).into(),
             cursor_status: CursorImageStatus::default_named(),
+            config: Default::default(),
             backend: None,
             redraw_requested: false,
             input: Default::default(),

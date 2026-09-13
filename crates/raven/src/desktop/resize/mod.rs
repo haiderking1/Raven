@@ -13,6 +13,7 @@ mod readiness;
 mod release;
 mod role;
 mod runtime;
+mod settings;
 
 pub(crate) use role::apply as apply_role_state;
 

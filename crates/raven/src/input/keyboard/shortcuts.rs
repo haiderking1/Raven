@@ -12,6 +12,7 @@ use super::actions::Action;
 pub(in crate::input) struct Shortcuts {
     pressed: HashMap<Keycode, bool>,
     pub(super) dragging: bool,
+    pub(crate) bindings: super::Bindings,
 }
 
 impl Shortcuts {
@@ -40,7 +41,7 @@ impl Shortcuts {
                     {
                         Some(Action::CancelWindowDrag)
                     } else {
-                        shortcut(modifiers, symbols)
+                        self.bindings.action(modifiers, symbols)
                     };
                     self.pressed.insert(keycode, action.is_some());
                     action.is_some()
@@ -55,43 +56,9 @@ impl Shortcuts {
     }
 }
 
+#[cfg(test)]
 fn shortcut(modifiers: &ModifiersState, symbols: &[Keysym]) -> Option<Action> {
-    for symbol in symbols {
-        let symbol = symbol.raw();
-        if modifiers.logo && modifiers.shift && matches!(symbol, keysyms::KEY_q | keysyms::KEY_Q) {
-            return Some(Action::Quit);
-        }
-        if modifiers.logo && !modifiers.ctrl && !modifiers.alt {
-            // Raw symbols remain digits even when Shift is held.
-            let workspace = match symbol {
-                keysyms::KEY_1..=keysyms::KEY_9 => Some((symbol - keysyms::KEY_1) as usize),
-                keysyms::KEY_0 => Some(9),
-                _ => None,
-            };
-            if let Some(index) = workspace {
-                return Some(if modifiers.shift {
-                    Action::MoveToWorkspace(index)
-                } else {
-                    Action::SwitchWorkspace(index)
-                });
-            }
-        }
-        if modifiers.logo && !modifiers.shift && !modifiers.ctrl && !modifiers.alt {
-            match symbol {
-                keysyms::KEY_q | keysyms::KEY_Q => return Some(Action::LaunchTerminal),
-                keysyms::KEY_c | keysyms::KEY_C => return Some(Action::CloseWindow),
-                keysyms::KEY_f | keysyms::KEY_F => return Some(Action::ToggleFullscreen),
-                keysyms::KEY_v | keysyms::KEY_V => return Some(Action::ToggleFloating),
-                keysyms::KEY_d | keysyms::KEY_D => return Some(Action::LaunchFuzzel),
-                _ => {}
-            }
-        }
-        if modifiers.ctrl && modifiers.alt && (keysyms::KEY_F1..=keysyms::KEY_F12).contains(&symbol)
-        {
-            return Some(Action::SwitchVt((symbol - keysyms::KEY_F1 + 1) as i32));
-        }
-    }
-    None
+    super::Bindings::default().action(modifiers, symbols)
 }
 
 #[cfg(test)]

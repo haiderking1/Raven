@@ -1,0 +1,94 @@
+{
+  "nav": "Appearance",
+  "title": "Appearance",
+  "intro": "raven.appearance controls tiled-window gaps and window borders. Sizes use logical pixels.",
+  "keywords": [
+    "appearance",
+    "colors",
+    "green",
+    "border",
+    "width",
+    "animation",
+    "resize",
+    "gaps"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Configuration"
+    },
+    {
+      "type": "code",
+      "text": "raven.appearance {\n    inner = 8,\n    outer = 8,\n    border = {\n        width = 2,\n        active = \"#228B22\",\n        inactive = \"#355E3B\",\n    },\n}",
+      "language": "Lua"
+    },
+    {
+      "type": "table",
+      "label": "Appearance options",
+      "headers": [
+        "Option",
+        "Description"
+      ],
+      "rows": [
+        [
+          "inner",
+          "Gap between tiled windows. Default: 8."
+        ],
+        [
+          "outer",
+          "Gap around the tiling area. Default: 8."
+        ],
+        [
+          "border.width",
+          "Border thickness. Default: 2. Use 0 to disable."
+        ],
+        [
+          "border.active",
+          "Focused-window border color."
+        ],
+        [
+          "border.inactive",
+          "Unfocused-window border color."
+        ]
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Gap and border widths accept whole numbers from 0 to 65535, constrained to fit the screen. Colors use #RRGGBB or #RRGGBBAA. Fullscreen windows have no gaps or border."
+    },
+    {
+      "type": "heading",
+      "text": "Per-axis and per-edge gaps"
+    },
+    {
+      "type": "code",
+      "text": "raven.appearance {\n    inner = { horizontal = 8, vertical = 12 },\n    outer = { top = 8, right = 12, bottom = 8, left = 12 },\n}",
+      "language": "Lua"
+    },
+    {
+      "type": "heading",
+      "text": "Resize animation"
+    },
+    {
+      "type": "code",
+      "text": "raven.animations { resize_ms = 200 }",
+      "language": "Lua"
+    },
+    {
+      "type": "table",
+      "label": "Animation options",
+      "headers": [
+        "Option",
+        "Default",
+        "Description"
+      ],
+      "rows": [
+        [
+          "resize_ms",
+          "200",
+          "Duration in milliseconds, from 0 to 2000. Set 0 to disable the visual animation."
+        ]
+      ]
+    }
+  ]
+}

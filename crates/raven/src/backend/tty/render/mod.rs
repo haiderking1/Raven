@@ -1,7 +1,7 @@
 mod animation;
 mod borders;
 mod clipping;
-mod cursor;
+pub(super) mod cursor;
 mod desktop;
 mod dragging;
 mod layers;
@@ -41,9 +41,12 @@ pub(super) struct Scene {
 }
 
 impl Scene {
-    pub fn new() -> std::io::Result<Self> {
+    pub fn new(prepared: Option<cursor::PreparedCursor>) -> std::io::Result<Self> {
         Ok(Self {
-            cursor: cursor::Cursors::new()?,
+            cursor: match prepared {
+                Some(prepared) => cursor::Cursors::prepared(prepared),
+                None => cursor::Cursors::new()?,
+            },
             feedback: FeedbackDelivery::default(),
             elements: Vec::new(),
             animations: animation::Animations::default(),

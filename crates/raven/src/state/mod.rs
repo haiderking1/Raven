@@ -58,6 +58,7 @@ pub struct State {
     pub loop_signal: LoopSignal,
     pub pointer_location: Point<f64, Logical>,
     pub cursor_status: CursorImageStatus,
+    pub(crate) config: crate::runtime::config::Runtime,
     pub backend: Option<crate::backend::tty::TtyBackend>,
     pub(super) redraw_requested: bool,
     pub input: crate::input::InputState,

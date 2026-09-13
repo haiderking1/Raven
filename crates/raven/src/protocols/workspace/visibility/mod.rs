@@ -1,6 +1,3 @@
-mod config;
-pub(super) use config::persistent_from_env;
-
 use crate::{desktop::workspaces::COUNT, state::State};
 use smithay::{
     reexports::wayland_protocols::ext::workspace::v1::server::ext_workspace_handle_v1::State as Flags,
@@ -14,7 +11,8 @@ impl State {
         std::array::from_fn(|index| {
             if index == self.workspaces.active {
                 Flags::Active
-            } else if self.workspace_protocol.persistent[index]
+            } else if self.workspace_protocol.show_all
+                || self.workspace_protocol.persistent[index]
                 || self.workspaces.entries[index]
                     .space
                     .elements()

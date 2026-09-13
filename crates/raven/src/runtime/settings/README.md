@@ -1,36 +1,23 @@
 # Runtime settings
 
-runtime::settings::Settings owns startup, appearance and resize animation values. runtime::run uses
-the defaults; run_with_settings accepts another Settings value. Appearance is
-validated before backend acquisition and applied before any client launches.
-Startup validation preserves individual entry errors for nonfatal launch reports.
-Constructing values never starts processes or changes a live compositor.
+Settings is the shared typed model for Lua configuration and run_with_settings.
+It owns appearance, resize animation duration, keybindings, terminal/launcher
+argv, startup entries, cursor theme/size, and workspace visibility choices.
+Settings::validate checks values before application; cursor asset preparation
+is also required before a Lua candidate is published.
 
-The default startup command is waybar. An empty StartupPlan.entries disables it.
-Waybar reads its own normal configuration; Raven does not replace personal files.
-Use its ext/workspaces module for Raven workspace buttons. A minimal separate
-example is in protocols/workspace/examples/waybar.jsonc.
+Normal startup reads the [Lua configuration](../config/README.md) and starts its
+watcher. Programmatic run_with_settings does not read or overwrite the user file.
+Constructing settings never starts processes. Startup entries launch once after
+the Wayland socket and backend are ready; they do not run again on reload.
 
-Appearance defaults to 8 logical pixels for each gap and a 2-pixel border. Inner
-horizontal/vertical gaps, outer edges, border width, and active/inactive RGBA
-colors are independent. Appearance::disabled removes both spacing and borders.
-State::set_appearance validates atomically and updates the running layout without
-restarting startup commands. Fullscreen remains gapless and borderless.
+The default startup entry remains Waybar. Lua can replace that list with any
+commands, including an empty list. Raven never edits Waybar settings or chooses
+a wallpaper tool for the user.
 
-ResizeAnimations defaults to a 200-millisecond cubic ease-out.
-ResizeAnimations::from_millis accepts 0 through 2000 milliseconds; zero and
-ResizeAnimations::OFF disable visuals without disabling resize transactions.
-The duration is private, so a future Lua loader uses the same validated type.
+Appearance remains independently validated by State::set_appearance. Reloads
+wait for current resize/fullscreen transactions and drags to settle before
+applying a complete candidate. Invalid reloads preserve the active settings.
 
-Related documentation:
-
-- [Startup entries and child ownership](../startup/README.md)
-- [Appearance geometry, rendering and input](../../desktop/appearance/README.md)
-- [Coordinated resize transactions](../../desktop/resize/README.md)
-- [Snapshot resize animations](../../desktop/animation/README.md)
-- [Resize integration issue and build status](../../desktop/resize/integration/README.md)
-- [Waybar workspace protocol](../../protocols/workspace/README.md)
-- [Encountered issues and confirmation](../../protocols/workspace/bugs/README.md)
-
-These are the real runtime values a future Lua loader will produce. No Lua
-parser, user config file or reload binding is introduced by these settings.
+Frame scheduling, acquire fences, and presentation ownership are not part of
+this user-facing settings model.

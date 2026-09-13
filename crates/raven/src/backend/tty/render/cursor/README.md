@@ -7,23 +7,23 @@ aliases. No application-specific sizing rules or procedural arrow remain.
 
 ## Settings
 
-Raven reads these at backend startup, before acquiring the seat:
+Normal Raven sessions use the hot-reloaded Lua configuration:
 
-- XCURSOR_THEME selects an installed Xcursor theme. The default is "default",
-  which normally inherits the distribution's selected cursor theme.
-- XCURSOR_SIZE selects a positive integer size in logical pixels. The default is 24.
-- XCURSOR_PATH overrides theme search paths through the xcursor library.
-  Otherwise its standard user and system icon directories are searched.
-
-For example:
-
-```sh
-XCURSOR_THEME=Adwaita XCURSOR_SIZE=24 ./target/debug/raven
+```lua
+raven.cursor { theme = "Adwaita", size = 24 }
 ```
 
-Theme and size changes currently require restarting Raven. Raven does not modify
-GNOME settings, GTK files, Waybar settings, or client-provided cursor images.
-SVG-only cursor themes are not supported by this raster Xcursor loader.
+Theme and size reload together after asset validation. The default theme is
+"default", normally inheriting the distribution's cursor theme, and the default
+size is 24 logical pixels. Unchanged settings keep their cache and animation phase.
+XCURSOR_PATH still controls the xcursor library's search paths; otherwise its
+standard user and system icon directories are searched.
+
+Move older XCURSOR_THEME/XCURSOR_SIZE launch preferences into raven.lua. Raven
+does not modify GNOME settings, GTK files, Waybar settings, or client-provided
+cursor images. SVG-only themes are not supported by this raster Xcursor loader.
+
+See [Lua settings](../../../../runtime/config/reference.md).
 
 ## Loading and fallback
 

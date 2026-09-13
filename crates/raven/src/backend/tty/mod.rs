@@ -4,6 +4,7 @@
 //! calloop registration and replaces State's bootstrap seat if libseat names a
 //! different seat. Runtime device failures stop State's loop signal; inspect
 //! failure() after the loop to report a nonzero exit status.
+mod cursor_settings;
 mod device;
 mod dmabuf;
 mod events;
@@ -16,6 +17,8 @@ mod presentation;
 pub(crate) use presentation::QueuedFeedback as TestQueuedFeedback;
 mod redraw;
 mod render;
+pub use render::cursor::CursorSettings;
+pub(crate) use render::cursor::PreparedCursor;
 mod schedule;
 mod session;
 mod sources;
