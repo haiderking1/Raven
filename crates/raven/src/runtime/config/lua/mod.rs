@@ -1,6 +1,7 @@
 mod appearance;
 mod bindings;
 mod checked;
+mod input;
 mod limits;
 mod resources;
 mod session;
@@ -59,6 +60,7 @@ fn evaluate(source: &[u8], path: &Path, defaults: Settings) -> Result<Prepared, 
         bindings::install(&lua, &api, build.clone())?;
         session::install(&lua, &api, build.clone())?;
         resources::install(&lua, &api, build.clone())?;
+        input::install(&lua, &api, build.clone())?;
         let proxy = lua.create_table()?;
         let meta = lua.create_table()?;
         meta.set("__index", api)?;

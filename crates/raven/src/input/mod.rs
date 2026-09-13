@@ -1,6 +1,7 @@
 //! Input from the active libinput source. The backend suspends that source while
 //! the session is inactive; do not dispatch queued events from an inactive source.
 
+pub(crate) mod devices;
 mod keyboard;
 pub use keyboard::{Action, Bindings};
 mod pointer;
@@ -14,6 +15,8 @@ use crate::state::State;
 /// Persistent shortcut disposition and the last dispatched pointer target.
 #[derive(Debug, Default)]
 pub struct InputState {
+    pointer_buttons: pointer::Buttons<pointer::Source>,
+    pub(crate) virtual_pointer_epoch: u64,
     shortcuts: keyboard::Shortcuts,
     pointer_refresh: pointer::PointerRefresh,
     popup_click: Option<pointer::PopupClick>,
@@ -29,6 +32,11 @@ pub fn handle_event(event: InputEvent<LibinputInputBackend>, state: &mut State) 
         timing.observe_event(&event);
     }
     match event {
+        InputEvent::DeviceAdded { device } => state.input_device_added(device),
+        InputEvent::DeviceRemoved { device } => {
+            state.remove_physical_pointer(device.sysname());
+            state.input_device_removed(&device);
+        }
         InputEvent::Keyboard { event } => keyboard::handle(event, state),
         InputEvent::PointerMotion { event } => pointer::relative(event, state),
         InputEvent::PointerMotionAbsolute { event } => pointer::absolute(event, state),

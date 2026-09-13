@@ -34,4 +34,5 @@ pub(super) fn suspend(input: &mut Libinput, state: &mut State) {
             _ => {}
         }
     }
+    state.suspend_pointer_input();
 }

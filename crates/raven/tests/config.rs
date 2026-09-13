@@ -5,3 +5,5 @@ mod support;
 
 #[path = "config/commands.rs"]
 mod commands;
+#[path = "config/input.rs"]
+mod input;

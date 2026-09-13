@@ -55,6 +55,7 @@ pub(super) fn install(
         device: Some(device),
         session,
         input: Some(input),
+        input_devices: Default::default(),
         scene,
         schedule: Schedule::with_policy(refresh, Instant::now(), policy),
         deferred_recovery: None,
@@ -92,7 +93,10 @@ fn replace_bootstrap_seat(state: &mut State, name: &str) -> Result<(), Box<dyn E
         return Ok(());
     }
     let mut seat = state.seat_state.new_wl_seat(&state.display_handle, name);
-    if let Err(error) = seat.add_keyboard(Default::default(), 400, 25) {
+    let repeat = state.config.settings.input.keyboard;
+    if let Err(error) =
+        seat.add_keyboard(Default::default(), repeat.repeat_delay, repeat.repeat_rate)
+    {
         if let Some(global) = seat.global() {
             state.display_handle.remove_global::<State>(global);
         }

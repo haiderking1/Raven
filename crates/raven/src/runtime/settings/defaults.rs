@@ -2,6 +2,7 @@ use super::*;
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            input: InputSettings::default(),
             appearance: Appearance::default(),
             resize_animations: ResizeAnimations::default(),
             startup: StartupPlan::default(),

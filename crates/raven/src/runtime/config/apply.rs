@@ -2,9 +2,10 @@ use super::{Prepared, Runtime};
 use crate::state::State;
 
 impl State {
-    pub(crate) fn apply_configuration(&mut self, prepared: Prepared) {
+    pub(crate) fn apply_configuration(&mut self, prepared: Prepared) -> Result<(), String> {
         // Candidate settings and cursor assets were validated before publication.
         let Prepared { settings, cursor } = prepared;
+        self.set_input_settings(settings.input)?;
         self.set_appearance(settings.appearance)
             .expect("validated appearance");
         self.set_resize_animations(settings.resize_animations);
@@ -20,6 +21,7 @@ impl State {
         self.config.settings = settings;
         self.config.dialog.close();
         self.request_redraw();
+        Ok(())
     }
 }
 
@@ -34,8 +36,13 @@ pub(crate) fn dispatch(state: &mut State) {
                 state.config.pending = Some(Ok(prepared));
                 return;
             }
-            state.apply_configuration(prepared);
-            eprintln!("raven: configuration reloaded");
+            match state.apply_configuration(prepared) {
+                Ok(()) => eprintln!("raven: configuration reloaded"),
+                Err(error) => {
+                    state.config.pending = Some(Err(error));
+                    dispatch(state);
+                }
+            }
         }
         Err(error) => {
             eprintln!("raven: configuration rejected: {error}");

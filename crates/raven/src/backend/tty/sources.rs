@@ -2,10 +2,8 @@ use super::{events, wake::Wake};
 use crate::state::State;
 use smithay::{
     backend::{
-        drm::DrmDeviceNotifier,
-        libinput::LibinputInputBackend,
-        session::{Session, libseat::LibSeatSessionNotifier},
-        udev::UdevBackend,
+        drm::DrmDeviceNotifier, libinput::LibinputInputBackend,
+        session::libseat::LibSeatSessionNotifier, udev::UdevBackend,
     },
     reexports::{
         calloop::{LoopHandle, RegistrationToken},
@@ -68,11 +66,11 @@ impl Sources {
         self.devices.push(
             self.handle
                 .insert_source(LibinputInputBackend::new(input), |event, _, state| {
-                    if state.backend.as_ref().is_some_and(|backend| {
-                        backend.failure.is_none()
-                            && backend.schedule.active()
-                            && backend.session.is_active()
-                    }) {
+                    if state
+                        .backend
+                        .as_ref()
+                        .is_some_and(|backend| backend.input_active())
+                    {
                         crate::input::handle_event(event, state);
                     }
                 })

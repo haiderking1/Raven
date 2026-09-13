@@ -50,7 +50,7 @@ fn run_session(settings: settings::Settings, use_file: bool) -> Result<(), Box<d
     let display = Display::<State>::new()?;
     let mut state = State::new(display.handle(), event_loop.get_signal())?;
     state.install_resize_transactions(event_loop.handle())?;
-    state.apply_configuration(prepared);
+    state.apply_configuration(prepared)?;
     let socket = wayland::install(display, event_loop.handle())?;
     // Capability detection and reservation finish before input/render installation.
     let mut clients = client::Clients::new(socket.clone());

@@ -51,3 +51,9 @@ end
 -- raven.unbind("Super+Q")
 -- raven.clear_bindings() -- removes all bindings, including quit and VT bindings
 -- raven.bind("Ctrl+Alt+F1", "vt", 1)
+
+-- Repeat delay is in milliseconds; rate is repeats per second.
+raven.input {
+    keyboard = { repeat_rate = 25, repeat_delay = 400 },
+    mouse = { accel_profile = "default" }, -- "flat" disables acceleration
+}

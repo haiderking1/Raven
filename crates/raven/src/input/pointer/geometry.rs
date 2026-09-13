@@ -18,6 +18,25 @@ pub(super) fn clamp(
         .into()
 }
 
+/// Map the client's coordinate extent onto an output's logical rectangle.
+pub(super) fn absolute(
+    x: u32,
+    y: u32,
+    x_extent: u32,
+    y_extent: u32,
+    bounds: Rectangle<i32, Logical>,
+) -> Option<Point<f64, Logical>> {
+    if x_extent == 0 || y_extent == 0 || bounds.size.w <= 0 || bounds.size.h <= 0 {
+        return None;
+    }
+    let offset: Point<f64, Logical> = (
+        f64::from(x) / f64::from(x_extent) * f64::from(bounds.size.w),
+        f64::from(y) / f64::from(y_extent) * f64::from(bounds.size.h),
+    )
+        .into();
+    Some(clamp(bounds.loc.to_f64() + offset, bounds))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

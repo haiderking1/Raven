@@ -12,5 +12,8 @@ mod seat;
 mod selection;
 mod shm;
 mod viewport;
+pub(crate) mod virtual_pointer;
+#[path = "virtual_pointer/routing.rs"]
+mod virtual_pointer_routing;
 pub(crate) mod workspace;
 mod xdg;

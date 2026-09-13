@@ -98,3 +98,30 @@ Persistent numbers can be any subset of 1 through 10. These settings do not
 change workspace count, identities, placement, or shortcut availability.
 Waybar's ext/workspaces must use ignore-hidden=true to honor Raven's Hidden hints;
 ignore-hidden=false still tells Waybar to show every workspace.
+
+## Input
+
+```lua
+raven.input {
+    keyboard = { repeat_rate = 30, repeat_delay = 300 },
+    mouse = { accel_profile = "flat" },
+}
+```
+
+Keyboard repeat rate accepts 0 to 1000 repeats per second, default 25. Use 0
+to disable repeat. Repeat delay accepts 0 to 60000 milliseconds, default 400.
+Values are sent to Wayland clients on reload and when they bind a keyboard;
+applications may implement their own repeat behavior. Held-key ownership is
+unchanged.
+
+Mouse profiles are "default", "flat", and "adaptive". The default restores
+each mouse’s libinput default. Flat disables speed-dependent acceleration,
+not libinput’s constant scaling. Adaptive enables speed-dependent acceleration.
+Pointer speed is unchanged. Only udev-tagged mice with configurable profiles
+are affected; touchpads and pointing sticks are excluded.
+
+Connected mice are checked before applying a reload; unsupported profiles
+reject the whole candidate. Device update failures restore earlier updates
+before rejecting the candidate. Newly connected mice receive the active
+profile; failures leave their existing profile and are logged. Devices
+without configurable acceleration profiles are left unchanged.

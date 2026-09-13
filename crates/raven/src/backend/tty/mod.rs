@@ -45,6 +45,7 @@ pub struct TtyBackend {
     device: Option<Device>,
     session: LibSeatSession,
     input: Option<Libinput>,
+    pub(crate) input_devices: crate::input::devices::Devices,
     scene: Scene,
     schedule: Schedule<presentation::Frame>,
     deferred_recovery: Option<String>,
@@ -76,6 +77,10 @@ impl TtyBackend {
         }
         self.session.change_vt(vt)?;
         Ok(())
+    }
+
+    pub(crate) fn input_active(&self) -> bool {
+        self.failure.is_none() && self.schedule.active() && self.session.is_active()
     }
 
     pub fn seat_name(&self) -> String {
@@ -129,6 +134,7 @@ impl Drop for TtyBackend {
             }
             drop(device);
         }
+        self.input_devices.clear();
         self.input.take();
         // LibSeatSession holds a weak reference. Keep its notifier alive until
         // every libinput and DRM close_device call has completed.

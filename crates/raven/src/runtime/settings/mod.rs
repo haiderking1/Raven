@@ -1,5 +1,7 @@
 //! Validated runtime values shared by Lua and programmatic configuration.
 mod defaults;
+mod input;
+pub use input::{InputSettings, KeyboardSettings, MouseAccelProfile};
 mod validation;
 mod workspaces;
 pub use crate::backend::tty::CursorSettings;
@@ -13,6 +15,7 @@ pub use crate::desktop::appearance::{Appearance, Border, InnerGaps, InvalidAppea
 /// Values are validated before backend acquisition; constructing settings starts nothing.
 #[derive(Clone, Debug)]
 pub struct Settings {
+    pub input: InputSettings,
     pub appearance: Appearance,
     pub resize_animations: ResizeAnimations,
     pub startup: StartupPlan,

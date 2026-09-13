@@ -34,6 +34,9 @@ pub(super) fn session(event: SessionEvent, state: &mut State) {
                 if let Some(input) = &mut backend.input {
                     super::input_lifecycle::suspend(input, state);
                 }
+                // Suspend drains device-removal events while backend is detached.
+                // Resume announces fresh devices and reapplies the active profile.
+                backend.input_devices.clear();
                 if let Some(device) = &mut backend.device {
                     device.drm.pause();
                 }

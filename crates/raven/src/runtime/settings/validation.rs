@@ -1,6 +1,7 @@
 use super::{Settings, StartupEntry, StartupPlan};
 impl Settings {
     pub fn validate(&self) -> Result<(), String> {
+        self.input.validate()?;
         self.appearance.validate().map_err(|e| e.to_string())?;
         self.workspaces.validate()?;
         self.startup.validate_all()?;
