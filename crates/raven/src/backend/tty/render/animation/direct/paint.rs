@@ -59,6 +59,7 @@ pub(in crate::backend::tty::render::animation) fn append(
             Kind::Unspecified,
         );
     let references = content.references(top.wl_surface(), &surfaces, scale);
+    let native = floating_resize.then(|| super::sampling::native_surfaces(window, scale));
     let elements: Vec<_> = surfaces
         .into_iter()
         .filter_map(|surface| {
@@ -95,7 +96,12 @@ pub(in crate::backend::tty::render::animation) fn append(
             if destination.is_empty() {
                 return None;
             }
+            let native = native
+                .as_ref()
+                .is_some_and(|native| native.contains(surface.id()));
             let surface = CropRenderElement::from_element(surface, scale, source)?;
+            let original_source = surface.src();
+            let transform = surface.transform();
             let location = surface.geometry(scale.into()).loc;
             let opaque = surface
                 .opaque_regions(scale.into())
@@ -119,12 +125,23 @@ pub(in crate::backend::tty::render::animation) fn append(
                 Relocate::Relative,
             );
             let element = CropRenderElement::from_element(moved, scale, clip)?;
-            let opaque =
-                opacity::project(opaque, source, destination, element.geometry(scale.into()));
+            let visible = element.geometry(scale.into());
+            let sampling = native.then(|| {
+                super::sampling::source(original_source, source, destination, visible, transform)
+            });
+            // Only the original opaque pixels are guaranteed opaque. Extended
+            // edge coverage is deliberately not used to occlude lower windows.
+            let opaque_target = if native {
+                Rectangle::new(destination.loc, source.size)
+            } else {
+                destination
+            };
+            let opaque = opacity::project(opaque, source, opaque_target, visible);
             Some(SceneElement::ResizeLive(Animated {
                 element,
                 commit,
                 opaque,
+                source: sampling,
             }))
         })
         .collect();

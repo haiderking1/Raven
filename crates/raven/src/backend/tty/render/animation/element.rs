@@ -15,6 +15,8 @@ pub(in crate::backend::tty::render) struct Animated<E> {
     pub element: E,
     pub commit: CommitCounter,
     pub opaque: Vec<Rectangle<i32, Physical>>,
+    /// Floating resize can crop or extend source sampling instead of scaling text.
+    pub source: Option<Rectangle<f64, Buffer>>,
 }
 
 impl<E: Element> Element for Animated<E> {
@@ -25,7 +27,7 @@ impl<E: Element> Element for Animated<E> {
         self.commit
     }
     fn src(&self) -> Rectangle<f64, Buffer> {
-        self.element.src()
+        self.source.unwrap_or_else(|| self.element.src())
     }
     fn geometry(&self, scale: Scale<f64>) -> Rectangle<i32, Physical> {
         self.element.geometry(scale)

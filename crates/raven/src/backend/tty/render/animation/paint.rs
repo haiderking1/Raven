@@ -101,6 +101,7 @@ pub(super) fn append_live(
                 element,
                 commit,
                 opaque,
+                source: None,
             }));
         }
     }

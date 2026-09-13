@@ -1,6 +1,7 @@
 mod content;
 mod floating;
 mod geometry;
+mod sampling;
 pub(super) use content::Content;
 mod paint;
 pub(super) use paint::append;
