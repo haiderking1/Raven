@@ -1,6 +1,6 @@
 # Window dragging
 
-Hold Super and drag with the left mouse button. Super + right-drag resizes floating windows and tiled splits; see [resizing](resizing.md). Super + V toggles the focused window between tiled and floating. Fullscreen windows are excluded. Returning to floating restores its previous floating placement; returning to tiling restores its saved tile index where possible.
+Hold Super and drag with the left mouse button. Super + right-drag resizes floating windows and tiled splits; see [resizing](resizing.md). Super + V toggles the focused window between tiled and floating. Fullscreen windows are excluded. Switching to floating restores the previous floating size around the current displayed tile center, not the screen center or a saved position. On the first toggle it uses the client geometry (640×400 if unavailable). Following Hyprland, when both size differences are less than 5 logical pixels, it adds 10 to each dimension to make the toggle visible. Client size constraints still apply. Returning to tiling restores its saved tile index where possible.
 
 - Floating windows follow the pointer and may extend beyond workarea and output edges. Only automatic initial placement is constrained to the workarea. Their chosen position survives client commits, layout refresh, and fullscreen round trips.
 - Tiled windows follow the pointer as a live render preview. Their layout membership stays unchanged during the drag. Releasing over another tiled window swaps the two layout positions through the existing resize transaction.

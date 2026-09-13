@@ -2,7 +2,7 @@
 
 Super + right-drag resizes the window under the pointer. The nearest corner is selected at the start and stays fixed for the gesture.
 
-Floating windows keep the opposite corner fixed, honor committed client minimum/maximum sizes, and may extend beyond the workarea. A manually resized size survives layout refresh and floating/tiled toggles. Initial automatic placement still fits the workarea.
+Floating windows keep the opposite corner fixed, honor committed client minimum/maximum sizes, and may extend beyond the workarea. A manually resized size survives layout refresh. Super + V restores the floating size around the current tile center, with Hyprland's small size adjustment when the toggle would otherwise barely change dimensions. Initial automatic placement still fits the workarea.
 
 In Raven's left-master layout, horizontal movement changes the master/stack split. A stack window also adjusts its nearest internal row boundary, distributing the size change proportionally across the rows on that side. At the top or bottom of the stack, the only internal boundary is used. One tiled window has no split to adjust. Split ratios survive layout refresh and tile swaps; changing the stack count resets row proportions, retaining the master ratio.
 
@@ -18,4 +18,4 @@ Reviewed Hyprland c31b90c5fc87b6bfc494f4e66d5acc3b0ba5b0ad: DragController.cpp, 
 
 ## QA
 
-Start ./target/debug/raven after building with cargo build -p raven. Check every floating corner, client size constraints, resizing beyond screen edges, and size persistence after Super + V round trips. With at least three tiles, check horizontal splitting and both internal row edges. Check rapid motion/reversal, releasing Super before the mouse, extra button presses, Escape, and workspace/fullscreen/VT shortcuts during resizing. No tests were added or run.
+Start ./target/debug/raven after building with cargo build -p raven. Check every floating corner, client size constraints, resizing beyond screen edges, and floating-size restoration around the current tile center after Super + V round trips. With at least three tiles, check horizontal splitting and both internal row edges. Check rapid motion/reversal, releasing Super before the mouse, extra button presses, Escape, and workspace/fullscreen/VT shortcuts during resizing. No tests were added or run.

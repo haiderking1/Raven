@@ -1,12 +1,12 @@
-use super::{Placement, hints::Hints};
+mod geometry;
 use crate::state::State;
-use smithay::utils::IsAlive;
+use smithay::utils::{IsAlive, Logical, Size};
 use std::sync::Mutex;
 
 /// Window-owned history does not retain closed windows in a workspace map.
 #[derive(Default)]
 struct History {
-    floating: Option<Placement>,
+    floating_size: Option<Size<i32, Logical>>,
     tile: Option<usize>,
 }
 
@@ -36,7 +36,10 @@ impl State {
         {
             return;
         }
-        let Some(area) = self.tiling_area() else {
+        let Some(frame) = self.window_frame_geometry(&window) else {
+            return;
+        };
+        let Some(client) = self.window_client_geometry(&window) else {
             return;
         };
         let was_floating = self.window_is_floating(&window);
@@ -50,7 +53,7 @@ impl State {
         // Capture old allocations before changing either membership list.
         self.begin_resize_batch(index);
         if was_floating {
-            let floating = self.workspaces.entries[index]
+            self.workspaces.entries[index]
                 .floating
                 .entries
                 .remove(&window);
@@ -61,7 +64,7 @@ impl State {
                     .unwrap()
                     .lock()
                     .unwrap();
-                history.floating = floating;
+                history.floating_size = Some(client.size);
                 history.tile
             };
             self.restore_floating_tile(&window, slot);
@@ -75,23 +78,9 @@ impl State {
                     .lock()
                     .unwrap();
                 history.tile = slot;
-                history.floating.take()
+                history.floating_size
             };
-            let placement = remembered.unwrap_or_else(|| {
-                let size = window.geometry().size;
-                let bounds = self.appearance.client_rect(area).size;
-                Placement {
-                    hints: Some(Hints::committed(&window)),
-                    natural: Some(
-                        (
-                            size.w.min((bounds.w * 3 / 4).max(1)).max(1),
-                            size.h.min((bounds.h * 3 / 4).max(1)).max(1),
-                        )
-                            .into(),
-                    ),
-                    ..Placement::default()
-                }
-            });
+            let placement = geometry::placement(&window, frame, client, remembered);
             self.workspaces.entries[index]
                 .floating
                 .entries
