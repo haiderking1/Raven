@@ -1,7 +1,9 @@
 # Layer surfaces
 
-Fuzzel uses wlr-layer-shell rather than an XDG toplevel. Raven advertises the
-protocol and assigns layer clients to its single output, outside workspaces.
+Launchers, panels, and wallpaper tools use wlr-layer-shell rather than XDG
+toplevels. Raven advertises the protocol and assigns layer clients to its single
+output, outside workspaces. See [wallpaper setup](wallpapers/README.md) for awww,
+swaybg, and the generic startup path.
 
 Only configured, buffer-backed surfaces enter the output layer map. Pending or
 null-buffer-unmapped clients do not reserve space, receive frames, or take focus.
