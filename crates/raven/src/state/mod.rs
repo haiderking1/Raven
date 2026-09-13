@@ -47,6 +47,7 @@ pub struct State {
     pub(crate) layers: crate::desktop::layers::Layers,
     // Retain the global handle; XDG decoration dispatch requires no state getter.
     pub(crate) _xdg_decoration_state: XdgDecorationState,
+    pub(crate) _kde_decoration_state: crate::protocols::KdeDecorations,
     pub data_device_state: DataDeviceState,
     pub(crate) _cursor_shape_state: smithay::wayland::cursor_shape::CursorShapeManagerState,
     pub seat_state: SeatState<Self>,

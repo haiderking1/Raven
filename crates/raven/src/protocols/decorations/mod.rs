@@ -1,5 +1,7 @@
-//! Raven owns decoration policy and currently draws no title bars or borders.
+//! Raven owns window borders; negotiated clients submit undecorated content.
 //! Clients that negotiate XDG decorations must submit undecorated content.
+
+pub(super) mod kde;
 
 use crate::state::State;
 use smithay::{

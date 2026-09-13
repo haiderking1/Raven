@@ -44,6 +44,7 @@ impl State {
         );
         let layer_shell_state = WlrLayerShellState::new::<Self>(&display_handle);
         let xdg_decoration_state = XdgDecorationState::new::<Self>(&display_handle);
+        let kde_decoration_state = crate::protocols::KdeDecorations::new(&display_handle);
         let data_device_state = DataDeviceState::new::<Self>(&display_handle);
         let cursor_shape_state =
             smithay::wayland::cursor_shape::CursorShapeManagerState::new::<Self>(&display_handle);
@@ -70,6 +71,7 @@ impl State {
             layer_shell_state,
             layers: Default::default(),
             _xdg_decoration_state: xdg_decoration_state,
+            _kde_decoration_state: kde_decoration_state,
             data_device_state,
             _cursor_shape_state: cursor_shape_state,
             seat_state,

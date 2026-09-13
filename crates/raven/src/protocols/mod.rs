@@ -1,6 +1,7 @@
 mod compositor;
 mod cursor_shape;
 mod decorations;
+pub(crate) use decorations::kde::KdeDecorations;
 pub(crate) mod dmabuf;
 mod layer_shell;
 mod output;
