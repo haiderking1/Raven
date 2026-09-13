@@ -16,10 +16,8 @@ use super::{device::Device, dmabuf::FeedbackDelivery};
 use crate::state::State;
 use smithay::backend::renderer::{
     element::{
-        memory::{MemoryRenderBuffer, MemoryRenderBufferRenderElement},
-        render_elements,
-        surface::WaylandSurfaceRenderElement,
-        utils::CropRenderElement,
+        memory::MemoryRenderBufferRenderElement, render_elements,
+        surface::WaylandSurfaceRenderElement, utils::CropRenderElement,
     },
     gles::GlesRenderer,
 };
@@ -36,20 +34,20 @@ render_elements! {
 }
 
 pub(super) struct Scene {
-    cursor: MemoryRenderBuffer,
+    pub(in crate::backend::tty) cursor: cursor::Cursors,
     feedback: FeedbackDelivery,
     elements: Vec<SceneElement>,
     pub(in crate::backend::tty) animations: animation::Animations,
 }
 
 impl Scene {
-    pub fn new() -> Self {
-        Self {
-            cursor: cursor::default_arrow(),
+    pub fn new() -> std::io::Result<Self> {
+        Ok(Self {
+            cursor: cursor::Cursors::new()?,
             feedback: FeedbackDelivery::default(),
             elements: Vec::new(),
             animations: animation::Animations::default(),
-        }
+        })
     }
 
     /// Render one snapshot. The scheduler reserves the pending or successor slot.
@@ -83,7 +81,13 @@ impl Scene {
         deferred: bool,
     ) -> Result<RenderOutcome, Box<dyn Error>> {
         let output = &device.output;
-        pointer::append(&mut device.renderer, state, output, &self.cursor, elements)?;
+        pointer::append(
+            &mut device.renderer,
+            state,
+            output,
+            &mut self.cursor,
+            elements,
+        )?;
         // Desktop elements include layer shells, XDG popups, and subsurface trees.
         desktop::append(
             &mut device.renderer,

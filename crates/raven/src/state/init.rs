@@ -45,6 +45,8 @@ impl State {
         let layer_shell_state = WlrLayerShellState::new::<Self>(&display_handle);
         let xdg_decoration_state = XdgDecorationState::new::<Self>(&display_handle);
         let data_device_state = DataDeviceState::new::<Self>(&display_handle);
+        let cursor_shape_state =
+            smithay::wayland::cursor_shape::CursorShapeManagerState::new::<Self>(&display_handle);
         let mut seat_state = SeatState::new();
         let mut seat = seat_state.new_wl_seat(&display_handle, "seat0");
         seat.add_keyboard(Default::default(), 400, 25)?;
@@ -69,6 +71,7 @@ impl State {
             layers: Default::default(),
             _xdg_decoration_state: xdg_decoration_state,
             data_device_state,
+            _cursor_shape_state: cursor_shape_state,
             seat_state,
             seat,
             output: None,

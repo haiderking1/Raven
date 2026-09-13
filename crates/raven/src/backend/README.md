@@ -35,7 +35,8 @@ presses and motion, then renders nothing until activation completes.
 The backend probes every seat GPU until a connected connector, compatible CRTC,
 mode, and GBM/GLES format combination succeeds. Preferred modes are tried first.
 DrmCompositor renders the Space, including XDG popups, plus client cursors with
-hotspots and a DND surface. Named cursors use a procedural arrow.
+hotspots and a DND surface. Named cursors use installed Xcursor themes with
+shape aliases, configured size, and animation. See [cursor settings](tty/render/cursor/README.md).
 
 Only one frame is in flight. Pageflips pace changing content. A refresh-rate timer
 checks damage and sends callbacks when unchanged content produces no pageflip.
@@ -51,7 +52,6 @@ errors stop the loop. Connector changes while inactive are checked on resume.
 
 - One GPU and one output. No live migration, multi-output layout, or mode switching.
 - GBM/GLES composition only. No client direct scanout, overlay planes, or hardware cursor.
-- Every named cursor shape uses the arrow. Client cursor surfaces are supported.
 - DND icons are drawn at the pointer; this backend does not accumulate client
   wl_surface.attach offsets for them.
 - Startup requires an already active libseat session and fails with instructions

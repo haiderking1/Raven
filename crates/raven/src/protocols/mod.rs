@@ -1,4 +1,5 @@
 mod compositor;
+mod cursor_shape;
 mod decorations;
 pub(crate) mod dmabuf;
 mod layer_shell;

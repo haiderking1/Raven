@@ -8,4 +8,5 @@ publish.workspace = true
 smithay.workspace = true
 calloop.workspace = true
 libc.workspace = true
+xcursor = "0.3.11"
 tracing-subscriber.workspace = true

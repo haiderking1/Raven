@@ -48,6 +48,7 @@ pub struct State {
     // Retain the global handle; XDG decoration dispatch requires no state getter.
     pub(crate) _xdg_decoration_state: XdgDecorationState,
     pub data_device_state: DataDeviceState,
+    pub(crate) _cursor_shape_state: smithay::wayland::cursor_shape::CursorShapeManagerState,
     pub seat_state: SeatState<Self>,
     pub seat: Seat<Self>,
     pub output: Option<Output>,

@@ -22,6 +22,7 @@ pub(super) fn install(
         );
     }
     let policy = super::schedule::Policy::from_env()?;
+    let scene = Scene::new()?;
     let (mut session, notifier) = LibSeatSession::new()
         .map_err(|error| format!("cannot open a libseat session: {error}; run Raven as your login user on an active VT with logind or seatd access"))?;
     if !session.is_active() {
@@ -54,7 +55,7 @@ pub(super) fn install(
         device: Some(device),
         session,
         input: Some(input),
-        scene: Scene::new(),
+        scene,
         schedule: Schedule::with_policy(refresh, Instant::now(), policy),
         deferred_recovery: None,
         timing: Timing::from_env(refresh, Instant::now()),

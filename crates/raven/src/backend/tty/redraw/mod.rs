@@ -14,10 +14,18 @@ impl TtyBackend {
                     state.request_redraw();
                 }
             }
+            if backend
+                .scene
+                .cursor
+                .tick(&state.cursor_status, Instant::now())
+            {
+                state.request_redraw();
+            }
             if state.take_redraw_request() {
                 backend.schedule.request_redraw();
             }
             if !backend.schedule.active() || !backend.session.is_active() {
+                backend.scene.cursor.suspend();
                 backend.cancel_resize_animations();
                 state.animations.clear_intents();
                 backend.sources.arm(None)?;
@@ -55,6 +63,7 @@ impl TtyBackend {
                 .chain(backend.timing.as_ref().map(|timing| timing.deadline()))
                 .chain(background_deadline)
                 .chain(backend.scene.animations.deadline())
+                .chain(backend.scene.cursor.deadline())
                 .chain(state.input_timing.as_ref().map(|timing| timing.deadline()))
                 .min();
             backend.sources.arm(deadline)?;
