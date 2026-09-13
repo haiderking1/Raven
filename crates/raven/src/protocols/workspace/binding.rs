@@ -3,7 +3,7 @@ use crate::{desktop::workspaces::COUNT, state::State};
 use smithay::reexports::{
     wayland_protocols::ext::workspace::v1::server::{
         ext_workspace_group_handle_v1::{ExtWorkspaceGroupHandleV1, GroupCapabilities},
-        ext_workspace_handle_v1::{ExtWorkspaceHandleV1, State as Flags, WorkspaceCapabilities},
+        ext_workspace_handle_v1::{ExtWorkspaceHandleV1, WorkspaceCapabilities},
         ext_workspace_manager_v1::ExtWorkspaceManagerV1,
     },
     wayland_server::{Client, DataInit, DisplayHandle, GlobalDispatch, New, Resource},
@@ -37,7 +37,7 @@ impl GlobalDispatch<ExtWorkspaceManagerV1, ()> for State {
         for output in &outputs {
             group.output_enter(output);
         }
-        let active = state.workspaces.active;
+        let states = state.workspace_visibility_states();
         let workspaces = std::array::from_fn::<_, COUNT, _>(|index| {
             let workspace = client
                 .create_resource::<ExtWorkspaceHandleV1, _, Self>(
@@ -53,11 +53,7 @@ impl GlobalDispatch<ExtWorkspaceManagerV1, ()> for State {
             workspace.id(format!("raven-workspace-{}", index + 1));
             workspace.name((index + 1).to_string());
             workspace.coordinates((index as u32).to_ne_bytes().to_vec());
-            workspace.state(if index == active {
-                Flags::Active
-            } else {
-                Flags::empty()
-            });
+            workspace.state(states[index]);
             workspace.capabilities(WorkspaceCapabilities::Activate);
             group.workspace_enter(&workspace);
             Some(workspace.downgrade())
@@ -68,7 +64,7 @@ impl GlobalDispatch<ExtWorkspaceManagerV1, ()> for State {
             group: Some(group.downgrade()),
             workspaces,
             outputs: outputs.iter().map(Resource::downgrade).collect(),
-            active,
+            states,
             pending: None,
         });
     }

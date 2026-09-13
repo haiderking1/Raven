@@ -1,8 +1,5 @@
 use crate::state::State;
-use smithay::reexports::{
-    wayland_protocols::ext::workspace::v1::server::ext_workspace_handle_v1::State as Flags,
-    wayland_server::{Resource, backend::ObjectId},
-};
+use smithay::reexports::wayland_server::{Resource, backend::ObjectId};
 
 impl State {
     /// Publish workspace/output changes after dispatch and output synchronization.
@@ -17,17 +14,17 @@ impl State {
         &mut self,
         acknowledgement: Option<(ObjectId, Option<usize>)>,
     ) {
-        let active = self.workspaces.active;
+        let states = self.workspace_visibility_states();
         let output = self.output.as_ref();
         let protocol = &mut self.workspace_protocol;
         if acknowledgement.is_none()
             && !protocol.outputs_dirty
-            && protocol.last_active == active
+            && protocol.last_states.as_ref() == Some(&states)
             && protocol.last_output.as_ref() == output
         {
             return;
         }
-        protocol.last_active = active;
+        protocol.last_states = Some(states);
         protocol.last_output = output.cloned();
         protocol.outputs_dirty = false;
         self.workspace_protocol
@@ -86,21 +83,17 @@ impl State {
                         *handle = None;
                         continue;
                     };
-                    let state_changed = (index == active) != (index == subscription.active);
+                    let state_changed = states[index] != subscription.states[index];
                     // Requests may be denied by a grab. Report the requested workspace's
                     // actual state at commit, not an optimistic activation or deferred retry.
                     let requested =
                         acknowledge.is_some_and(|(_, requested)| *requested == Some(index));
                     if state_changed || requested {
-                        workspace.state(if index == active {
-                            Flags::Active
-                        } else {
-                            Flags::empty()
-                        });
+                        workspace.state(states[index]);
                         changed = true;
                     }
                 }
-                subscription.active = active;
+                subscription.states = states;
                 if changed || acknowledge.is_some() {
                     manager.done();
                 }

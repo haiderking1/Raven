@@ -10,6 +10,7 @@
     "format": "{name}",
     "on-click": "activate",
     "sort-by-name": true,
-    "all-outputs": false
+    "all-outputs": false,
+    "ignore-hidden": false
   }
 }

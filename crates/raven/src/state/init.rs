@@ -53,7 +53,7 @@ impl State {
         let pointer_constraints_state = PointerConstraintsState::new::<Self>(&display_handle);
         let relative_pointer_state = RelativePointerManagerState::new::<Self>(&display_handle);
         let workspace_protocol =
-            crate::protocols::workspace::WorkspaceProtocol::new(&display_handle);
+            crate::protocols::workspace::WorkspaceProtocol::new(&display_handle)?;
         Ok(Self {
             display_handle,
             compositor_state,

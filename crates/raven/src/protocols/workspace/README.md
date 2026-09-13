@@ -18,6 +18,14 @@ This is not `wlr/workspaces`. It also does not implement `wlr/taskbar`.
 The taskbar needs a separate foreign-toplevel protocol to list windows;
 workspace handles are not window handles.
 
+## Workspace display choices
+
+By default, Waybar shows occupied workspaces and the active workspace. Use
+`"ignore-hidden": false` in `ext/workspaces` to show all ten, or set
+`RAVEN_WORKSPACE_PERSISTENT=1,2,3,4,5` when launching Raven to keep selected
+workspaces visible even when empty. See [visibility settings](visibility/README.md)
+for details. These settings do not change workspace count or shortcuts.
+
 ## Published state
 
 - Ten workspaces named `1` through `10`, with session-stable IDs
@@ -25,7 +33,8 @@ workspace handles are not window handles.
   `0` through `9`.
 - One stable workspace group spanning Raven's current output. It remains present
   with no outputs when `State::output` is `None`.
-- Exactly one active workspace. Only the Activate capability is advertised.
+- Exactly one active workspace. Empty, inactive, nonpersistent workspaces carry
+  the Hidden flag. Only the Activate capability is advertised.
   Create, deactivate, remove, and assign requests are ignored.
 - Output membership includes every live `wl_output` object belonging to the
   manager's client, including objects bound later. Removing or replacing the
@@ -66,8 +75,8 @@ by Waybar; Smithay updates it from the same Output used by Raven's desktop.
 The runtime refreshes workspace publication after desktop reconciliation and
 before rendering/client flush, and after installing the output. OutputHandler
 marks late wl_output binds dirty without querying output state inside its hook.
-Unchanged active/output identity and no new binds return before enumerating
-subscriptions or allocating snapshots. There is no timer or input-rate polling.
+Unchanged workspace flags/output identity and no new binds return before
+enumerating subscriptions. A fixed-size flag snapshot includes occupancy changes. There is no timer or input-rate polling.
 Protocol commits publish their own acknowledged results immediately.
 
 Isolated server loops use the same refresh after desktop reconciliation. Output

@@ -5,12 +5,13 @@ mod dispatch;
 mod refresh;
 #[cfg(test)]
 mod tests;
+mod visibility;
 
 use crate::desktop::workspaces::COUNT;
 use smithay::reexports::{
     wayland_protocols::ext::workspace::v1::server::{
         ext_workspace_group_handle_v1::ExtWorkspaceGroupHandleV1,
-        ext_workspace_handle_v1::ExtWorkspaceHandleV1,
+        ext_workspace_handle_v1::{ExtWorkspaceHandleV1, State as Flags},
         ext_workspace_manager_v1::ExtWorkspaceManagerV1,
     },
     wayland_server::{
@@ -23,7 +24,8 @@ use smithay::reexports::{
 pub(crate) struct WorkspaceProtocol {
     _global: GlobalId,
     subscriptions: Vec<Subscription>,
-    last_active: usize,
+    last_states: Option<[Flags; COUNT]>,
+    persistent: [bool; COUNT],
     last_output: Option<smithay::output::Output>,
     outputs_dirty: bool,
     deferred: Option<activation::Deferred>,
@@ -34,7 +36,7 @@ struct Subscription {
     group: Option<Weak<ExtWorkspaceGroupHandleV1>>,
     workspaces: [Option<Weak<ExtWorkspaceHandleV1>>; COUNT],
     outputs: Vec<Weak<WlOutput>>,
-    active: usize,
+    states: [Flags; COUNT],
     pending: Option<usize>,
 }
 
@@ -49,14 +51,16 @@ impl WorkspaceProtocol {
         self.outputs_dirty = true;
     }
 
-    pub(crate) fn new(display: &DisplayHandle) -> Self {
-        Self {
+    pub(crate) fn new(display: &DisplayHandle) -> std::io::Result<Self> {
+        let persistent = visibility::persistent_from_env()?;
+        Ok(Self {
             _global: display.create_global::<crate::state::State, ExtWorkspaceManagerV1, _>(1, ()),
             subscriptions: Vec::new(),
-            last_active: usize::MAX,
+            last_states: None,
+            persistent,
             last_output: None,
             outputs_dirty: true,
             deferred: None,
-        }
+        })
     }
 }
