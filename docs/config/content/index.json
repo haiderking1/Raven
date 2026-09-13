@@ -60,6 +60,10 @@
         [
           "workspaces.html",
           "Workspaces"
+        ],
+        [
+          "input.html",
+          "Input"
         ]
       ]
     },

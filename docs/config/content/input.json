@@ -1,0 +1,150 @@
+{
+  "nav": "Input",
+  "title": "Input",
+  "intro": "raven.input controls keyboard repeat and mouse acceleration. Save to apply changes.",
+  "keywords": [
+    "keyboard",
+    "repeat",
+    "rate",
+    "delay",
+    "mouse",
+    "acceleration",
+    "flat",
+    "adaptive",
+    "autoclicker",
+    "virtual",
+    "automation"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Configuration"
+    },
+    {
+      "type": "code",
+      "language": "Lua",
+      "text": "raven.input {\n    keyboard = {\n        repeat_rate = 30,   -- repeats per second\n        repeat_delay = 300, -- milliseconds\n    },\n    mouse = { accel_profile = \"flat\" },\n}"
+    },
+    {
+      "type": "heading",
+      "text": "Keyboard repeat"
+    },
+    {
+      "type": "table",
+      "label": "Keyboard options",
+      "headers": [
+        "Option",
+        "Default",
+        "Description"
+      ],
+      "rows": [
+        [
+          "keyboard.repeat_rate",
+          "25",
+          "Repeats per second, from 0 to 1000. Use 0 to disable repeat."
+        ],
+        [
+          "keyboard.repeat_delay",
+          "400",
+          "Delay before repeating, from 0 to 60000 milliseconds."
+        ]
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Raven sends these values to applications. An application may implement its own repeat behavior. Changing repeat settings does not release held keys or change their shortcuts."
+    },
+    {
+      "type": "heading",
+      "text": "Disable key repeat"
+    },
+    {
+      "type": "code",
+      "language": "Lua",
+      "text": "raven.input { keyboard = { repeat_rate = 0 } }"
+    },
+    {
+      "type": "heading",
+      "text": "Mouse acceleration"
+    },
+    {
+      "type": "table",
+      "label": "Mouse acceleration profiles",
+      "headers": [
+        "mouse.accel_profile",
+        "Effect"
+      ],
+      "rows": [
+        [
+          "\"default\"",
+          "Use each mouse’s libinput default. This is the default setting."
+        ],
+        [
+          "\"flat\"",
+          "Disable speed-dependent acceleration. Movement still uses libinput’s constant device scaling."
+        ],
+        [
+          "\"adaptive\"",
+          "Enable speed-dependent acceleration."
+        ]
+      ]
+    },
+    {
+      "type": "text",
+      "text": "Applies to mice with configurable acceleration profiles, including mice connected later. Touchpads, pointing sticks, and devices without configurable profiles are left unchanged. This setting does not change pointer speed."
+    },
+    {
+      "type": "code",
+      "language": "Lua",
+      "text": "-- Disable mouse acceleration\nraven.input { mouse = { accel_profile = \"flat\" } }"
+    },
+    {
+      "type": "code",
+      "language": "Lua",
+      "text": "-- Enable mouse acceleration\nraven.input { mouse = { accel_profile = \"adaptive\" } }"
+    },
+    {
+      "type": "code",
+      "language": "Lua",
+      "text": "-- Restore each mouse’s default\nraven.input { mouse = { accel_profile = \"default\" } }"
+    },
+    {
+      "type": "text",
+      "text": "Choose one profile and edit your existing raven.input block. Save to apply it; no session restart is needed."
+    },
+    {
+      "type": "heading",
+      "text": "Unsupported profiles"
+    },
+    {
+      "type": "text",
+      "text": "If a connected mouse cannot use the requested profile, Raven rejects the reload before applying the other settings. If a newly connected mouse cannot use the active profile, it keeps its existing profile and Raven logs the error."
+    },
+    {
+      "type": "heading",
+      "text": "Virtual pointers"
+    },
+    {
+      "type": "text",
+      "text": "Automation tools using wlr-virtual-pointer-unstable-v1 can send mouse clicks, movement, and scrolling. Launch them with a normal spawn keybinding. This does not provide virtual keyboard input."
+    },
+    {
+      "type": "note",
+      "title": "Trusted tools only",
+      "text": "Any client with access to Raven’s Wayland socket can use this protocol to control the pointer. There is no separate permission prompt."
+    },
+    {
+      "type": "links",
+      "items": [
+        [
+          "bindings.html",
+          "Keybindings"
+        ],
+        [
+          "reload.html",
+          "Reloading"
+        ]
+      ]
+    }
+  ]
+}

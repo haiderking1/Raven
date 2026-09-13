@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Input · Raven configuration</title>
+<link rel="stylesheet" href="assets/styles.css">
+<script defer src="assets/handbook.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<aside class="rail">
+<a class="brand" href="index.html">RAVEN<span>Configuration handbook</span></a>
+
+<details class="contents" open><summary>Browse the handbook</summary>
+<div class="section-search" hidden><label for="section-search">Find a section</label><input id="section-search" type="search" placeholder="Try rofi, colors, errors" autocomplete="off"></div>
+<nav aria-label="Handbook sections"><ol id="sections"><li data-keywords="setup file quickstart home"><a href="index.html">Configuration</a></li><li data-keywords="syntax comma quotes table beginner"><a href="syntax.html">Basic syntax</a></li><li data-keywords="rofi foot foote fuzzel terminal launcher drun argv"><a href="commands.html">Terminal and launcher</a></li><li data-keywords="keys shortcuts super shift ctrl actions vt spawn applications arguments"><a href="bindings.html">Keybindings</a></li><li data-keywords="keyboard repeat rate delay mouse acceleration flat adaptive autoclicker virtual automation"><a href="input.html" aria-current="page">Input</a></li><li data-keywords="waybar awww wallpaper cwd env session"><a href="startup.html">Startup applications</a></li><li data-keywords="appearance colors green border width animation resize gaps"><a href="appearance.html">Appearance</a></li><li data-keywords="cursor adwaita xcursor pointer size"><a href="cursor.html">Cursor</a></li><li data-keywords="workspace waybar persistent occupied hidden panel"><a href="workspaces.html">Workspaces</a></li><li data-keywords="reload save rollback copy error last startup"><a href="reload.html">Reloading</a></li><li data-keywords="error mistakes rofi foote comma syntax line startup csd"><a href="troubleshooting.html">Troubleshooting</a></li></ol><p id="search-status" role="status"></p></nav>
+</details>
+<p class="rail-foot">Local documentation<br>No network required</p>
+</aside>
+<main id="main" tabindex="-1">
+<header><p class="eyebrow"><a href="index.html">Raven configuration</a></p><h1>Input</h1><p class="intro">raven.input controls keyboard repeat and mouse acceleration. Save to apply changes.</p></header>
+<nav class="page-toc" aria-label="On this page"><strong>Contents</strong><ul><li><a href="#configuration">Configuration</a></li><li><a href="#keyboard-repeat">Keyboard repeat</a></li><li><a href="#disable-key-repeat">Disable key repeat</a></li><li><a href="#mouse-acceleration">Mouse acceleration</a></li><li><a href="#unsupported-profiles">Unsupported profiles</a></li><li><a href="#virtual-pointers">Virtual pointers</a></li></ul></nav>
+<article><h2 id="configuration">Configuration</h2>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.input {
+    keyboard = {
+        repeat_rate = 30,   -- repeats per second
+        repeat_delay = 300, -- milliseconds
+    },
+    mouse = { accel_profile = &quot;flat&quot; },
+}</code></pre><p class="copy-status" role="status"></p></div>
+<h2 id="keyboard-repeat">Keyboard repeat</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Keyboard options"><table><caption>Keyboard options</caption><thead><tr><th scope="col">Option</th><th scope="col">Default</th><th scope="col">Description</th></tr></thead><tbody><tr><td>keyboard.repeat_rate</td><td>25</td><td>Repeats per second, from 0 to 1000. Use 0 to disable repeat.</td></tr><tr><td>keyboard.repeat_delay</td><td>400</td><td>Delay before repeating, from 0 to 60000 milliseconds.</td></tr></tbody></table></div>
+<p>Raven sends these values to applications. An application may implement its own repeat behavior. Changing repeat settings does not release held keys or change their shortcuts.</p>
+<h2 id="disable-key-repeat">Disable key repeat</h2>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.input { keyboard = { repeat_rate = 0 } }</code></pre><p class="copy-status" role="status"></p></div>
+<h2 id="mouse-acceleration">Mouse acceleration</h2>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Mouse acceleration profiles"><table><caption>Mouse acceleration profiles</caption><thead><tr><th scope="col">mouse.accel_profile</th><th scope="col">Effect</th></tr></thead><tbody><tr><td>&quot;default&quot;</td><td>Use each mouse’s libinput default. This is the default setting.</td></tr><tr><td>&quot;flat&quot;</td><td>Disable speed-dependent acceleration. Movement still uses libinput’s constant device scaling.</td></tr><tr><td>&quot;adaptive&quot;</td><td>Enable speed-dependent acceleration.</td></tr></tbody></table></div>
+<p>Applies to mice with configurable acceleration profiles, including mice connected later. Touchpads, pointing sticks, and devices without configurable profiles are left unchanged. This setting does not change pointer speed.</p>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>-- Disable mouse acceleration
+raven.input { mouse = { accel_profile = &quot;flat&quot; } }</code></pre><p class="copy-status" role="status"></p></div>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>-- Enable mouse acceleration
+raven.input { mouse = { accel_profile = &quot;adaptive&quot; } }</code></pre><p class="copy-status" role="status"></p></div>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>-- Restore each mouse’s default
+raven.input { mouse = { accel_profile = &quot;default&quot; } }</code></pre><p class="copy-status" role="status"></p></div>
+<p>Choose one profile and edit your existing raven.input block. Save to apply it; no session restart is needed.</p>
+<h2 id="unsupported-profiles">Unsupported profiles</h2>
+<p>If a connected mouse cannot use the requested profile, Raven rejects the reload before applying the other settings. If a newly connected mouse cannot use the active profile, it keeps its existing profile and Raven logs the error.</p>
+<h2 id="virtual-pointers">Virtual pointers</h2>
+<p>Automation tools using wlr-virtual-pointer-unstable-v1 can send mouse clicks, movement, and scrolling. Launch them with a normal spawn keybinding. This does not provide virtual keyboard input.</p>
+<aside class="callout"><strong>Trusted tools only</strong><p>Any client with access to Raven’s Wayland socket can use this protocol to control the pointer. There is no separate permission prompt.</p></aside>
+<p class="related">See also: <a href="bindings.html">Keybindings</a> · <a href="reload.html">Reloading</a></p></article>
+<nav class="pagination" aria-label="Adjacent pages"><a href="bindings.html">Previous: Keybindings</a><a href="startup.html">Next: Startup applications</a></nav>
+<footer>Edit ~/.config/raven/raven.lua and save to apply changes.</footer>
+</main>
+</body>
+</html>

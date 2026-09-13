@@ -9,7 +9,10 @@
     "shift",
     "ctrl",
     "actions",
-    "vt"
+    "vt",
+    "spawn",
+    "applications",
+    "arguments"
   ],
   "blocks": [
     {
@@ -18,12 +21,38 @@
     },
     {
       "type": "code",
-      "text": "raven.bind(\"Super+Return\", \"terminal\")\nraven.bind(\"Super+E\", { spawn = { \"nautilus\", \"--new-window\" } })",
+      "text": "raven.bind(\"Super+Return\", \"terminal\")",
       "language": "Lua"
     },
     {
       "type": "text",
       "text": "Combine Super, Shift, Ctrl, and Alt with +. Key names include Return, space, F2, plus, and XF86AudioRaiseVolume. Use an unshifted key name with an explicit Shift modifier."
+    },
+    {
+      "type": "heading",
+      "text": "Launching applications"
+    },
+    {
+      "type": "text",
+      "text": "Put the application’s executable name in spawn."
+    },
+    {
+      "type": "code",
+      "language": "Lua",
+      "text": "raven.bind(\"Super+E\", { spawn = { \"nautilus\" } })"
+    },
+    {
+      "type": "text",
+      "text": "To pass arguments, add each one as a separate entry after the executable."
+    },
+    {
+      "type": "code",
+      "language": "Lua",
+      "text": "raven.bind(\"Super+E\", { spawn = { \"nautilus\", \"--new-window\" } })"
+    },
+    {
+      "type": "text",
+      "text": "Replace nautilus with your application’s executable and use arguments it supports. Keep an argument containing spaces in one quoted entry. These examples use the same shortcut; choose one, then save to apply it."
     },
     {
       "type": "heading",
