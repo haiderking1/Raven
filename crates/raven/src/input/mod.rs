@@ -15,6 +15,7 @@ use crate::state::State;
 pub struct InputState {
     shortcuts: keyboard::Shortcuts,
     pointer_refresh: pointer::PointerRefresh,
+    popup_click: Option<pointer::PopupClick>,
     capture: pointer::capture::Capture,
     drag: Option<pointer::dragging::Drag>,
     resize_cleanup: Option<smithay::desktop::Window>,

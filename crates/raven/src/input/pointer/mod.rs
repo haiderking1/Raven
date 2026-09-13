@@ -1,6 +1,8 @@
 pub(crate) mod capture;
 pub(super) mod dragging;
 mod geometry;
+mod popup;
+pub(super) use popup::PopupClick;
 mod output;
 mod refresh;
 pub(super) use refresh::PointerRefresh;
@@ -112,6 +114,7 @@ pub(super) fn button(event: impl PointerButtonEvent<LibinputInputBackend>, state
         serial,
         event.time_msec(),
     ) {
+        state.clear_popup_click();
         pointer.frame(state);
         return;
     }
@@ -134,6 +137,7 @@ pub(super) fn button(event: impl PointerButtonEvent<LibinputInputBackend>, state
     }
     // Grab dismissal and drag completion can change the scene without a commit.
     state.request_redraw();
+    state.record_popup_click(event.button_code(), event.state(), serial);
     pointer.button(
         state,
         &ButtonEvent {

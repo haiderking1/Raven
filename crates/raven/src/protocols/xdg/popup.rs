@@ -1,3 +1,5 @@
+mod admission;
+
 use crate::state::State;
 use smithay::{
     desktop::{
@@ -37,7 +39,8 @@ impl State {
             popup.send_popup_done();
             return;
         };
-        // Never let an unfocused client take the seat by requesting a popup grab.
+        // Windows need keyboard focus. A visible panel can instead authorize
+        // its menu with the serial of a delivered click, including after release.
         let root_focused = keyboard.current_focus().is_some_and(|focus| {
             focus == root
                 || self
@@ -47,7 +50,8 @@ impl State {
                     .as_ref()
                     == Some(&root)
         });
-        if !root_focused || !self.popup_root_is_visible(&root) {
+        let pointer_authorized = self.layer_popup_has_click(&root, serial);
+        if (!root_focused && !pointer_authorized) || !self.popup_root_is_visible(&root) {
             popup.send_popup_done();
             return;
         }
@@ -57,15 +61,29 @@ impl State {
         else {
             return;
         };
+        let keyboard_allowed = self
+            .layers
+            .surfaces
+            .iter()
+            .find(|layer| layer.wl_surface() == &root)
+            .is_none_or(|layer| layer.can_receive_keyboard_focus());
         let previous = grab.previous_serial().unwrap_or(serial);
-        if (keyboard.is_grabbed() && !keyboard.has_grab(serial) && !keyboard.has_grab(previous))
+        if (keyboard_allowed
+            && keyboard.is_grabbed()
+            && !keyboard.has_grab(serial)
+            && !keyboard.has_grab(previous))
             || (pointer.is_grabbed() && !pointer.has_grab(serial) && !pointer.has_grab(previous))
         {
             grab.ungrab(PopupUngrabStrategy::All);
             return;
         }
-        keyboard.set_focus(self, grab.current_grab(), serial);
-        keyboard.set_grab(self, PopupKeyboardGrab::new(&grab), serial);
+        self.clear_popup_click();
+        // Giving keyboard focus to a noninteractive panel breaks GTK 3 tray
+        // menus. Keep the application focused and install only a pointer grab.
+        if keyboard_allowed {
+            keyboard.set_focus(self, grab.current_grab(), serial);
+            keyboard.set_grab(self, PopupKeyboardGrab::new(&grab), serial);
+        }
         pointer.set_grab(self, PopupPointerGrab::new(&grab), serial, Focus::Keep);
         self.cancel_workspace_activation();
         self.popup_grab = Some((root, grab));
