@@ -19,7 +19,14 @@ pub(super) fn append(
 ) {
     let output_clip = Rectangle::from_size(area.size);
     let active_root = borders::active_root(state);
+    super::dragging::append(renderer, state, area, scale, elements);
     for window in state.visible_windows().rev() {
+        if state
+            .dragged_tile()
+            .is_some_and(|(dragged, _)| dragged == window)
+        {
+            continue;
+        }
         let Some(toplevel) = window.toplevel() else {
             continue;
         };
@@ -72,6 +79,9 @@ pub(super) fn append_content(
     scale: f64,
     elements: &mut Vec<SceneElement>,
 ) {
+    if super::animation::interactive::append(renderer, state, window, area, scale, elements) {
+        return;
+    }
     let Some(top) = window.toplevel() else {
         return;
     };

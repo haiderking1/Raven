@@ -20,7 +20,11 @@ impl State {
             .get(window)?;
         let bounds = self.appearance.client_rect(area).size;
         let border = self.appearance.border_width(area);
-        let mut size = bounded_size(&Hints::committed(window), entry.natural, Some(bounds));
+        let mut size = bounded_size(
+            &Hints::committed(window),
+            entry.natural,
+            (!entry.manual_size).then_some(bounds),
+        );
         // Placement needs an extent even before the client chooses an unconstrained axis.
         if size.w == 0 {
             size.w = (bounds.w / 2).max(1);
@@ -44,14 +48,18 @@ impl State {
             .unwrap_or(area);
         let centered =
             anchor.loc + Point::from(((anchor.size.w - size.w) / 2, (anchor.size.h - size.h) / 2));
-        let loc = Point::from((
-            centered
-                .x
-                .clamp(area.loc.x, area.loc.x + area.size.w - size.w),
-            centered
-                .y
-                .clamp(area.loc.y, area.loc.y + area.size.h - size.h),
-        ));
+        // Only automatic placement stays inside the workarea. Preserve manual
+        // drag coordinates, including positions beyond the output edges.
+        let loc = entry.position.unwrap_or_else(|| {
+            Point::from((
+                centered
+                    .x
+                    .clamp(area.loc.x, area.loc.x + area.size.w - size.w),
+                centered
+                    .y
+                    .clamp(area.loc.y, area.loc.y + area.size.h - size.h),
+            ))
+        });
         Some((
             Rectangle::new(loc, size),
             Rectangle::new(loc + Point::from((border, border)), client_size),
@@ -133,6 +141,7 @@ impl State {
         {
             return false;
         }
+        let pointer_owned_size = self.floating_resize_owns_size(window);
         let hints = Hints::committed(window);
         let entry = self.workspaces.entries[index]
             .floating
@@ -146,7 +155,8 @@ impl State {
         // a newer gap/workarea configure is already pending. A late response to
         // an older clamp must not replace the natural size after bounds relax.
         let configured = window.toplevel().and_then(|top| top.current_state().size);
-        if size.w > 0
+        if !pointer_owned_size
+            && size.w > 0
             && size.h > 0
             && (entry.natural.is_none()
                 || (configured != Some(size)

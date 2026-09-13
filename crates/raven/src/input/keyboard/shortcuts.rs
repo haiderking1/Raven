@@ -11,6 +11,7 @@ use super::actions::Action;
 #[derive(Debug, Default)]
 pub(in crate::input) struct Shortcuts {
     pressed: HashMap<Keycode, bool>,
+    pub(super) dragging: bool,
 }
 
 impl Shortcuts {
@@ -32,7 +33,15 @@ impl Shortcuts {
                     action = None;
                     suppressed
                 } else {
-                    action = shortcut(modifiers, symbols);
+                    action = if self.dragging
+                        && symbols
+                            .iter()
+                            .any(|symbol| symbol.raw() == keysyms::KEY_Escape)
+                    {
+                        Some(Action::CancelWindowDrag)
+                    } else {
+                        shortcut(modifiers, symbols)
+                    };
                     self.pressed.insert(keycode, action.is_some());
                     action.is_some()
                 }
@@ -72,6 +81,7 @@ fn shortcut(modifiers: &ModifiersState, symbols: &[Keysym]) -> Option<Action> {
                 keysyms::KEY_q | keysyms::KEY_Q => return Some(Action::LaunchTerminal),
                 keysyms::KEY_c | keysyms::KEY_C => return Some(Action::CloseWindow),
                 keysyms::KEY_f | keysyms::KEY_F => return Some(Action::ToggleFullscreen),
+                keysyms::KEY_v | keysyms::KEY_V => return Some(Action::ToggleFloating),
                 keysyms::KEY_d | keysyms::KEY_D => return Some(Action::LaunchFuzzel),
                 _ => {}
             }

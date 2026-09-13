@@ -3,20 +3,26 @@ use crate::state::State;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum Action {
     Quit,
+    CancelWindowDrag,
     SwitchVt(i32),
     LaunchTerminal,
     LaunchFuzzel,
     CloseWindow,
     ToggleFullscreen,
+    ToggleFloating,
     SwitchWorkspace(usize),
     MoveToWorkspace(usize),
 }
 
 impl Action {
     pub(super) fn execute(self, state: &mut State) {
+        // A workspace/fullscreen/VT shortcut must not act through a move grab.
+        state.cancel_window_drag();
         match self {
+            Self::CancelWindowDrag => state.cancel_window_drag(),
             Self::CloseWindow => state.close_focused_window(),
             Self::ToggleFullscreen => state.toggle_fullscreen(),
+            Self::ToggleFloating => state.toggle_focused_floating(),
             Self::SwitchWorkspace(index) => state.switch_workspace(index),
             Self::MoveToWorkspace(index) => state.move_focused_to_workspace(index),
             Self::Quit => {

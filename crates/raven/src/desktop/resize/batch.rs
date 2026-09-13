@@ -42,7 +42,11 @@ impl State {
         let windows: Vec<_> = self.workspaces.entries[index]
             .space
             .elements()
-            .filter(|w| w.toplevel().is_some() && self.window_is_visible(w))
+            .filter(|w| {
+                w.toplevel().is_some()
+                    && self.window_is_visible(w)
+                    && !self.window_has_live_resize(w)
+            })
             .cloned()
             .collect();
         for window in windows {

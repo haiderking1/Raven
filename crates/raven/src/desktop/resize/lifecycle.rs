@@ -53,6 +53,7 @@ impl State {
     /// Called from desktop refresh before layout refresh. This is lifecycle
     /// validation, not a readiness poll; readiness is exclusively fd/timer driven.
     pub(crate) fn refresh_resize_lifecycle(&mut self) {
+        self.refresh_live_resizes();
         let output = self.output.clone().zip(self.fullscreen_area());
         if self.resize.output != output {
             self.cancel_resize_transactions();

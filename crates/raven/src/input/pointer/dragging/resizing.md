@@ -1,0 +1,21 @@
+# Interactive resizing
+
+Super + right-drag resizes the window under the pointer. The nearest corner is selected at the start and stays fixed for the gesture.
+
+Floating windows keep the opposite corner fixed, honor committed client minimum/maximum sizes, and may extend beyond the workarea. A manually resized size survives layout refresh and floating/tiled toggles. Initial automatic placement still fits the workarea.
+
+In Raven's left-master layout, horizontal movement changes the master/stack split. A stack window also adjusts its nearest internal row boundary, distributing the size change proportionally across the rows on that side. At the top or bottom of the stack, the only internal boundary is used. One tiled window has no split to adjust. Split ratios survive layout refresh and tile swaps; changing the stack count resets row proportions, retaining the master ratio.
+
+Release or Escape ends the gesture and keeps the latest requested size. Other compositor shortcuts, membership changes during tiled resizing, workarea/output changes, unmapping, and session suspension end it too. Fullscreen windows and existing client grabs/constraints are excluded. Additional buttons cannot finish a resize started with the right button, and compositor-owned releases never reach clients.
+
+Motion callbacks record the latest pointer position. Desktop reconciliation applies tiled motion once per input batch, outside Smithay's pointer mutex. Floating updates are coalesced to the output refresh interval, following Hyprland's resize pacing. A one-shot timer delivers the latest motion if input stops; release bypasses pacing to flush the final position. Cancellation and grab-replacement cleanup remove the timer. Releasing the initiating button also applies the final pending motion. Interactive participants are excluded from layout allocation holds and their commit-coordination gates. New size configures do not wait for earlier resize replies.
+
+Visible allocations follow the pointer without waiting for client replies. Rendering uses the latest imported client surfaces, preserving surface identities, acquire fences, release ownership, and presentation feedback. No screenshot is retained. Tiled windows retain their existing full-window subtree projection. Floating windows follow Hyprland SurfacePassElement::getTexBox: ordinary roots fill the allocation; roots undersized relative to the commit's acknowledged size retain their natural extent. Child surfaces retain natural size and root-relative offsets, with right/bottom overflow squeezed to the allocation rather than globally scaling the subtree. Growing content may briefly leave an uncovered edge until the client repaints, instead of stretching every child to cover it. Mapping continues after release until the root and tracked content children reach the final size; it never holds client commits or schedules polling frames. Fullscreen requests explicitly end live resizing before normal fullscreen transaction capture.
+
+The source receives the XDG resizing state and a final configure clearing it. Grab replacement defers that cleanup until desktop reconciliation. Resize participants do not run competing resize animations.
+
+Reviewed Hyprland c31b90c5fc87b6bfc494f4e66d5acc3b0ba5b0ad: DragController.cpp, algorithm/tiled/master/MasterAlgorithm.cpp, SurfacePassElement.cpp, WLSurface.cpp, and WaylandBackend.cpp. The small-surface comparison uses committed acknowledged size, not the latest pointer target. Floating corner anchoring and left-master resize direction follow those paths. Raven retains its own layout and transaction implementation; this does not add Hyprland's other layouts, snapping settings, or aspect-ratio override bindings.
+
+## QA
+
+Start ./target/debug/raven after building with cargo build -p raven. Check every floating corner, client size constraints, resizing beyond screen edges, and size persistence after Super + V round trips. With at least three tiles, check horizontal splitting and both internal row edges. Check rapid motion/reversal, releasing Super before the mouse, extra button presses, Escape, and workspace/fullscreen/VT shortcuts during resizing. No tests were added or run.

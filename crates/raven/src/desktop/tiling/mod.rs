@@ -4,6 +4,10 @@ mod configure;
 mod geometry;
 mod initial;
 mod membership;
+mod mode;
+mod movement;
+mod resizing;
+pub(crate) use resizing::TileResize;
 
 use smithay::{
     desktop::Window,
@@ -14,6 +18,7 @@ use smithay::{
 #[derive(Default)]
 pub(crate) struct Tiling {
     windows: Vec<Window>,
+    splits: geometry::adjusted::Splits,
     geometry: Option<Rectangle<i32, Logical>>,
     frames: Vec<Rectangle<i32, Logical>>,
 }

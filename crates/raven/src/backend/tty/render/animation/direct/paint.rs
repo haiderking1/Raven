@@ -15,8 +15,9 @@ use smithay::{
 };
 
 /// Draw client buffers directly, retaining their identity, fences and feedback.
-/// Transform surface positions and sizes together into the animated client
-/// rectangle, then clip. No intermediate image or independent edge squeezing.
+/// Animated/tiled mapping transforms the surface tree into the client rectangle.
+/// Floating interactive mapping instead preserves child offsets and natural
+/// extents, squeezing only overflow as in Hyprland. Neither retains an image.
 pub(in crate::backend::tty::render::animation) fn append(
     renderer: &mut GlesRenderer,
     state: &State,
@@ -26,6 +27,7 @@ pub(in crate::backend::tty::render::animation) fn append(
     client: Rectangle<i32, Logical>,
     commit: CommitCounter,
     content: &super::Content,
+    floating_resize: bool,
 ) -> Vec<SceneElement> {
     let Some(top) = window.toplevel() else {
         return Vec::new();
@@ -61,7 +63,9 @@ pub(in crate::backend::tty::render::animation) fn append(
         .into_iter()
         .filter_map(|surface| {
             let main = surface.id() == &root_id;
-            let source = if main {
+            let source = if main && floating_resize {
+                source_window.intersection(surface.geometry(scale.into()))?
+            } else if main {
                 source_window
             } else {
                 surface.geometry(scale.into())
@@ -76,7 +80,18 @@ pub(in crate::backend::tty::render::animation) fn append(
                 .get(surface.id())
                 .copied()
                 .unwrap_or(source_window);
-            let destination = super::geometry::project(source, reference, target);
+            let destination = if floating_resize {
+                let buffer = surface.geometry(scale.into());
+                // Hyprland compares against the size acknowledged with this
+                // commit, not the newer pointer target. Ordinary roots still
+                // fill the target; genuinely undersized roots stay natural.
+                let reported = top.current_state().size.unwrap_or(geometry.size);
+                let small = buffer.size.w as f64 + scale < reported.w as f64 * scale
+                    || buffer.size.h as f64 + scale < reported.h as f64 * scale;
+                super::floating::destination(source, source_window, target, main, small)
+            } else {
+                super::geometry::project(source, reference, target)
+            };
             if destination.is_empty() {
                 return None;
             }

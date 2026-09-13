@@ -27,6 +27,7 @@ pub(super) fn session(event: SessionEvent, state: &mut State) {
     with_backend(state, |backend, state| {
         match event {
             SessionEvent::PauseSession => {
+                state.cancel_window_drag();
                 state.animations.clear_intents();
                 state.suspend_resize_transactions();
                 backend.pause_frames();

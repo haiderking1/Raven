@@ -9,6 +9,16 @@ impl TtyBackend {
     /// The pre-commit caller has not installed the replacement surface state.
     /// Borrow the backend only for this copy; never dispatch clients reentrantly.
     pub(crate) fn capture_resize_animation(state: &mut State, root: &WlSurface, serial: Serial) {
+        if state.surface_is_dragged_window(root)
+            || state.windows.iter().any(|window| {
+                window
+                    .toplevel()
+                    .is_some_and(|top| top.wl_surface() == root)
+                    && state.window_has_live_resize(window)
+            })
+        {
+            return;
+        }
         let Some(mut backend) = state.backend.take() else {
             return;
         };

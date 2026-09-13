@@ -119,6 +119,8 @@ impl State {
     }
 
     pub fn refresh(&mut self) {
+        self.reconcile_window_drag();
+        self.apply_window_resize();
         self.refresh_resize_lifecycle();
         self.workspaces.refresh();
         self.windows.retain(IsAlive::alive);
@@ -129,5 +131,6 @@ impl State {
         self.popup_manager.cleanup();
         self.refresh_popup_grab();
         self.restore_focus();
+        self.reconcile_window_drag();
     }
 }

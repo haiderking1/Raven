@@ -16,6 +16,9 @@ pub struct InputState {
     shortcuts: keyboard::Shortcuts,
     pointer_refresh: pointer::PointerRefresh,
     capture: pointer::capture::Capture,
+    drag: Option<pointer::dragging::Drag>,
+    resize_cleanup: Option<smithay::desktop::Window>,
+    drag_buttons: std::collections::HashSet<u32>,
 }
 
 /// Dispatch an event from the backend's active libinput source.

@@ -1,4 +1,4 @@
-use super::{configure::configure_tile, geometry::spaced_master_stack};
+use super::{configure::configure_tile, geometry::adjusted};
 use crate::state::State;
 use smithay::utils::{Clock, Logical, Monotonic, Rectangle, SERIAL_COUNTER};
 
@@ -46,8 +46,19 @@ impl State {
         self.workspaces.entries[index].tiling.geometry = area;
         if let Some(area) = area {
             let workspace = &mut self.workspaces.entries[index];
-            workspace.tiling.frames =
-                spaced_master_stack(area, workspace.tiling.windows.len(), self.appearance.inner);
+            // Row proportions describe slots in the current stack. A membership
+            // count change starts a new equal stack rather than reviving stale weights.
+            if workspace.tiling.splits.rows.len()
+                != workspace.tiling.windows.len().saturating_sub(1)
+            {
+                workspace.tiling.splits.rows.clear();
+            }
+            workspace.tiling.frames = adjusted::frames(
+                area,
+                workspace.tiling.windows.len(),
+                self.appearance.inner,
+                &workspace.tiling.splits,
+            );
             let tiles = workspace.tiling.frames.clone();
             // map_element raises even with activate=false. Preserve stacking.
             let stacking: Vec<_> = workspace.space.elements().cloned().collect();

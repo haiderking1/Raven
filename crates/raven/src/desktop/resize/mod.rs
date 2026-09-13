@@ -7,6 +7,8 @@ mod configure;
 mod fullscreen;
 mod geometry;
 mod lifecycle;
+mod live;
+mod pacing;
 mod readiness;
 mod release;
 mod role;
@@ -61,6 +63,8 @@ pub(super) struct Batch {
 #[derive(Default)]
 pub(crate) struct Transactions {
     held: HashMap<Window, Held>,
+    live: HashMap<Window, live::Live>,
+    pacing: pacing::Pacing,
     callbacks: callbacks::Callbacks,
     fullscreen_notifications: Vec<smithay::reexports::wayland_server::Client>,
     batch: Option<Batch>,

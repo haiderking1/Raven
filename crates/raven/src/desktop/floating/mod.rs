@@ -2,13 +2,16 @@ mod access;
 mod configure;
 mod hints;
 mod lifecycle;
+mod movement;
 mod placement;
+mod resizing;
 mod stacking;
+mod toggle;
 
 use hints::Hints;
 use smithay::{
     desktop::Window,
-    utils::{Logical, Rectangle, Size},
+    utils::{Logical, Point, Rectangle, Size},
 };
 use std::collections::{HashMap, HashSet};
 
@@ -23,6 +26,8 @@ pub(crate) struct Floating {
 
 #[derive(Default)]
 struct Placement {
+    manual_size: bool,
+    position: Option<Point<i32, Logical>>,
     hints: Option<Hints>,
     natural: Option<Size<i32, Logical>>,
     geometry: Option<Rectangle<i32, Logical>>,

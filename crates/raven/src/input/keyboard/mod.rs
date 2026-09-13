@@ -13,6 +13,7 @@ pub(super) fn handle(event: impl KeyboardKeyEvent<LibinputInputBackend>, state: 
     let Some(keyboard) = state.seat.get_keyboard() else {
         return;
     };
+    state.input.shortcuts.dragging = state.input.drag.is_some();
     let keycode = event.key_code();
     let key_state = event.state();
     // Always run through input, including intercepted releases, so XKB sees

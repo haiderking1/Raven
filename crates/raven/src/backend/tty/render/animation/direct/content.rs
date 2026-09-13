@@ -53,6 +53,27 @@ impl Content {
         Self { roots }
     }
 
+    pub(in crate::backend::tty::render::animation) fn settled(&self, window: &Window) -> bool {
+        let Some(top) = window.toplevel() else {
+            return true;
+        };
+        self.roots.iter().all(|weak| {
+            let Ok(surface) = weak.upgrade() else {
+                return true;
+            };
+            if get_parent(&surface).as_ref() != Some(top.wl_surface()) {
+                return true;
+            }
+            with_renderer_surface_state(&surface, |state| {
+                state.buffer().is_none()
+                    || state.view().is_some_and(|view| {
+                        Rectangle::new(view.offset, view.dst) == window.geometry()
+                    })
+            })
+            .unwrap_or(true)
+        })
+    }
+
     /// Give each member of a full-window subtree the same live reference box.
     /// Its size comes from the imported content, not the independently committed
     /// root geometry. This covers both child-first and root-first resizes.

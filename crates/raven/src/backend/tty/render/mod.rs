@@ -3,6 +3,7 @@ mod borders;
 mod clipping;
 mod cursor;
 mod desktop;
+mod dragging;
 mod layers;
 mod outcome;
 mod pointer;

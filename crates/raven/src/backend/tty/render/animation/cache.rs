@@ -148,6 +148,7 @@ impl Animations {
                 sample.geometry.client,
                 self.commit,
                 &entry.live_content,
+                false,
             );
             if live.is_empty() {
                 self.entries.remove(top.wl_surface());

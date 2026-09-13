@@ -1,4 +1,5 @@
 mod content;
+mod floating;
 mod geometry;
 pub(super) use content::Content;
 mod paint;

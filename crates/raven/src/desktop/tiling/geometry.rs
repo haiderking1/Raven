@@ -1,3 +1,6 @@
+pub(super) mod adjusted;
+pub(super) mod rows;
+
 use crate::desktop::appearance::InnerGaps;
 use smithay::utils::{Logical, Rectangle};
 

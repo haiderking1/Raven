@@ -1,4 +1,4 @@
-use super::geometry::spaced_tile_at;
+use super::geometry::adjusted;
 use crate::state::State;
 use smithay::{
     desktop::Window,
@@ -36,11 +36,13 @@ impl State {
                 .get(position)
                 .copied();
         }
-        spaced_tile_at(
+        adjusted::frames(
             self.tiling_area()?,
             count,
-            position.unwrap_or(windows.len()),
             self.appearance.inner,
+            &self.workspaces.entries[index].tiling.splits,
         )
+        .get(windows.len())
+        .copied()
     }
 }

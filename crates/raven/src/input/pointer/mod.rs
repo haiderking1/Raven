@@ -1,4 +1,5 @@
 pub(crate) mod capture;
+pub(super) mod dragging;
 mod geometry;
 mod output;
 mod refresh;
@@ -104,6 +105,16 @@ pub(super) fn button(event: impl PointerButtonEvent<LibinputInputBackend>, state
     state.reconcile_pointer_capture();
     let serial = SERIAL_COUNTER.next_serial();
     let location = state.pointer_location;
+    if dragging::button(
+        state,
+        event.button_code(),
+        event.state(),
+        serial,
+        event.time_msec(),
+    ) {
+        pointer.frame(state);
+        return;
+    }
     let keyboard_grabbed = state
         .seat
         .get_keyboard()

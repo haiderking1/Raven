@@ -30,6 +30,12 @@ impl State {
             }
             return;
         }
+        // Interactive geometry must rejoin normal fullscreen coordination before
+        // the entry cohort captures its allocations. GPU blockers are unchanged.
+        if self.surface_is_dragged_window(surface.wl_surface()) {
+            self.cancel_window_drag();
+        }
+        self.end_live_resize(&window);
         self.begin_resize_batch(index);
         self.workspaces.entries[index]
             .fullscreen
