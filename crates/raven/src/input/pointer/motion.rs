@@ -11,8 +11,14 @@ pub(super) fn send(
     relative: Option<RelativeMotionEvent>,
     finish: bool,
 ) {
+    if state.screenshot_motion(location) {
+        return;
+    }
     state.reconcile_pointer_capture();
     let location = state.captured_pointer_location(location);
+    if state.switcher_motion(location) {
+        return;
+    }
     let moved = state.pointer_location != location;
     let Some(pointer) = state.seat.get_pointer() else {
         return;

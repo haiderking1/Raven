@@ -3,6 +3,26 @@ use smithay::{desktop::Window, utils::SERIAL_COUNTER};
 
 impl State {
     pub(crate) fn activate_window(&mut self, window: Option<Window>) {
+        if self.screenshot.active() {
+            if window
+                .as_ref()
+                .is_some_and(|w| self.is_configuration_error(w))
+            {
+                self.cancel_screenshot();
+            } else {
+                return;
+            }
+        }
+        if self.switcher.active() {
+            if window
+                .as_ref()
+                .is_some_and(|w| self.is_configuration_error(w))
+            {
+                self.cancel_app_switcher();
+            } else {
+                return;
+            }
+        }
         self.request_redraw();
         // A newly mapped hidden tile must not steal the fullscreen owner's seat.
         let fullscreen = self.fullscreen_window().cloned();

@@ -3,6 +3,8 @@ use crate::state::State;
 
 impl State {
     pub(crate) fn switch_workspace(&mut self, index: usize) {
+        self.cancel_screenshot();
+        self.cancel_app_switcher();
         self.cancel_workspace_activation();
         if index >= COUNT || index == self.workspaces.active || !self.prepare_workspace_change() {
             return;

@@ -7,6 +7,10 @@ impl Default for Bindings {
         };
         for (chord, action) in [
             ("Super+Shift+Q", Action::Quit),
+            ("Print", Action::Screenshot),
+            ("Super+Shift+S", Action::Screenshot),
+            ("Alt+Tab", Action::CycleApplications(false)),
+            ("Alt+Shift+Tab", Action::CycleApplications(true)),
             ("Super+Q", Action::LaunchTerminal),
             ("Super+D", Action::LaunchFuzzel),
             ("Super+C", Action::CloseWindow),

@@ -12,6 +12,8 @@ use super::actions::Action;
 pub(in crate::input) struct Shortcuts {
     pressed: HashMap<Keycode, bool>,
     pub(super) dragging: bool,
+    pub(super) switching: bool,
+    pub(super) screenshot: bool,
     pub(crate) bindings: super::Bindings,
 }
 
@@ -34,7 +36,65 @@ impl Shortcuts {
                     action = None;
                     suppressed
                 } else {
-                    action = if self.dragging
+                    action = if self.screenshot {
+                        let bound = self.bindings.action(modifiers, symbols);
+                        if matches!(bound, Some(Action::Quit | Action::SwitchVt(_))) {
+                            bound
+                        } else if symbols.iter().any(|s| s.raw() == keysyms::KEY_Escape) {
+                            Some(Action::CancelScreenshot)
+                        } else if symbols.iter().any(|s| {
+                            matches!(
+                                s.raw(),
+                                keysyms::KEY_Return | keysyms::KEY_KP_Enter | keysyms::KEY_space
+                            )
+                        }) {
+                            Some(Action::ConfirmScreenshot)
+                        } else {
+                            None
+                        }
+                    } else if self.switching {
+                        let mut capture_modifiers = *modifiers;
+                        capture_modifiers.alt = false;
+                        let capture = self
+                            .bindings
+                            .action(&capture_modifiers, symbols)
+                            .filter(|a| *a == Action::Screenshot)
+                            .or_else(|| {
+                                symbols
+                                    .iter()
+                                    .any(|s| s.raw() == keysyms::KEY_Print)
+                                    .then(|| {
+                                        self.bindings.action(&ModifiersState::default(), symbols)
+                                    })
+                                    .flatten()
+                                    .filter(|a| *a == Action::Screenshot)
+                            });
+                        let bound = capture.or_else(|| self.bindings.action(modifiers, symbols));
+                        if matches!(
+                            bound,
+                            Some(
+                                Action::Quit
+                                    | Action::SwitchVt(_)
+                                    | Action::CycleApplications(_)
+                                    | Action::Screenshot
+                            )
+                        ) {
+                            bound
+                        } else if symbols.iter().any(|s| s.raw() == keysyms::KEY_Escape) {
+                            Some(Action::CancelAppSwitcher)
+                        } else if symbols.iter().any(|s| {
+                            s.raw() == keysyms::KEY_Tab
+                                || s.raw() == keysyms::KEY_Right
+                                || s.raw() == keysyms::KEY_Left
+                        }) {
+                            Some(Action::CycleApplications(
+                                modifiers.shift
+                                    || symbols.iter().any(|s| s.raw() == keysyms::KEY_Left),
+                            ))
+                        } else {
+                            None
+                        }
+                    } else if self.dragging
                         && symbols
                             .iter()
                             .any(|symbol| symbol.raw() == keysyms::KEY_Escape)
@@ -43,8 +103,9 @@ impl Shortcuts {
                     } else {
                         self.bindings.action(modifiers, symbols)
                     };
-                    self.pressed.insert(keycode, action.is_some());
-                    action.is_some()
+                    let owned = self.screenshot || self.switching || action.is_some();
+                    self.pressed.insert(keycode, owned);
+                    owned
                 }
             }
         };

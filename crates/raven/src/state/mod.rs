@@ -63,6 +63,8 @@ pub struct State {
     pub backend: Option<crate::backend::tty::TtyBackend>,
     pub(super) redraw_requested: bool,
     pub input: crate::input::InputState,
+    pub(crate) switcher: crate::desktop::switcher::Switcher,
+    pub(crate) screenshot: crate::desktop::screenshot::Screenshot,
     pub(crate) input_timing: Option<crate::input::timing::InputTiming>,
     pub(crate) clients: Option<crate::runtime::client::Clients>,
     pub(crate) workspaces: crate::desktop::workspaces::Workspaces,

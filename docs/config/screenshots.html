@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Screenshots · Raven configuration</title>
+<link rel="stylesheet" href="assets/styles.css">
+<script defer src="assets/handbook.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<aside class="rail">
+<a class="brand" href="index.html">RAVEN<span>Configuration handbook</span></a>
+
+<details class="contents" open><summary>Browse the handbook</summary>
+<div class="section-search" hidden><label for="section-search">Find a section</label><input id="section-search" type="search" placeholder="Try rofi, colors, errors" autocomplete="off"></div>
+<nav aria-label="Handbook sections"><ol id="sections"><li data-keywords="setup file quickstart home"><a href="index.html">Configuration</a></li><li data-keywords="syntax comma quotes table beginner"><a href="syntax.html">Basic syntax</a></li><li data-keywords="rofi foot foote fuzzel terminal launcher drun argv"><a href="commands.html">Terminal and launcher</a></li><li data-keywords="keys shortcuts super shift ctrl actions vt spawn applications arguments alt tab switcher"><a href="bindings.html">Keybindings</a></li><li data-keywords="keyboard repeat rate delay mouse acceleration flat adaptive autoclicker virtual automation"><a href="input.html">Input</a></li><li data-keywords="screenshot print capture png clipboard selection"><a href="screenshots.html" aria-current="page">Screenshots</a></li><li data-keywords="waybar awww wallpaper cwd env session"><a href="startup.html">Startup applications</a></li><li data-keywords="appearance colors green border width animation resize gaps"><a href="appearance.html">Appearance</a></li><li data-keywords="cursor adwaita xcursor pointer size"><a href="cursor.html">Cursor</a></li><li data-keywords="workspace waybar persistent occupied hidden panel"><a href="workspaces.html">Workspaces</a></li><li data-keywords="reload save rollback copy error last startup"><a href="reload.html">Reloading</a></li><li data-keywords="error mistakes rofi foote comma syntax line startup csd"><a href="troubleshooting.html">Troubleshooting</a></li></ol><p id="search-status" role="status"></p></nav>
+</details>
+<p class="rail-foot">Local documentation<br>No network required</p>
+</aside>
+<main id="main" tabindex="-1">
+<header><p class="eyebrow"><a href="index.html">Raven configuration</a></p><h1>Screenshots</h1><p class="intro">Print and Super+Shift+S open Raven&#x27;s native area selector. No external screenshot program is required.</p></header>
+<nav class="page-toc" aria-label="On this page"><strong>Contents</strong><ul><li><a href="#taking-a-screenshot">Taking a screenshot</a></li><li><a href="#bindings">Bindings</a></li><li><a href="#saved-files-and-clipboard">Saved files and clipboard</a></li><li><a href="#capturing-the-application-switcher">Capturing the application switcher</a></li><li><a href="#input-and-session-changes">Input and session changes</a></li></ul></nav>
+<article><h2 id="taking-a-screenshot">Taking a screenshot</h2>
+<ul class="notes"><li>Press Print or Super+Shift+S. The desktop freezes while you select an area.</li><li>Drag with the left mouse button, release it, then press Enter or Space to save and copy the selected area.</li><li>Press Enter or Space without dragging to capture the whole output.</li><li>Press Escape or right-click to cancel before confirmation.</li></ul>
+<p>The saved image excludes the cursor, selection border, and screenshot controls. Taking a screenshot does not change keyboard focus.</p>
+<p>The selector opens with a dimmed desktop and a crosshair cursor, without a full-screen frame or hint panel. Dragging reveals a clear selected area. A thin outline sits outside its bounds, and the rest of the screen stays dimmed. The saved PNG has no dimming or outline.</p>
+<h2 id="bindings">Bindings</h2>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.bind(&quot;Print&quot;, &quot;screenshot&quot;)
+raven.bind(&quot;Super+Shift+S&quot;, &quot;screenshot&quot;)</code></pre><p class="copy-status" role="status"></p></div>
+<p>Both bindings are enabled by default. If you use raven.clear_bindings(), add them back explicitly. While the selector is open, Enter, Space, and Escape remain available even if bindings are reloaded.</p>
+<h2 id="saved-files-and-clipboard">Saved files and clipboard</h2>
+<p>PNG files go in Screenshots inside your XDG Pictures directory, normally ~/Pictures/Screenshots. Filenames contain the date, time, and a unique suffix. Existing files are not overwritten, and new screenshot files are private to your user.</p>
+<p>The clipboard contains the image as image/png, not its filename. Paste it into an application that accepts images. Raven shows a confirmation when saving and copying finish. If saving fails after encoding, the image is still copied and the message explains the save failure.</p>
+<h2 id="capturing-the-application-switcher">Capturing the application switcher</h2>
+<p>While holding Alt+Tab open, press Print or Super+Shift+S. The frozen image includes the application switcher. Releasing Alt during capture does not activate the highlighted app.</p>
+<h2 id="input-and-session-changes">Input and session changes</h2>
+<p>Finish an active window drag or close a popup or launcher that holds an input grab before opening the selector. Session suspension, workspace changes, output geometry changes, or a new input grab cancel an unfinished selection. Most other shortcuts are suppressed during selection; quit and VT-switch bindings still work.</p>
+<aside class="callout"><strong>Native capture only</strong><p>This feature does not add a screencopy protocol, a screen-sharing portal, or permission for arbitrary Wayland clients to capture the screen.</p></aside>
+<p class="related">See also: <a href="bindings.html">Keybindings</a> · <a href="input.html">Input settings</a></p></article>
+<nav class="pagination" aria-label="Adjacent pages"><a href="input.html">Previous: Input</a><a href="startup.html">Next: Startup applications</a></nav>
+<footer>Edit ~/.config/raven/raven.lua and save to apply changes.</footer>
+</main>
+</body>
+</html>

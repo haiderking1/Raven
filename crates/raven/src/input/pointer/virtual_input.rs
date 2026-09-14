@@ -87,7 +87,9 @@ impl State {
             }
             Event::Frame(axis) => {
                 if let Some(pointer) = self.seat.get_pointer() {
-                    if let Some(axis) = axis {
+                    if let Some(axis) =
+                        axis.filter(|_| !self.switcher.active() && !self.screenshot.active())
+                    {
                         pointer.axis(self, axis);
                     }
                     pointer.frame(self);

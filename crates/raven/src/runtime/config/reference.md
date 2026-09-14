@@ -17,7 +17,8 @@ exact, excluding lock state. The final component is an XKB keysym name, such as
 Return, space, F2, or XF86AudioRaiseVolume. Use unshifted symbols with an explicit
 Shift modifier. A plus key can be named `plus`.
 
-Actions without parameters: terminal, launcher, close, fullscreen, floating,
+Actions without parameters: terminal, launcher, close, fullscreen, floating, screenshot,
+next_app, previous_app (both require Alt in the binding),
 quit, reload. workspace and move_to_workspace take a number from 1 through 10.
 vt takes a number from 1 through 12. Spawn takes a literal argv array.
 

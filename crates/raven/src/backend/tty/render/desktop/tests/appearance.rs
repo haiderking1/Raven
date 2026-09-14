@@ -19,7 +19,8 @@ use smithay::{
 pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, output: &Output) {
     f.state.set_appearance(Appearance::default()).unwrap();
     let mut elements = Vec::new();
-    super::super::append(renderer, &f.state, output, &mut elements);
+    let mut animations = crate::backend::tty::render::animation::Animations::default();
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
     assert_eq!(elements.len(), 5);
     assert!(
         elements[..4]
@@ -56,7 +57,7 @@ pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, 
         result.sync.wait().unwrap();
     }
     elements.clear();
-    super::super::append(renderer, &f.state, output, &mut elements);
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
     for (element, (id, commit)) in elements[..4].iter().zip(&identity) {
         assert_eq!(element.id(), id);
         assert_eq!(element.current_commit(), *commit);
@@ -78,7 +79,7 @@ pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, 
 
     f.state.activate_window(None);
     elements.clear();
-    super::super::append(renderer, &f.state, output, &mut elements);
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
     for (element, (id, commit)) in elements[..4].iter().zip(&identity) {
         assert_eq!(
             element.id(),
@@ -105,7 +106,7 @@ pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, 
             .is_some()
     );
     elements.clear();
-    super::super::append(renderer, &f.state, output, &mut elements);
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
     assert!(
         damage
             .render_output(
@@ -124,7 +125,7 @@ pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, 
     appearance.border.inactive = [0.8, 0.4, 0.2, 0.5];
     f.state.set_appearance(appearance).unwrap();
     elements.clear();
-    super::super::append(renderer, &f.state, output, &mut elements);
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
     assert!(
         elements[..4]
             .iter()
@@ -143,7 +144,7 @@ pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, 
     result.sync.wait().unwrap();
     f.state.set_appearance(Appearance::disabled()).unwrap();
     elements.clear();
-    super::super::append(renderer, &f.state, output, &mut elements);
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
     assert_eq!(elements.len(), 1);
     assert!(
         damage

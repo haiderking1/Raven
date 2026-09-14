@@ -50,6 +50,10 @@ impl Chord {
         })
     }
 
+    pub fn requires_alt(&self) -> bool {
+        self.modifiers & 8 != 0
+    }
+
     pub fn matches(&self, modifiers: &ModifiersState, symbol: Keysym) -> bool {
         let bits = u8::from(modifiers.logo)
             | (u8::from(modifiers.shift) << 1)

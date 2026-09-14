@@ -95,7 +95,7 @@ impl Game {
         location: (f64, f64),
         relative: Option<RelativeMotionEvent>,
     ) -> Vec<Event> {
-        super::super::super::motion(&mut self.f.state, location.into(), 4321, relative);
+        super::super::super::motion::send(&mut self.f.state, location.into(), 4321, relative, true);
         self.f.dispatch()
     }
 

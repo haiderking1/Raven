@@ -7,3 +7,7 @@ mod support;
 mod commands;
 #[path = "config/input.rs"]
 mod input;
+#[path = "config/screenshot.rs"]
+mod screenshot;
+#[path = "config/switcher.rs"]
+mod switcher;

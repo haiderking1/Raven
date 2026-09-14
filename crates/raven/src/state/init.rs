@@ -60,6 +60,8 @@ impl State {
         let workspace_protocol =
             crate::protocols::workspace::WorkspaceProtocol::new(&display_handle);
         Ok(Self {
+            switcher: Default::default(),
+            screenshot: Default::default(),
             display_handle,
             compositor_state,
             shm_state,

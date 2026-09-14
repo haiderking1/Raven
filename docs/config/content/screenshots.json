@@ -1,0 +1,95 @@
+{
+  "nav": "Screenshots",
+  "title": "Screenshots",
+  "intro": "Print and Super+Shift+S open Raven's native area selector. No external screenshot program is required.",
+  "keywords": [
+    "screenshot",
+    "print",
+    "capture",
+    "png",
+    "clipboard",
+    "selection"
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "text": "Taking a screenshot"
+    },
+    {
+      "type": "list",
+      "items": [
+        "Press Print or Super+Shift+S. The desktop freezes while you select an area.",
+        "Drag with the left mouse button, release it, then press Enter or Space to save and copy the selected area.",
+        "Press Enter or Space without dragging to capture the whole output.",
+        "Press Escape or right-click to cancel before confirmation."
+      ]
+    },
+    {
+      "type": "text",
+      "text": "The saved image excludes the cursor, selection border, and screenshot controls. Taking a screenshot does not change keyboard focus."
+    },
+    {
+      "type": "text",
+      "text": "The selector opens with a dimmed desktop and a crosshair cursor, without a full-screen frame or hint panel. Dragging reveals a clear selected area. A thin outline sits outside its bounds, and the rest of the screen stays dimmed. The saved PNG has no dimming or outline."
+    },
+    {
+      "type": "heading",
+      "text": "Bindings"
+    },
+    {
+      "type": "code",
+      "language": "Lua",
+      "text": "raven.bind(\"Print\", \"screenshot\")\nraven.bind(\"Super+Shift+S\", \"screenshot\")"
+    },
+    {
+      "type": "text",
+      "text": "Both bindings are enabled by default. If you use raven.clear_bindings(), add them back explicitly. While the selector is open, Enter, Space, and Escape remain available even if bindings are reloaded."
+    },
+    {
+      "type": "heading",
+      "text": "Saved files and clipboard"
+    },
+    {
+      "type": "text",
+      "text": "PNG files go in Screenshots inside your XDG Pictures directory, normally ~/Pictures/Screenshots. Filenames contain the date, time, and a unique suffix. Existing files are not overwritten, and new screenshot files are private to your user."
+    },
+    {
+      "type": "text",
+      "text": "The clipboard contains the image as image/png, not its filename. Paste it into an application that accepts images. Raven shows a confirmation when saving and copying finish. If saving fails after encoding, the image is still copied and the message explains the save failure."
+    },
+    {
+      "type": "heading",
+      "text": "Capturing the application switcher"
+    },
+    {
+      "type": "text",
+      "text": "While holding Alt+Tab open, press Print or Super+Shift+S. The frozen image includes the application switcher. Releasing Alt during capture does not activate the highlighted app."
+    },
+    {
+      "type": "heading",
+      "text": "Input and session changes"
+    },
+    {
+      "type": "text",
+      "text": "Finish an active window drag or close a popup or launcher that holds an input grab before opening the selector. Session suspension, workspace changes, output geometry changes, or a new input grab cancel an unfinished selection. Most other shortcuts are suppressed during selection; quit and VT-switch bindings still work."
+    },
+    {
+      "type": "note",
+      "title": "Native capture only",
+      "text": "This feature does not add a screencopy protocol, a screen-sharing portal, or permission for arbitrary Wayland clients to capture the screen."
+    },
+    {
+      "type": "links",
+      "items": [
+        [
+          "bindings.html",
+          "Keybindings"
+        ],
+        [
+          "input.html",
+          "Input settings"
+        ]
+      ]
+    }
+  ]
+}

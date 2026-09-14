@@ -10,7 +10,9 @@ mod pointer;
 pub(super) mod recovery;
 mod windows;
 pub(super) use outcome::RenderOutcome;
+mod screenshot;
 mod submit;
+mod switcher;
 
 use super::{device::Device, dmabuf::FeedbackDelivery};
 use crate::state::State;
@@ -27,8 +29,9 @@ render_elements! {
     SceneElement<=GlesRenderer>;
     Surface=WaylandSurfaceRenderElement<GlesRenderer>,
     ClippedSurface=CropRenderElement<WaylandSurfaceRenderElement<GlesRenderer>>,
-    Cursor=MemoryRenderBufferRenderElement<GlesRenderer>,
+    Memory=MemoryRenderBufferRenderElement<GlesRenderer>,
     Border=borders::BorderElement,
+    Screenshot=screenshot::View,
     ResizeLive=animation::LiveElement,
     ResizeBlend=animation::Blend,
 }
@@ -36,6 +39,8 @@ render_elements! {
 pub(super) struct Scene {
     pub(in crate::backend::tty) cursor: cursor::Cursors,
     feedback: FeedbackDelivery,
+    switcher: switcher::Overlay,
+    screenshot: screenshot::Capture,
     elements: Vec<SceneElement>,
     pub(in crate::backend::tty) animations: animation::Animations,
 }
@@ -48,9 +53,15 @@ impl Scene {
                 None => cursor::Cursors::new()?,
             },
             feedback: FeedbackDelivery::default(),
+            switcher: Default::default(),
+            screenshot: Default::default(),
             elements: Vec::new(),
             animations: animation::Animations::default(),
         })
+    }
+
+    pub(in crate::backend::tty) fn clear_screenshot(&mut self) {
+        self.screenshot = Default::default();
     }
 
     /// Render one snapshot. The scheduler reserves the pending or successor slot.
@@ -91,6 +102,10 @@ impl Scene {
             &mut self.cursor,
             elements,
         )?;
+        self.screenshot
+            .append(&mut device.renderer, state, output, elements)?;
+        self.switcher
+            .append(&mut device.renderer, state, output, elements)?;
         // Desktop elements include layer shells, XDG popups, and subsurface trees.
         desktop::append(
             &mut device.renderer,
@@ -100,7 +115,26 @@ impl Scene {
             elements,
         );
         animation::accounting::record(state, output, elements);
-        submit::render(device, state, elements, &mut self.feedback, deferred)
+        let outcome = submit::render(device, state, elements, &mut self.feedback, deferred)?;
+        self.screenshot
+            .after_frame(&mut device.renderer, state, elements);
+        Ok(outcome)
+    }
+}
+
+impl super::TtyBackend {
+    pub(crate) fn poll_screenshot(
+        &mut self,
+    ) -> Option<(
+        u64,
+        Result<crate::desktop::screenshot::encoding::Pixels, String>,
+    )> {
+        if !self.input_active() {
+            return None;
+        }
+        self.scene
+            .screenshot
+            .poll(&mut self.device.as_mut()?.renderer)
     }
 }
 

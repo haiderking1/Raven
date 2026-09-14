@@ -8,6 +8,8 @@ Built as a personal **tiling** compositor — workspaces, Waybar, Xwayland, and 
 
 Actively used and under development. Single GPU and single output today. Multi-output is intentionally deferred. Expect sharp edges; this is not positioned as a drop-in replacement for Hyprland/Sway.
 
+Deferred features and validation work are tracked in the [TODO list](docs/planning/TODO.md).
+
 ## Layout
 
     crates/raven/     compositor binary + library

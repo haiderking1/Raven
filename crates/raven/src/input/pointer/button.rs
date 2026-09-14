@@ -6,6 +6,13 @@ pub(super) fn send(state: &mut State, button: u32, pressed: ButtonState, time: u
     let Some(pointer) = state.seat.get_pointer() else {
         return;
     };
+    if state.screenshot_button(button, pressed) || state.switcher_button(button, pressed) {
+        state.clear_popup_click();
+        if finish {
+            pointer.frame(state);
+        }
+        return;
+    }
     state.reconcile_pointer_capture();
     let serial = SERIAL_COUNTER.next_serial();
     let location = state.pointer_location;

@@ -12,7 +12,10 @@
     "vt",
     "spawn",
     "applications",
-    "arguments"
+    "arguments",
+    "alt",
+    "tab",
+    "switcher"
   ],
   "blocks": [
     {
@@ -56,6 +59,31 @@
     },
     {
       "type": "heading",
+      "text": "Application switcher"
+    },
+    {
+      "type": "text",
+      "text": "Hold Alt and press Tab to select the next application. Alt+Shift+Tab goes backward. Release Alt to focus the selected application’s most recently focused window, including windows on other workspaces. Escape cancels without changing focus."
+    },
+    {
+      "type": "code",
+      "language": "Lua",
+      "text": "raven.bind(\"Alt+Tab\", \"next_app\")\nraven.bind(\"Alt+Shift+Tab\", \"previous_app\")"
+    },
+    {
+      "type": "text",
+      "text": "These bindings are enabled by default and must include Alt. Holding Tab uses your keyboard repeat settings. While the switcher is open, the arrow keys also change selection; hovering an icon selects it, clicking confirms, and clicking outside cancels."
+    },
+    {
+      "type": "text",
+      "text": "Windows are grouped by application ID and listed in recent-focus order. Applications without mapped windows are not shown. Names and icons come from installed desktop entries and the icon theme; unidentified applications use a fallback."
+    },
+    {
+      "type": "text",
+      "text": "If another fullscreen window hides the target on its workspace, Raven requests fullscreen exit before focusing the target."
+    },
+    {
+      "type": "heading",
       "text": "Actions"
     },
     {
@@ -81,6 +109,16 @@
           "fullscreen / floating",
           "None",
           "Toggle the focused window’s mode."
+        ],
+        [
+          "screenshot",
+          "None",
+          "Open the native area selector."
+        ],
+        [
+          "next_app / previous_app",
+          "None",
+          "Select the next / previous application. The binding must include Alt."
         ],
         [
           "quit",
@@ -145,6 +183,14 @@
       ],
       "rows": [
         [
+          "Print / Super+Shift+S",
+          "Screenshot area selector"
+        ],
+        [
+          "Alt+Tab / Alt+Shift+Tab",
+          "Next / previous application"
+        ],
+        [
           "Super+Q / Super+D",
           "Terminal / launcher"
         ],
@@ -188,6 +234,10 @@
         [
           "commands.html",
           "Terminal and launcher"
+        ],
+        [
+          "screenshots.html",
+          "Screenshots"
         ]
       ]
     }

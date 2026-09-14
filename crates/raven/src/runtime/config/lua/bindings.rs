@@ -36,8 +36,11 @@ fn action(value: Value, argument: Option<i64>) -> Result<Action> {
                 "fullscreen" => Ok(Action::ToggleFullscreen),
                 "floating" => Ok(Action::ToggleFloating),
                 "reload" => Ok(Action::ReloadConfig),
+                "screenshot" => Ok(Action::Screenshot),
+                "next_app" => Ok(Action::CycleApplications(false)),
+                "previous_app" => Ok(Action::CycleApplications(true)),
                 _ => Err(error(format!(
-                    "unknown binding action {name:?}. Choose terminal, launcher, close, fullscreen, floating, quit, reload, workspace, move_to_workspace, or vt. To launch a program, use {{ spawn = {{ 'program' }} }}"
+                    "unknown binding action {name:?}. Choose terminal, launcher, close, fullscreen, floating, screenshot, next_app, previous_app, quit, reload, workspace, move_to_workspace, or vt. To launch a program, use {{ spawn = {{ 'program' }} }}"
                 ))),
             }
         }

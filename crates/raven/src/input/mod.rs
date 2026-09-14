@@ -2,7 +2,7 @@
 //! the session is inactive; do not dispatch queued events from an inactive source.
 
 pub(crate) mod devices;
-mod keyboard;
+pub(crate) mod keyboard;
 pub use keyboard::{Action, Bindings};
 mod pointer;
 pub(crate) use pointer::capture::motion_hook as pointer_motion_hook;

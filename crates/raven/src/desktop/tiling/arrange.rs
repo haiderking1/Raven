@@ -102,7 +102,7 @@ impl State {
     }
 
     pub(crate) fn refresh_tiling_pointer(&mut self) {
-        if self.resize_is_applying() {
+        if self.resize_is_applying() || self.screenshot.active() {
             return;
         }
         let time = Clock::<Monotonic>::new().now().as_millis();

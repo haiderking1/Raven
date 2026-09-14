@@ -3,6 +3,11 @@ use crate::state::State;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Action {
     Quit,
+    CycleApplications(bool),
+    CancelAppSwitcher,
+    Screenshot,
+    ConfirmScreenshot,
+    CancelScreenshot,
     ReloadConfig,
     Spawn(Vec<std::ffi::OsString>),
     CancelWindowDrag,
@@ -18,6 +23,27 @@ pub enum Action {
 
 impl Action {
     pub(super) fn execute(self, state: &mut State) {
+        match self {
+            Self::Screenshot => {
+                state.open_screenshot();
+                return;
+            }
+            Self::ConfirmScreenshot => {
+                state.confirm_screenshot();
+                return;
+            }
+            Self::CancelScreenshot => {
+                state.cancel_screenshot();
+                return;
+            }
+            _ => {}
+        }
+        if let Self::CycleApplications(reverse) = self {
+            state.cycle_applications(reverse);
+            return;
+        }
+        state.cancel_screenshot();
+        state.cancel_app_switcher();
         if self == Self::ReloadConfig {
             state.config.request_reload();
             return;
@@ -25,7 +51,12 @@ impl Action {
         // A workspace/fullscreen/VT shortcut must not act through a move grab.
         state.cancel_window_drag();
         match self {
-            Self::ReloadConfig => unreachable!(),
+            Self::ReloadConfig
+            | Self::CycleApplications(_)
+            | Self::Screenshot
+            | Self::ConfirmScreenshot
+            | Self::CancelScreenshot => unreachable!(),
+            Self::CancelAppSwitcher => {}
             Self::Spawn(argv) => launch(state, &argv),
             Self::CancelWindowDrag => state.cancel_window_drag(),
             Self::CloseWindow => state.close_focused_window(),

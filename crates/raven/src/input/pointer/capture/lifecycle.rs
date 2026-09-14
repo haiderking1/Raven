@@ -39,6 +39,11 @@ impl State {
             self.release_pointer_capture();
             return;
         };
+        // The native selector moves its cursor without sending client motion.
+        // Preserve an existing lock/confine until its original position returns.
+        if self.screenshot.active() {
+            return;
+        }
         let hit = self.surface_under(self.pointer_location);
         let eligible = (!self.input.capture.keyboard_seen
             || self

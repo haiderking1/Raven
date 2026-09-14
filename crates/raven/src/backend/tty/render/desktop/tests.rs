@@ -49,8 +49,15 @@ fn first_tiled_window_builds_real_scene_without_relocking_layer_map() {
     let context = EGLContext::new(&display).unwrap();
     let mut renderer = unsafe { GlesRenderer::new(context) }.unwrap();
     let mut elements = Vec::new();
+    let mut animations = crate::backend::tty::render::animation::Animations::default();
     eprintln!("Entering production scene assembly with one mapped tiled client");
-    super::append(&mut renderer, &fixture.state, &output, &mut elements);
+    super::append(
+        &mut renderer,
+        &fixture.state,
+        &output,
+        &mut animations,
+        &mut elements,
+    );
     assert_eq!(
         elements.len(),
         1,

@@ -78,6 +78,9 @@ pub(super) fn button(event: impl PointerButtonEvent<LibinputInputBackend>, state
     }
 }
 pub(super) fn axis(event: impl PointerAxisEvent<LibinputInputBackend>, state: &mut State) {
+    if state.screenshot.active() || state.switcher.active() {
+        return;
+    }
     if let Some(pointer) = state.seat.get_pointer() {
         pointer.axis(state, scroll::frame(&event));
         pointer.frame(state);

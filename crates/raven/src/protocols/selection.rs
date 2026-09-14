@@ -13,7 +13,22 @@ use smithay::{
 use std::os::fd::OwnedFd;
 
 impl SelectionHandler for State {
-    type SelectionUserData = ();
+    type SelectionUserData = Option<std::sync::Arc<[u8]>>;
+    fn send_selection(
+        &mut self,
+        ty: smithay::wayland::selection::SelectionTarget,
+        mime_type: String,
+        fd: OwnedFd,
+        _seat: Seat<Self>,
+        user_data: &Self::SelectionUserData,
+    ) {
+        if ty == smithay::wayland::selection::SelectionTarget::Clipboard && mime_type == "image/png"
+        {
+            if let Some(png) = user_data {
+                self.send_screenshot_clipboard(fd, png.clone());
+            }
+        }
+    }
 }
 impl DataDeviceHandler for State {
     fn data_device_state(&self) -> &DataDeviceState {
@@ -37,7 +52,7 @@ impl ClientDndGrabHandler for State {
     }
 }
 impl ServerDndGrabHandler for State {
-    // Raven never creates a server-owned selection or starts a server drag.
+    // Raven does not start server drags. Clipboard image transfers are handled above.
     // Closing an unexpected transfer FD reports EOF rather than leaving it hanging.
     fn send(&mut self, _mime_type: String, fd: OwnedFd, _seat: Seat<Self>) {
         drop(fd);

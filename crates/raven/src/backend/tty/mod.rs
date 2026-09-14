@@ -118,6 +118,8 @@ impl Drop for TtyBackend {
         if let Some(input) = &mut self.input {
             input.suspend();
         }
+        // Retire screenshot copies before removing their GL context.
+        self.scene.clear_screenshot();
         // Remove client readiness fds and globals before dropping EGL/DRM.
         self.dmabuf.take();
         self.sources.remove_devices();

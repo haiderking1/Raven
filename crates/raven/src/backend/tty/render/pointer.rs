@@ -25,6 +25,32 @@ pub(super) fn append(
     };
     let scale = output.current_scale().fractional_scale();
     let pointer = state.pointer_location - area.loc.to_f64();
+    if state.screenshot.active() {
+        elements.push(
+            cursor
+                .render(
+                    renderer,
+                    smithay::input::pointer::CursorIcon::Crosshair,
+                    pointer,
+                    scale,
+                )?
+                .into(),
+        );
+        return Ok(());
+    }
+    if state.switcher.active() {
+        elements.push(
+            cursor
+                .render(
+                    renderer,
+                    smithay::input::pointer::CursorIcon::Default,
+                    pointer,
+                    scale,
+                )?
+                .into(),
+        );
+        return Ok(());
+    }
     if matches!(&state.cursor_status, CursorImageStatus::Surface(surface) if !surface.is_alive()) {
         state.cursor_status = CursorImageStatus::default_named();
     }

@@ -13,6 +13,7 @@ impl Bindings {
     pub fn bind(&mut self, chord: &str, action: Action) -> Result<(), String> {
         validate_action(&action)?;
         let chord = Chord::parse(chord)?;
+        validate_chord(&chord, &action)?;
         if let Some((_, previous)) = self.entries.iter_mut().find(|(key, _)| *key == chord) {
             *previous = action;
         } else {
@@ -26,8 +27,9 @@ impl Bindings {
         Ok(())
     }
     pub fn validate(&self) -> Result<(), String> {
-        for (_, action) in &self.entries {
+        for (chord, action) in &self.entries {
             validate_action(action)?;
+            validate_chord(chord, action)?;
         }
         Ok(())
     }
@@ -43,6 +45,17 @@ impl Bindings {
                     .any(|symbol| chord.matches(modifiers, *symbol))
             })
             .map(|(_, action)| action.clone())
+    }
+}
+
+fn validate_chord(chord: &Chord, action: &Action) -> Result<(), String> {
+    if matches!(action, Action::CycleApplications(_)) && !chord.requires_alt() {
+        Err(
+            "application-switcher bindings must include Alt; releasing Alt confirms the selection"
+                .into(),
+        )
+    } else {
+        Ok(())
     }
 }
 

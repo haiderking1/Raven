@@ -12,5 +12,5 @@ mod popups;
 mod presentation;
 mod redraw;
 mod tiling;
-mod wire;
+pub(crate) mod wire;
 mod workspaces;

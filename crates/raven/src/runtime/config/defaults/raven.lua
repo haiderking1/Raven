@@ -33,6 +33,10 @@ raven.workspaces { show = "occupied", persistent = {} }
 -- raven.workspaces { show = "all" }
 
 -- These replace the matching built-in bindings. Unmentioned bindings stay enabled.
+raven.bind("Print", "screenshot")
+raven.bind("Super+Shift+S", "screenshot")
+raven.bind("Alt+Tab", "next_app")
+raven.bind("Alt+Shift+Tab", "previous_app")
 raven.bind("Super+Q", "terminal")
 raven.bind("Super+D", "launcher")
 raven.bind("Super+C", "close")

@@ -50,6 +50,8 @@ fn run_session(settings: settings::Settings, use_file: bool) -> Result<(), Box<d
     let display = Display::<State>::new()?;
     let mut state = State::new(display.handle(), event_loop.get_signal())?;
     state.install_resize_transactions(event_loop.handle())?;
+    state.install_app_switcher(event_loop.handle());
+    state.install_screenshot(event_loop.handle());
     state.apply_configuration(prepared)?;
     let socket = wayland::install(display, event_loop.handle())?;
     // Capability detection and reservation finish before input/render installation.
@@ -104,6 +106,10 @@ fn run_session(settings: settings::Settings, use_file: bool) -> Result<(), Box<d
             return;
         }
         state.refresh();
+        state.refresh_screenshot();
+        if !state.screenshot.active() {
+            state.refresh_app_switcher();
+        }
         config::dispatch(state);
         state.refresh_workspace_protocol();
         TtyBackend::dispatch(state);
