@@ -11,6 +11,12 @@ impl State {
         if self.fullscreen_manages(window) {
             return;
         }
+        if self
+            .window_frame_geometry(window)
+            .is_some_and(|frame| frame.loc != position)
+        {
+            self.leave_maximized_for_interaction(window);
+        }
         let Some(index) = self.workspaces.index_of(window) else {
             return;
         };

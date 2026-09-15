@@ -19,12 +19,12 @@ pub(super) fn append(
     area: Rectangle<i32, Logical>,
     scale: f64,
     elements: &mut Vec<SceneElement>,
-) {
+) -> Result<(), smithay::backend::renderer::gles::GlesError> {
     let Some(top) = window.toplevel() else {
-        return;
+        return Ok(());
     };
     let Some(origin) = state.window_surface_origin(window) else {
-        return;
+        return Ok(());
     };
     let location = (origin + offset - area.loc).to_physical_precise_round(scale);
     for (popup, popup_offset) in PopupManager::popups_for_surface(top.wl_surface()) {
@@ -40,6 +40,7 @@ pub(super) fn append(
         );
         clipping::append(elements, surfaces, Rectangle::from_size(area.size), scale);
     }
+    let start = elements.len();
     if let (Some(mut frame), Some(mut client)) = (
         state.window_frame_geometry(window),
         state.window_client_geometry(window),
@@ -50,21 +51,27 @@ pub(super) fn append(
             state, window, area, scale, true, frame, client, 1.0, elements,
         );
     }
-    let Some(mut clip) = state.window_render_geometry(window) else {
-        return;
-    };
-    clip.loc += offset;
-    let Some(mut clip) = clip.intersection(area) else {
-        return;
-    };
-    clip.loc -= area.loc;
-    let surfaces = render_elements_from_surface_tree(
-        renderer,
-        top.wl_surface(),
-        location,
-        scale,
-        1.0,
-        Kind::Unspecified,
-    );
-    clipping::append(elements, surfaces, clip, scale);
+    if let Some(mut clip) = state.window_render_geometry(window) {
+        clip.loc += offset;
+        if let Some(mut clip) = clip.intersection(area) {
+            clip.loc -= area.loc;
+            let surfaces = render_elements_from_surface_tree(
+                renderer,
+                top.wl_surface(),
+                location,
+                scale,
+                1.0,
+                Kind::Unspecified,
+            );
+            clipping::append(elements, surfaces, clip, scale);
+        }
+    }
+    if let Some(mut geometry) = crate::desktop::animation::geometry::Geometry::of(state, window) {
+        geometry.frame.loc += offset;
+        geometry.client.loc += offset;
+        super::super::rounded::apply(
+            renderer, state, window, geometry, area, scale, true, start, elements,
+        )?;
+    }
+    Ok(())
 }

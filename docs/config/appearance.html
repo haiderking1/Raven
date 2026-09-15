@@ -21,7 +21,7 @@
 </aside>
 <main id="main" tabindex="-1">
 <header><p class="eyebrow"><a href="index.html">Raven configuration</a></p><h1>Appearance</h1><p class="intro">raven.appearance controls tiled-window gaps and window borders. Sizes use logical pixels.</p></header>
-<nav class="page-toc" aria-label="On this page"><strong>Contents</strong><ul><li><a href="#configuration">Configuration</a></li><li><a href="#per-axis-and-per-edge-gaps">Per-axis and per-edge gaps</a></li><li><a href="#resize-animation">Resize animation</a></li></ul></nav>
+<nav class="page-toc" aria-label="On this page"><strong>Contents</strong><ul><li><a href="#configuration">Configuration</a></li><li><a href="#per-axis-and-per-edge-gaps">Per-axis and per-edge gaps</a></li><li><a href="#resize-animation">Resize animation</a></li><li><a href="#window-management">Window management</a></li><li><a href="#taskbar-restoration">Taskbar restoration</a></li></ul></nav>
 <article><h2 id="configuration">Configuration</h2>
 <div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.appearance {
     inner = 8,
@@ -41,7 +41,22 @@
 }</code></pre><p class="copy-status" role="status"></p></div>
 <h2 id="resize-animation">Resize animation</h2>
 <div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.animations { resize_ms = 200 }</code></pre><p class="copy-status" role="status"></p></div>
-<div class="table-scroll" tabindex="0" role="region" aria-label="Animation options"><table><caption>Animation options</caption><thead><tr><th scope="col">Option</th><th scope="col">Default</th><th scope="col">Description</th></tr></thead><tbody><tr><td>resize_ms</td><td>200</td><td>Duration in milliseconds, from 0 to 2000. Set 0 to disable the visual animation.</td></tr></tbody></table></div></article>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Animation options"><table><caption>Animation options</caption><thead><tr><th scope="col">Option</th><th scope="col">Default</th><th scope="col">Description</th></tr></thead><tbody><tr><td>resize_ms</td><td>200</td><td>Duration in milliseconds, from 0 to 2000. Set 0 to disable the visual animation.</td></tr></tbody></table></div>
+<p>Normal windows have rounded corners with a fixed 16-logical-pixel radius, scaled with the output. Existing border colors and widths still apply. Fullscreen windows stay square; popup windows are not clipped to their parent’s corners. Traffic-light window buttons are not added.</p>
+<h2 id="window-management">Window management</h2>
+<p>The maximize action toggles between the layer-reserved workarea and the window’s previous tiled or floating placement. Client size limits still apply. The minimize action hides a window and its descendants while preserving their workspace and restore placement. Neither action has a default shortcut.</p>
+<div class="sample"><div class="sample-bar"><span>Lua</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>raven.bind(&quot;Super+M&quot;, &quot;minimize&quot;)
+raven.bind(&quot;Super+Shift+F&quot;, &quot;maximize&quot;)</code></pre><p class="copy-status" role="status"></p></div>
+<h2 id="taskbar-restoration">Taskbar restoration</h2>
+<p>Minimization requires a compatible taskbar or Dock using wlr foreign-toplevel-management. Waybar’s wlr/taskbar module provides this connection; clicking its entry with the activate action restores and focuses the window. Add wlr/taskbar to your existing module list rather than replacing unrelated modules.</p>
+<div class="sample"><div class="sample-bar"><span>JSON</span><button type="button" class="copy" hidden>Copy</button></div><pre><code>{
+    &quot;modules-left&quot;: [&quot;wlr/taskbar&quot;],
+    &quot;wlr/taskbar&quot;: {
+        &quot;format&quot;: &quot;{icon}&quot;,
+        &quot;on-click&quot;: &quot;activate&quot;
+    }
+}</code></pre><p class="copy-status" role="status"></p></div>
+<p>Raven disables minimization when a window has no taskbar restore route. If that route disconnects, affected minimized windows become visible again. Alt+Tab does not automatically restore minimized windows. Traffic-light buttons, a native Dock, and minimize animations are not implemented yet.</p></article>
 <nav class="pagination" aria-label="Adjacent pages"><a href="startup.html">Previous: Startup applications</a><a href="cursor.html">Next: Cursor</a></nav>
 <footer>Edit ~/.config/raven/raven.lua and save to apply changes.</footer>
 </main>

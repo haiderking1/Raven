@@ -49,11 +49,12 @@ impl State {
             index = destination;
         }
         let hints = Hints::committed(window);
+        super::maximize::resolve_opening(window, hints.floats());
         let floating = &mut self.workspaces.entries[index].floating;
         if floating.opening.get(window) == Some(&hints) {
             return false;
         }
-        if hints.floats() {
+        if hints.floats() || super::maximize::is_maximized(window) {
             floating.entries.entry(window.clone()).or_default();
         } else {
             floating.entries.remove(window);

@@ -13,8 +13,9 @@ pub(super) fn append(
     area: Rectangle<i32, Logical>,
     scale: f64,
     elements: &mut Vec<SceneElement>,
-) {
+) -> Result<(), smithay::backend::renderer::gles::GlesError> {
     if let Some((window, offset)) = state.dragged_tile() {
-        preview::append(renderer, state, window, offset, area, scale, elements);
+        preview::append(renderer, state, window, offset, area, scale, elements)?;
     }
+    Ok(())
 }

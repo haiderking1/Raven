@@ -8,6 +8,7 @@ mod layers;
 mod outcome;
 mod pointer;
 pub(super) mod recovery;
+mod rounded;
 mod windows;
 pub(super) use outcome::RenderOutcome;
 mod screenshot;
@@ -31,6 +32,8 @@ render_elements! {
     ClippedSurface=CropRenderElement<WaylandSurfaceRenderElement<GlesRenderer>>,
     Memory=MemoryRenderBufferRenderElement<GlesRenderer>,
     Border=borders::BorderElement,
+    Rounded=rounded::Rounded,
+    RoundedBorder=rounded::Ring,
     Screenshot=screenshot::View,
     ResizeLive=animation::LiveElement,
     ResizeBlend=animation::Blend,
@@ -113,7 +116,7 @@ impl Scene {
             output,
             &mut self.animations,
             elements,
-        );
+        )?;
         animation::accounting::record(state, output, elements);
         let outcome = submit::render(device, state, elements, &mut self.feedback, deferred)?;
         self.screenshot
@@ -148,7 +151,8 @@ pub(crate) fn test_scene_size(renderer: &mut GlesRenderer, state: &State) -> usi
             output,
             &mut animation::Animations::default(),
             &mut elements,
-        );
+        )
+        .unwrap();
     }
     elements.len()
 }

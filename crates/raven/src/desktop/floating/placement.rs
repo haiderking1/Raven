@@ -10,6 +10,23 @@ impl State {
         &self,
         window: &Window,
     ) -> Option<(Rectangle<i32, Logical>, Rectangle<i32, Logical>)> {
+        if super::maximize::is_maximized(window) {
+            let area = self.window_workarea()?;
+            let bounds = self.appearance.client_rect(area).size;
+            let size = bounded_size(&Hints::committed(window), Some(bounds), Some(bounds));
+            let border = self.appearance.border_width(area);
+            let frame_size: smithay::utils::Size<i32, Logical> =
+                (size.w + 2 * border, size.h + 2 * border).into();
+            let loc = area.loc
+                + Point::from((
+                    (area.size.w - frame_size.w) / 2,
+                    (area.size.h - frame_size.h) / 2,
+                ));
+            return Some((
+                Rectangle::new(loc, frame_size),
+                Rectangle::new(loc + Point::from((border, border)), size),
+            ));
+        }
         let area = self
             .tiling_area()
             .filter(|a| a.size.w > 0 && a.size.h > 0)?;
@@ -141,6 +158,7 @@ impl State {
         {
             return false;
         }
+        let maximized = super::maximize::is_maximized(window);
         let pointer_owned_size = self.floating_resize_owns_size(window);
         let hints = Hints::committed(window);
         let entry = self.workspaces.entries[index]
@@ -150,6 +168,9 @@ impl State {
             .unwrap();
         let mut changed = entry.hints.as_ref() != Some(&hints);
         entry.hints = Some(hints);
+        if maximized {
+            return changed;
+        }
         let size = window.geometry().size;
         // The committed XDG state follows the acknowledged configure, even if
         // a newer gap/workarea configure is already pending. A late response to

@@ -2,6 +2,7 @@ use crate::state::State;
 
 impl State {
     pub(crate) fn cycle_applications(&mut self, reverse: bool) {
+        self.cancel_management_requests();
         if let Some(session) = &mut self.switcher.session {
             session.step(reverse);
         } else {
@@ -36,7 +37,19 @@ impl State {
             .switcher
             .session
             .as_ref()
-            .and_then(|session| session.target())
+            .and_then(|session| {
+                let target = session.target()?;
+                if !self.window_is_minimized(target) {
+                    Some(target)
+                } else {
+                    session
+                        .apps
+                        .get(session.selected)?
+                        .windows
+                        .iter()
+                        .find(|window| !self.window_is_minimized(window))
+                }
+            })
             .cloned();
         self.cancel_app_switcher();
         let Some(target) = target else {
@@ -56,11 +69,13 @@ impl State {
         self.switcher.pending = Some(target);
         self.refresh_switcher_activation();
     }
-    pub(super) fn refresh_switcher_activation(&mut self) {
+    // Taskbar restoration shares the same fullscreen-exit and focus transaction.
+    pub(in crate::desktop) fn refresh_switcher_activation(&mut self) {
         let Some(target) = self.switcher.pending.clone() else {
             return;
         };
-        if self.workspaces.index_of(&target) != Some(self.workspaces.active)
+        if self.window_is_minimized(&target)
+            || self.workspaces.index_of(&target) != Some(self.workspaces.active)
             || self.space().element_location(&target).is_none()
         {
             self.switcher.pending = None;

@@ -14,6 +14,7 @@ use smithay::{
 pub(super) fn suspend(input: &mut Libinput, state: &mut State) {
     state.cancel_screenshot();
     state.cancel_app_switcher();
+    state.cancel_management_requests();
     state.cancel_workspace_activation();
     state.suspend_pointer_capture();
     input.suspend();

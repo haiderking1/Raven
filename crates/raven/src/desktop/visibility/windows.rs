@@ -7,6 +7,7 @@ use smithay::{
 impl State {
     pub(crate) fn window_is_visible(&self, window: &Window) -> bool {
         window.alive()
+            && !self.window_is_minimized(window)
             && self.space().element_location(window).is_some()
             && self.fullscreen_window().is_none_or(|owner| {
                 owner == window

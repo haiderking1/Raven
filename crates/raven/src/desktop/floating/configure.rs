@@ -53,14 +53,19 @@ impl State {
         let Some(entry) = self.workspaces.entries[index].floating.entries.get(window) else {
             return false;
         };
-        let bounds = self
-            .tiling_area()
-            .map(|area| self.appearance.client_rect(area).size);
+        let bounds = (if super::maximize::is_maximized(window) {
+            self.window_workarea()
+        } else {
+            self.tiling_area()
+        })
+        .map(|area| self.appearance.client_rect(area).size);
         // Before a natural size exists, zero still means client choice. Once
         // mapped, always configure the positive allocated client rectangle.
-        let size = entry
-            .geometry
-            .map(|client| client.size)
+        let size = self
+            .compute_floating_geometry(window)
+            .filter(|_| super::maximize::is_maximized(window))
+            .map(|(_, client)| client.size)
+            .or_else(|| entry.geometry.map(|client| client.size))
             .unwrap_or_else(|| bounded_size(&Hints::committed(window), entry.natural, bounds));
         let top = window.toplevel().expect("Wayland window");
         top.with_pending_state(|state| {

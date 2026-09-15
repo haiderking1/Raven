@@ -16,10 +16,10 @@ pub(super) fn append(
     scale: f64,
     animations: &mut Animations,
     elements: &mut Vec<SceneElement>,
-) {
+) -> Result<(), smithay::backend::renderer::gles::GlesError> {
     let output_clip = Rectangle::from_size(area.size);
     let active_root = borders::active_root(state);
-    super::dragging::append(renderer, state, area, scale, elements);
+    super::dragging::append(renderer, state, area, scale, elements)?;
     for window in state.visible_windows().rev() {
         if state
             .dragged_tile()
@@ -50,10 +50,23 @@ pub(super) fn append(
             clipping::append(elements, surfaces, output_clip, scale);
         }
         let active = active_root.as_ref() == Some(toplevel.wl_surface());
-        if !animations.append(renderer, state, window, area, scale, active, elements) {
+        let start = elements.len();
+        let animated = animations.append(renderer, state, window, area, scale, active, elements);
+        if !animated {
             append_body(renderer, state, window, area, scale, active, elements);
         }
+        let geometry = if animated {
+            animations.displayed_geometry(window)
+        } else {
+            crate::desktop::animation::geometry::Geometry::of(state, window)
+        };
+        if let Some(geometry) = geometry {
+            super::rounded::apply(
+                renderer, state, window, geometry, area, scale, active, start, elements,
+            )?;
+        }
     }
+    Ok(())
 }
 
 /// Shared normal and OLD-current capture path. Never includes popup trees.

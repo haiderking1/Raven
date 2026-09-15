@@ -57,7 +57,8 @@ fn first_tiled_window_builds_real_scene_without_relocking_layer_map() {
         &output,
         &mut animations,
         &mut elements,
-    );
+    )
+    .unwrap();
     assert_eq!(
         elements.len(),
         1,

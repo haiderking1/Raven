@@ -16,6 +16,8 @@ pub enum Action {
     LaunchFuzzel,
     CloseWindow,
     ToggleFullscreen,
+    ToggleMaximized,
+    MinimizeWindow,
     ToggleFloating,
     SwitchWorkspace(usize),
     MoveToWorkspace(usize),
@@ -44,6 +46,7 @@ impl Action {
         }
         state.cancel_screenshot();
         state.cancel_app_switcher();
+        state.cancel_management_requests();
         if self == Self::ReloadConfig {
             state.config.request_reload();
             return;
@@ -61,6 +64,17 @@ impl Action {
             Self::CancelWindowDrag => state.cancel_window_drag(),
             Self::CloseWindow => state.close_focused_window(),
             Self::ToggleFullscreen => state.toggle_fullscreen(),
+            Self::ToggleMaximized => {
+                if let Some(window) = state.focused_window() {
+                    let maximized = crate::desktop::floating::maximize::is_maximized(&window);
+                    state.set_window_maximized(&window, !maximized);
+                }
+            }
+            Self::MinimizeWindow => {
+                if let Some(window) = state.focused_window() {
+                    state.set_window_minimized(&window, true);
+                }
+            }
             Self::ToggleFloating => state.toggle_focused_floating(),
             Self::SwitchWorkspace(index) => state.switch_workspace(index),
             Self::MoveToWorkspace(index) => state.move_focused_to_workspace(index),

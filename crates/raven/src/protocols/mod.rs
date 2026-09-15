@@ -17,3 +17,5 @@ pub(crate) mod virtual_pointer;
 mod virtual_pointer_routing;
 pub(crate) mod workspace;
 mod xdg;
+
+pub(crate) mod foreign_toplevel;

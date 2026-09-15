@@ -15,6 +15,7 @@ use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub(in crate::backend::tty::render) struct Blend {
+    pub corners: Option<super::super::rounded::shape::Shape>,
     pub id: Id,
     pub old: Rc<Snapshot>,
     pub current: Rc<Snapshot>,
@@ -31,10 +32,12 @@ pub(super) fn compile(
     renderer: &mut GlesRenderer,
 ) -> Result<Rc<GlesTexProgram>, Box<dyn std::error::Error>> {
     Ok(Rc::new(renderer.compile_custom_texture_shader(
-        include_str!("shaders/resize.frag"),
+        &super::super::rounded::program::source(include_str!("shaders/resize.frag")),
         &[
             UniformName::new("previous_image", UniformType::_1i),
             UniformName::new("progress", UniformType::_1f),
+            UniformName::new("corner_bounds", UniformType::_4f),
+            UniformName::new("corner_radius", UniformType::_1f),
         ],
     )?))
 }
@@ -53,7 +56,12 @@ impl Element for Blend {
         self.bounds
     }
     fn opaque_regions(&self, _: Scale<f64>) -> OpaqueRegions<i32, Physical> {
-        OpaqueRegions::from_slice(&self.opaque)
+        let regions = OpaqueRegions::from_slice(&self.opaque);
+        if let Some(shape) = self.corners {
+            shape.opaque(regions, self.bounds)
+        } else {
+            regions
+        }
     }
 }
 
@@ -66,6 +74,15 @@ impl RenderElement<GlesRenderer> for Blend {
         damage: &[Rectangle<i32, Physical>],
         opaque: &[Rectangle<i32, Physical>],
     ) -> Result<(), GlesError> {
+        let mut shape = self
+            .corners
+            .unwrap_or(super::super::rounded::shape::Shape::new(self.bounds, 0.0));
+        shape.bounds.loc += dst.loc - self.bounds.loc;
+        let mut uniforms = shape.uniforms(frame)?;
+        uniforms.extend([
+            Uniform::new("previous_image", 1i32),
+            Uniform::new("progress", self.progress),
+        ]);
         let previous = frame.with_context(|gl| unsafe {
             // Both images are compositor-owned immutable 2D textures produced on
             // this context. No external client texture or buffer name is bound.
@@ -99,10 +116,7 @@ impl RenderElement<GlesRenderer> for Blend {
             Transform::Normal,
             1.0,
             Some(&self.program),
-            &[
-                Uniform::new("previous_image", 1i32),
-                Uniform::new("progress", self.progress),
-            ],
+            &uniforms,
         );
         let restored = frame.with_context(|gl| unsafe {
             gl.ActiveTexture(ffi::TEXTURE1);

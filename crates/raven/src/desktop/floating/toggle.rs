@@ -36,6 +36,11 @@ impl State {
         {
             return;
         }
+        // Leave the explicit maximized mode before another placement change.
+        if super::maximize::is_maximized(&window) {
+            self.set_window_maximized(&window, false);
+            return;
+        }
         let Some(frame) = self.window_frame_geometry(&window) else {
             return;
         };

@@ -3,7 +3,7 @@ use super::{assertions::tiled, fixture::fixture};
 use smithay::reexports::wayland_server::Resource;
 
 #[test]
-fn startup_maximize_requests_wait_for_the_initial_commit_and_include_tile_geometry() {
+fn startup_mode_requests_wait_for_the_initial_commit_and_include_the_accepted_geometry() {
     for occupied in [false, true] {
         // A saved maximized preference may arrive before the first commit.
         for (opcode, args) in [(9, vec![]), (10, vec![])] {
@@ -21,8 +21,12 @@ fn startup_maximize_requests_wait_for_the_initial_commit_and_include_tile_geomet
 
             f.wire.request(top.surface, 6, &[]);
             let events = f.dispatch();
-            let size = (if occupied { 501 } else { 1001 }, 601);
-            let serial = tiled(&events, top, size);
+            let size = (if occupied && opcode != 9 { 501 } else { 1001 }, 601);
+            let serial = if opcode == 9 {
+                super::assertions::maximized(&events, top, size)
+            } else {
+                tiled(&events, top, size)
+            };
             let bounds = events
                 .iter()
                 .find(|e| e.object == top.role && e.opcode == 2)
@@ -48,7 +52,7 @@ fn startup_maximize_requests_wait_for_the_initial_commit_and_include_tile_geomet
             );
             assert_eq!(
                 f.state.space().element_location(window),
-                Some((if occupied { 500 } else { 0 }, 0).into())
+                Some((if occupied && opcode != 9 { 500 } else { 0 }, 0).into())
             );
             // Activation can send a configure, but mapping must not repair its size.
             for event in events

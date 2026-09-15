@@ -21,3 +21,5 @@ pub(crate) mod workspaces;
 
 #[cfg(test)]
 pub(crate) mod tests;
+
+pub(crate) mod management;

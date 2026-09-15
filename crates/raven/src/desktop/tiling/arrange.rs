@@ -4,6 +4,11 @@ use smithay::utils::{Clock, Logical, Monotonic, Rectangle, SERIAL_COUNTER};
 
 impl State {
     pub(crate) fn tiling_area(&self) -> Option<Rectangle<i32, Logical>> {
+        self.window_workarea()
+            .map(|area| self.appearance.inset_workarea(area))
+    }
+
+    pub(crate) fn window_workarea(&self) -> Option<Rectangle<i32, Logical>> {
         let output = self.output.as_ref()?;
         let area = self.space().output_geometry(output)?;
         if area.size.w <= 0 || area.size.h <= 0 {
@@ -33,7 +38,7 @@ impl State {
                     (1, 1).into(),
                 )
             });
-        Some(self.appearance.inset_workarea(zone))
+        Some(zone)
     }
 
     /// Membership and geometry belong to a workspace, not the visible output.

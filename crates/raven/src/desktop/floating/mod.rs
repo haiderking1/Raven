@@ -2,6 +2,7 @@ mod access;
 mod configure;
 mod hints;
 mod lifecycle;
+pub(crate) mod maximize;
 mod movement;
 mod placement;
 mod resizing;
@@ -24,7 +25,7 @@ pub(crate) struct Floating {
     pub(crate) elevated: HashSet<Window>,
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 struct Placement {
     manual_size: bool,
     position: Option<Point<i32, Logical>>,

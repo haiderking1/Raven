@@ -31,6 +31,7 @@ use smithay::{
 use std::time::Instant;
 
 pub struct State {
+    pub(crate) foreign_toplevel: crate::protocols::foreign_toplevel::ForeignToplevel,
     pub display_handle: DisplayHandle,
     pub compositor_state: CompositorState,
     pub shm_state: ShmState,

@@ -20,18 +20,18 @@ pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, 
     f.state.set_appearance(Appearance::default()).unwrap();
     let mut elements = Vec::new();
     let mut animations = crate::backend::tty::render::animation::Animations::default();
-    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
-    assert_eq!(elements.len(), 5);
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements).unwrap();
+    assert_eq!(elements.len(), 2);
     assert!(
-        elements[..4]
+        elements[..1]
             .iter()
-            .all(|e| matches!(e, SceneElement::Border(_)))
+            .all(|e| matches!(e, SceneElement::RoundedBorder(_)))
     );
     assert_eq!(
-        elements[4].geometry(1.0.into()),
+        elements[1].geometry(1.0.into()),
         Rectangle::new((10, 10).into(), (780, 580).into())
     );
-    let identity: Vec<_> = elements[..4]
+    let identity: Vec<_> = elements[..1]
         .iter()
         .map(|e| (e.id().clone(), e.current_commit()))
         .collect();
@@ -57,8 +57,8 @@ pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, 
         result.sync.wait().unwrap();
     }
     elements.clear();
-    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
-    for (element, (id, commit)) in elements[..4].iter().zip(&identity) {
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements).unwrap();
+    for (element, (id, commit)) in elements[..1].iter().zip(&identity) {
         assert_eq!(element.id(), id);
         assert_eq!(element.current_commit(), *commit);
     }
@@ -79,17 +79,17 @@ pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, 
 
     f.state.activate_window(None);
     elements.clear();
-    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
-    for (element, (id, commit)) in elements[..4].iter().zip(&identity) {
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements).unwrap();
+    for (element, (id, commit)) in elements[..1].iter().zip(&identity) {
         assert_eq!(
             element.id(),
             id,
-            "focus keeps each stripe's damage identity"
+            "focus keeps each outline's damage identity"
         );
         assert_ne!(
             element.current_commit(),
             *commit,
-            "inactive color damages the stripe"
+            "inactive color damages the outline"
         );
     }
     assert!(
@@ -106,7 +106,7 @@ pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, 
             .is_some()
     );
     elements.clear();
-    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements).unwrap();
     assert!(
         damage
             .render_output(
@@ -125,9 +125,9 @@ pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, 
     appearance.border.inactive = [0.8, 0.4, 0.2, 0.5];
     f.state.set_appearance(appearance).unwrap();
     elements.clear();
-    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements).unwrap();
     assert!(
-        elements[..4]
+        elements[..1]
             .iter()
             .all(|e| e.alpha() == 0.5 && e.opaque_regions(1.0.into()).is_empty())
     );
@@ -144,7 +144,7 @@ pub(super) fn assert_border_scene(f: &mut Fixture, renderer: &mut GlesRenderer, 
     result.sync.wait().unwrap();
     f.state.set_appearance(Appearance::disabled()).unwrap();
     elements.clear();
-    super::super::append(renderer, &f.state, output, &mut animations, &mut elements);
+    super::super::append(renderer, &f.state, output, &mut animations, &mut elements).unwrap();
     assert_eq!(elements.len(), 1);
     assert!(
         damage

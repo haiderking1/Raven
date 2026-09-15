@@ -31,7 +31,8 @@ pub(crate) fn is_firefox(window: &Window) -> bool {
 /// maximized hint stable for Firefox and Zen, including floating and fullscreen exits.
 /// This affects client decoration policy, not Raven's allocation or layout mode.
 pub(crate) fn configure_client_decorations(window: &Window) {
-    let maximized_hint = is_firefox(window);
+    let maximized_hint =
+        is_firefox(window) || crate::desktop::floating::maximize::is_maximized(window);
     let Some(top) = window.toplevel() else {
         return;
     };

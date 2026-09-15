@@ -56,7 +56,9 @@ impl State {
                 // Keep logical surface-tree hit testing available during setup
                 // and output teardown; actual surface input regions still apply.
                 self.window_layout_geometry(window)
-                    .map_or(output.is_none(), |area| area.to_f64().contains(point))
+                    .map_or(output.is_none(), |area| {
+                        self.window_corner_contains(window, area, point, true)
+                    })
                     .then(|| {
                         window.surface_under(
                             local,
@@ -74,10 +76,10 @@ impl State {
             }
             if self
                 .window_frame_geometry(window)
-                .is_some_and(|frame| frame.to_f64().contains(point))
+                .is_some_and(|frame| self.window_corner_contains(window, frame, point, false))
                 && self
                     .window_client_geometry(window)
-                    .is_some_and(|client| !client.to_f64().contains(point))
+                    .is_some_and(|client| !self.window_corner_contains(window, client, point, true))
             {
                 // A compositor border blocks lower windows/layers but has no
                 // wl_surface. Focus the owner without inventing content input.

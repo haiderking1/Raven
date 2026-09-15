@@ -112,6 +112,7 @@ pub(super) fn build(
             .collect()
     };
     Ok(Blend {
+        corners: None,
         id: entry.id.clone(),
         old: snapshot.clone(),
         current,

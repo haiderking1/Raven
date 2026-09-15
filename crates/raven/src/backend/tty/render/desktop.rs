@@ -11,9 +11,9 @@ pub(super) fn append(
     output: &Output,
     animations: &mut super::animation::Animations,
     elements: &mut Vec<SceneElement>,
-) {
+) -> Result<(), smithay::backend::renderer::gles::GlesError> {
     let Some(area) = state.space().output_geometry(output) else {
-        return;
+        return Ok(());
     };
     let scale = output.current_scale().fractional_scale();
     let clip = Rectangle::from_size(area.size);
@@ -29,7 +29,7 @@ pub(super) fn append(
         clip,
         elements,
     );
-    windows::append(renderer, state, area, scale, animations, elements);
+    windows::append(renderer, state, area, scale, animations, elements)?;
     layers::append(
         renderer,
         state,
@@ -39,6 +39,7 @@ pub(super) fn append(
         clip,
         elements,
     );
+    Ok(())
 }
 
 #[cfg(test)]

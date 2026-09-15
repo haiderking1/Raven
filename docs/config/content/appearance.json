@@ -89,6 +89,40 @@
           "Duration in milliseconds, from 0 to 2000. Set 0 to disable the visual animation."
         ]
       ]
+    },
+    {
+      "type": "text",
+      "text": "Normal windows have rounded corners with a fixed 16-logical-pixel radius, scaled with the output. Existing border colors and widths still apply. Fullscreen windows stay square; popup windows are not clipped to their parent’s corners. Traffic-light window buttons are not added."
+    },
+    {
+      "type": "heading",
+      "text": "Window management"
+    },
+    {
+      "type": "text",
+      "text": "The maximize action toggles between the layer-reserved workarea and the window’s previous tiled or floating placement. Client size limits still apply. The minimize action hides a window and its descendants while preserving their workspace and restore placement. Neither action has a default shortcut."
+    },
+    {
+      "type": "code",
+      "language": "Lua",
+      "text": "raven.bind(\"Super+M\", \"minimize\")\nraven.bind(\"Super+Shift+F\", \"maximize\")"
+    },
+    {
+      "type": "heading",
+      "text": "Taskbar restoration"
+    },
+    {
+      "type": "text",
+      "text": "Minimization requires a compatible taskbar or Dock using wlr foreign-toplevel-management. Waybar’s wlr/taskbar module provides this connection; clicking its entry with the activate action restores and focuses the window. Add wlr/taskbar to your existing module list rather than replacing unrelated modules."
+    },
+    {
+      "type": "code",
+      "language": "JSON",
+      "text": "{\n    \"modules-left\": [\"wlr/taskbar\"],\n    \"wlr/taskbar\": {\n        \"format\": \"{icon}\",\n        \"on-click\": \"activate\"\n    }\n}"
+    },
+    {
+      "type": "text",
+      "text": "Raven disables minimization when a window has no taskbar restore route. If that route disconnects, affected minimized windows become visible again. Alt+Tab does not automatically restore minimized windows. Traffic-light buttons, a native Dock, and minimize animations are not implemented yet."
     }
   ]
 }

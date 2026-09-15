@@ -56,6 +56,17 @@ pub(in crate::backend::tty) struct Animations {
 }
 
 impl Animations {
+    pub(in crate::backend::tty::render) fn displayed_geometry(
+        &self,
+        window: &Window,
+    ) -> Option<Geometry> {
+        Some(
+            self.entries
+                .get(window.toplevel()?.wl_surface())?
+                .rendered
+                .geometry,
+        )
+    }
     pub fn clear(&mut self) {
         self.entries.clear();
         self.output = None;

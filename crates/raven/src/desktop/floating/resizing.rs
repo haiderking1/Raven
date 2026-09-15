@@ -33,6 +33,9 @@ impl State {
         if self.fullscreen_manages(window) {
             return;
         }
+        if delta != (0, 0).into() {
+            self.leave_maximized_for_interaction(window);
+        }
         let Some(index) = self.workspaces.index_of(window) else {
             return;
         };

@@ -11,3 +11,6 @@ mod input;
 mod screenshot;
 #[path = "config/switcher.rs"]
 mod switcher;
+
+#[path = "config/management.rs"]
+mod management;

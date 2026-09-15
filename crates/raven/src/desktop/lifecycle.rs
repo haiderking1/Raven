@@ -26,6 +26,8 @@ impl State {
             .element_location(&window)
             .is_some();
         if mapped && !has_buffer {
+            crate::desktop::management::minimize::clear(&window);
+            crate::desktop::floating::maximize::clear(&window);
             self.cancel_resize_window(&window);
             self.dismiss_window_popups(surface);
             window.set_activated(false);
@@ -79,6 +81,8 @@ impl State {
     }
 
     pub(crate) fn remove_window(&mut self, window: &Window) {
+        crate::desktop::management::minimize::clear(window);
+        crate::desktop::floating::maximize::clear(window);
         self.cancel_resize_window(window);
         self.request_redraw();
         self.clear_fullscreen(window);
@@ -128,9 +132,11 @@ impl State {
         self.refresh_tiling();
         self.refresh_fullscreen();
         self.refresh_floating();
+        self.refresh_minimized_windows();
         self.popup_manager.cleanup();
         self.refresh_popup_grab();
         self.restore_focus();
         self.reconcile_window_drag();
+        self.refresh_foreign_toplevels();
     }
 }

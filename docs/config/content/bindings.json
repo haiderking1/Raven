@@ -111,6 +111,16 @@
           "Toggle the focused window’s mode."
         ],
         [
+          "maximize",
+          "None",
+          "Toggle workarea maximization and restore prior placement."
+        ],
+        [
+          "minimize",
+          "None",
+          "Minimize the focused window when a taskbar restore route is available."
+        ],
+        [
           "screenshot",
           "None",
           "Open the native area selector."
@@ -240,6 +250,10 @@
           "Screenshots"
         ]
       ]
+    },
+    {
+      "type": "text",
+      "text": "Window-management actions have no default bindings. The application switcher chooses a non-minimized window when one is available; selecting a minimized-only app does not restore it. Use its taskbar entry to restore it."
     }
   ]
 }

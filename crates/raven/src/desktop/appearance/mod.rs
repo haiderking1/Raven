@@ -8,3 +8,5 @@ mod geometry;
 mod settings;
 
 pub use settings::{Appearance, Border, InnerGaps, InvalidAppearance, OuterGaps};
+
+pub(crate) mod corners;

@@ -40,7 +40,7 @@ impl State {
         // Do not advertise window-management operations we do not implement.
         let xdg_shell_state = XdgShellState::new_with_capabilities::<Self>(
             &display_handle,
-            vec![WmCapabilities::Fullscreen],
+            vec![WmCapabilities::Fullscreen, WmCapabilities::Maximize],
         );
         let layer_shell_state = WlrLayerShellState::new::<Self>(&display_handle);
         let xdg_decoration_state = XdgDecorationState::new::<Self>(&display_handle);
@@ -59,7 +59,10 @@ impl State {
         let relative_pointer_state = RelativePointerManagerState::new::<Self>(&display_handle);
         let workspace_protocol =
             crate::protocols::workspace::WorkspaceProtocol::new(&display_handle);
+        let foreign_toplevel =
+            crate::protocols::foreign_toplevel::ForeignToplevel::new(&display_handle);
         Ok(Self {
+            foreign_toplevel,
             switcher: Default::default(),
             screenshot: Default::default(),
             display_handle,

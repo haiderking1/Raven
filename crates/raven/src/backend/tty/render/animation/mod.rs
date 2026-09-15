@@ -19,3 +19,6 @@ mod tree;
 pub(in crate::backend::tty::render) use blend::Blend;
 pub(in crate::backend::tty) use cache::Animations;
 pub(in crate::backend::tty::render) use paint::LiveElement;
+
+#[cfg(test)]
+mod tests;

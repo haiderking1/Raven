@@ -54,11 +54,22 @@ impl XdgShellHandler for State {
     }
 
     fn maximize_request(&mut self, surface: ToplevelSurface) {
-        mode::reply_unchanged(&surface);
+        mode::maximize(self, &surface, true);
     }
 
     fn unmaximize_request(&mut self, surface: ToplevelSurface) {
-        mode::reply_unchanged(&surface);
+        mode::maximize(self, &surface, false);
+    }
+
+    fn minimize_request(&mut self, surface: ToplevelSurface) {
+        if let Some(window) = self
+            .windows
+            .iter()
+            .find(|w| w.toplevel() == Some(&surface))
+            .cloned()
+        {
+            self.set_window_minimized(&window, true);
+        }
     }
 
     fn fullscreen_request(&mut self, surface: ToplevelSurface, _output: Option<WlOutput>) {
